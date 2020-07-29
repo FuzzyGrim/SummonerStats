@@ -1,0 +1,42 @@
+{% block content %}
+
+    <title>{{ stats.name }}</title>
+    <link crossorigin="anonymous"
+    href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css"
+    integrity="sha256-8B1OaG0zT7uYA572S2xOxWACq9NXYPQ+U5kHPV1bJN4="
+    rel="stylesheet"/>
+    <h1><strong>RIOT API</strong></h1>
+
+
+    <p><strong>{{ stats.name }}</strong> </p>    
+    <p>Tier: <strong>{{ stats.tier }} {{ stats.rank }}</strong></p>    
+    <p>Winrate: <strong>W: {{ stats.wins }} / L: {{ stats.losses }} ({{stats.win_rate }}%)</strong></p>
+
+    <table class="table is-fullwidth is-striped is-bordered">
+        <thead>
+        <tr>
+            <th>Champion</th>
+            <th>Win</th>
+            <th>Game Id</th>
+            <th>Game Mode</th>
+            <th>KDA</th>
+            <th>Game Duration</th>
+            <th>When</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for game in games %}
+        <tr>
+            <th><a href="/{{stats.server}}/{{stats.name}}/{{game.champion_name}}">{{ game.champion_name }}</a></th>
+            <td>{{ game.win }}</td>
+            <td><a href="/{{stats.server}}/{{game.gameId}}/info">{{ game.gameId }}</a></td>
+            <td>{{ game.gameMode }}</td>
+            <td>{{ game.kills }}/{{ game.deaths }}/{{ game.assist }}</td>
+            <td>{{ game.game_duration }}</td>
+            <td>{{ game.time_diff }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table> 
+
+{% endblock %}

@@ -1,0 +1,46 @@
+{% block content %}
+
+<title>{{ champ.name }}: {{ champ.champ_name }}</title>
+<link crossorigin="anonymous"
+href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css"
+integrity="sha256-8B1OaG0zT7uYA572S2xOxWACq9NXYPQ+U5kHPV1bJN4="
+rel="stylesheet"/>
+
+    <h1><strong>RIOT API</strong></h1>
+
+    <p><strong>{{ champ.name }}</strong> </p>    
+    <p>Summoner ID: <strong>{{ champ.summonerId }}</strong></p>    
+    <p>Account ID: <strong>{{ champ.accountId }}</strong></p>    
+    <p>Champion name: <strong>{{ champ.champ_name }}</strong></p>
+    <p>Champion id: <strong>{{ champ.championId }}</strong></p>
+    <p>Champion level: <strong>{{ champ.championLevel }}</strong></p>
+    <p>Champion points: <strong>{{ champ.championPoints }}</strong></p>
+    <p>Last time: <strong>{{ champ.last_time }}</strong></p>
+    
+    <table class="table is-fullwidth is-striped is-bordered">
+        <thead>
+        <tr>
+            <th>Champion</th>
+            <th>Win</th>
+            <th>Game Id</th>
+            <th>Game Mode</th>
+            <th>KDA</th>
+            <th>Game Duration</th>
+            <th>When</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for game in champ_games %}
+        <tr>
+            <th><a href="/{{champ.server}}/{{champ.name}}/{{champ.champ_name}}">{{ game.champion_name }}</a></th>
+            <td>{{ game.win }}</td>
+            <td><a href="/{{champ.server}}/{{game.gameId}}/info">{{ game.gameId }}</a></td>
+            <td>{{ game.gameMode }}</td>
+            <td>{{ game.kills }}/{{ game.deaths }}/{{ game.assist }}</td>
+            <td>{{ game.game_duration }}</td>
+            <td>{{ game.time_diff }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table> 
+{% endblock %}

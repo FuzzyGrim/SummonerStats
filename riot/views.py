@@ -1,0 +1,42 @@
+from django.shortcuts import render
+from django.http import Http404, HttpResponse
+import requests
+from .services import *
+
+
+def index(request):
+    user = {}
+    if ('summoners_name' and 'server') in request.GET:
+        username = request.GET['summoners_name']
+        server = (request.GET['server'] )
+
+        user = get_main_data(server, username)
+
+    return render(request, 'riot/index.html', {'user': user})
+
+def user_info(request, server, summoner_name):
+    stats = player_stats(server, summoner_name)
+    
+    account_id = stats['accountId']
+    
+    games = past_games(server, account_id)
+    
+    return render(request, 'riot/record.html', {'stats': stats, "games": games})
+
+def champ_info(request, server, summoner_name, champion_name):
+    champ = champion_information(server, summoner_name, champion_name)
+    
+    server = champ['server']
+    
+    account_id = champ['accountId']
+    
+    champion_id = champ['championId'] 
+    
+    champ_games = champion_games(server, account_id, champion_id)
+    
+    return render(request, 'riot/champ.html', {'champ': champ, "champ_games": champ_games})
+
+def game_info(request, server, game_id):
+    game_info = game_information(server, game_id)
+    
+    return render(request, 'riot/game.html', {'game_info': game_info})
