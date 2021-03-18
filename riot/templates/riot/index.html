@@ -1,22 +1,6 @@
 {% load static %}
-<link rel="stylesheet" type="text/css" href="{% static 'riot/style.css' %}">
 
-<style>
-[type='radio'] {
-    margin: 10px 2px 10px 5px;
-  }
-  
-  .button {
-    background-color: #2aabda; /* Green */
-    border: none;
-    color: white;
-    padding: 15px 32px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-  }
-</style>
+<link rel="stylesheet" type="text/css" href="{% static 'riot/index.css' %}">
 
 {% block content %}
 
@@ -36,6 +20,7 @@
         <button type="submit">search on database</button>
     </form>
 
+    <main>
     {% if user.success %}
         <p><strong>{{ user.name }}</strong> </p>    
         <p>Level: <strong>{{ user.summonerLevel }}</strong></p>    
@@ -43,13 +28,14 @@
         <p>Account id: <strong>{{ user.accountId }}</strong></p>
 
         <a href='/{{user.server}}/{{user.name}}' class="button">More information</a>
+        <a href='/{{user.server}}/{{user.name}}/In-Game' class="button" style = "margin-left: 1em;">In-Game</a>
         
     {% elif user.fail %}
         <p>Summoner not found</strong></p>
-    
-    {% elif user.api_error %}
-        <p>Api key has timed out</strong></p>
+
 
     {% endif %}
+
+    </main>
 
 {% endblock %}

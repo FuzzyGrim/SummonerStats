@@ -8,12 +8,10 @@ def get_main_data(server, name):
     URL = "https://" + server + ".api.riotgames.com/lol/summoner/v4/summoners/by-name/" + name + "?api_key=" + ApiKey
     response = requests.get(URL)
     search_was_successful = (response.status_code == 200)
-    search_summoner_not_found = (response.status_code == 404)
-    error_api_key = (response.status_code == 403)
+    summoner_not_found = (response.status_code == 404)
     user_json = response.json()
     user_json['success'] = search_was_successful
-    user_json['fail'] = search_summoner_not_found
-    user_json['api_error'] = error_api_key
+    user_json['fail'] = summoner_not_found
     user_json['server'] = server
     return user_json
 
@@ -57,20 +55,15 @@ def past_games(server, account_id):
     URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matchlists/by-account/" + account_id + "?api_key=" + ApiKey
     response = requests.get(URL)
     old_games_json = response.json()
-    old_games_json = old_games_json['matches']
-    old_games_json = old_games_json[:10]
+    del old_games_json['matches'][5:]
     
-    for index in range(len(old_games_json)):
-        key = (old_games_json[index]['champion'])
+    for match in old_games_json['matches']:
+        key = match['champion']
         key = str(key)
-        r = requests.get("http://ddragon.leagueoflegends.com/cdn/10.13.1/data/en_US/champion.json")
-        j = r.json()
-        data = j["data"]
-        by_key = {x['key']: x for x in data.values()}
-        champ_name = (by_key.get(key)['id'])
-        old_games_json[index]['champion_name'] = champ_name
+        champ_name = get_champ_name(key)
+        match['champion_name'] = champ_name
         
-        gameid = (old_games_json[index]['gameId'])
+        gameid = match['gameId']
         
         URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matches/" + str(gameid) + "?api_key=" + ApiKey
         response = requests.get(URL)
@@ -78,38 +71,33 @@ def past_games(server, account_id):
         
         game_duration_seconds = game_json['gameDuration'] 
         game_duration = str(datetime.timedelta(seconds=game_duration_seconds))
-        old_games_json[index]['game_duration'] = game_duration
+        match['game_duration'] = game_duration
         
         game_mode = game_json['gameMode'] 
-        old_games_json[index]['gameMode'] = game_mode
+        match['gameMode'] = game_mode
         
         game_creation = game_json['gameCreation']  
         time_diff = get_time(game_creation)
-        old_games_json[index]['time_diff'] = time_diff
+        match['time_diff'] = time_diff
         
+        for player in game_json['participants']:
+            if str(player['championId']) == key:
+                win = player['stats']["win"]
+                kills = player['stats']["kills"]
+                deaths = player['stats']["deaths"]
+                assists = player['stats']["assists"]
         
-        for player in range(len(game_json['participants'])):
-            if str(game_json['participants'][player]['championId']) == key:
-                win = game_json['participants'][player]['stats']["win"]
-                kills = game_json['participants'][player]['stats']["kills"]
-                deaths = game_json['participants'][player]['stats']["deaths"]
-                assists = game_json['participants'][player]['stats']["assists"]
+        match['win'] = win
+        match['kills'] = kills
+        match['deaths'] = deaths
+        match['assist'] = assists
         
-        old_games_json[index]['win'] = win
-        old_games_json[index]['kills'] = kills
-        old_games_json[index]['deaths'] = deaths
-        old_games_json[index]['assist'] = assists
-        
-        del old_games_json[index]['timestamp']
-        del old_games_json[index]['queue']
-        del old_games_json[index]['platformId']
-        
-        if old_games_json[index]['win'] == False:
-            old_games_json[index]['win'] = 'False'
+        if match['win'] == False:
+            match['win'] = 'False'
         else:
-            old_games_json[index]['win'] = 'True'
+            match['win'] = 'True'
     
-    return old_games_json
+    return old_games_json['matches']
 
 def champion_information(server, summoner_name, champion_name):
     r = requests.get("http://ddragon.leagueoflegends.com/cdn/10.13.1/data/en_US/champion.json")
@@ -145,20 +133,15 @@ def champion_games(server, account_id, champion_id):
     URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matchlists/by-account/" + account_id  + '?champion=' + champion_id + "&api_key=" + ApiKey
     response = requests.get(URL)
     champ_games_json = response.json()
-    champ_games_json = champ_games_json['matches']
-    champ_games_json = champ_games_json[:8]
+    del champ_games_json['matches'][5:]
     
-    for index in range(len(champ_games_json)):
-        key = (champ_games_json[index]['champion'])
+    for match in champ_games_json['matches']:
+        key = match['champion']
         key = str(key)
-        r = requests.get("http://ddragon.leagueoflegends.com/cdn/10.13.1/data/en_US/champion.json")
-        j = r.json()
-        data = j["data"]
-        by_key = {x['key']: x for x in data.values()}
-        champ_name = (by_key.get(key)['id'])
-        champ_games_json[index]['champion_name'] = champ_name
+        champ_name = get_champ_name(key)
+        match['champion_name'] = champ_name
         
-        gameid = (champ_games_json[index]['gameId'])
+        gameid = match['gameId']
         
         URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matches/" + str(gameid) + "?api_key=" + ApiKey
         response = requests.get(URL)
@@ -166,40 +149,33 @@ def champion_games(server, account_id, champion_id):
         
         game_duration_seconds = game_json['gameDuration'] 
         game_duration = str(datetime.timedelta(seconds=game_duration_seconds))
-        champ_games_json[index]['game_duration'] = game_duration
+        match['game_duration'] = game_duration
         
         game_mode = game_json['gameMode'] 
-        champ_games_json[index]['gameMode'] = game_mode
+        match['gameMode'] = game_mode
         
         game_creation = game_json['gameCreation']  
         time_diff = get_time(game_creation)
-        champ_games_json[index]['time_diff'] = time_diff
+        match['time_diff'] = time_diff
         
+        for player in game_json['participants']:
+            if str(player['championId']) == key:
+                win = player['stats']["win"]
+                kills = player['stats']["kills"]
+                deaths = player['stats']["deaths"]
+                assists = player['stats']["assists"]
         
-        for player in range(len(game_json['participants'])):
-            if str(game_json['participants'][player]['championId']) == key:
-                win = game_json['participants'][player]['stats']["win"]
-                kills = game_json['participants'][player]['stats']["kills"]
-                deaths = game_json['participants'][player]['stats']["deaths"]
-                assists = game_json['participants'][player]['stats']["assists"]
+        match['win'] = win
+        match['kills'] = kills
+        match['deaths'] = deaths
+        match['assist'] = assists
         
-        champ_games_json[index]['win'] = win
-        champ_games_json[index]['kills'] = kills
-        champ_games_json[index]['deaths'] = deaths
-        champ_games_json[index]['assist'] = assists
-        
-        del champ_games_json[index]['timestamp']
-        del champ_games_json[index]['queue']
-        del champ_games_json[index]['platformId']
-        
-        if champ_games_json[index]['win'] == False:
-            champ_games_json[index]['win'] = 'False'
+        if match['win'] == False:
+            match['win'] = 'False'
         else:
-            champ_games_json[index]['win'] = 'True'
+            match['win'] = 'True'
     
-    pprint(champ_games_json)
-    
-    return champ_games_json
+    return champ_games_json['matches']
     
 
 def game_information(server, gameid):
@@ -211,31 +187,92 @@ def game_information(server, gameid):
     
     game_duration_seconds = game_json['gameDuration'] 
     game_duration = str(datetime.timedelta(seconds=game_duration_seconds))
-    
     game_json['gameDuration'] = game_duration
+    
     
     game_creation = game_json['gameCreation']
     game_creation = get_time(game_creation)
-    
     game_json['gameCreation'] = game_creation
     
-    blue_team_json = game_json['teams'][0]
-    red_team_json = game_json['teams'][1]
     
+    blue_team_json = game_json['teams'][0]
+    
+    if blue_team_json['win'] == True:
+        blue_team_json['win'] = 'Victory'
+    else:
+        blue_team_json['win'] = 'Defeat'
+        
+        
+    red_team_json = game_json['teams'][1]
+    if red_team_json['win'] == True:
+        red_team_json['win'] = 'Victory'
+    else:
+        red_team_json['win'] = 'Defeat'
+        
+        
     blue_participants_json = game_json['participants'][:5]
     red_participants_json = game_json['participants'][5:]
-    
-    
-    
-    del game_json['teams']
-    del game_json['participants']
-    del game_json['participantIdentities']
-    
-    pprint(game_json)
-    
-    return game_json
-    
-    
+
+    for participant in blue_participants_json:
+        key = participant['championId']
+        key = str(key)
+        champ_name = get_champ_name(key)
+        participant['champion_name'] = champ_name
+        
+        kills = participant['stats']['kills']
+        deaths = participant['stats']['deaths']
+        assists = participant['stats']['assists']
+        
+        kda = f'{kills}/{deaths}/{assists}'
+        
+        participant['kda'] = kda
+        
+        participant_id = participant['stats']['participantId']
+        
+        for playerid in game_json['participantIdentities']:
+            if playerid['participantId'] == participant_id:
+                summoner_name = playerid['player']['summonerName']
+                
+                stats = player_stats(server, summoner_name)
+                tier = stats['tier']
+                rank = stats['rank']
+                
+                tier = f'{tier} {rank}'
+        
+        participant['tier'] = tier
+        participant['summoner_name'] = summoner_name
+        
+        
+    for participant in red_participants_json:
+        key = participant['championId']
+        key = str(key)
+        champ_name = get_champ_name(key)
+        participant['champion_name'] = champ_name
+        
+        kills = participant['stats']['kills']
+        deaths = participant['stats']['deaths']
+        assists = participant['stats']['assists']
+        
+        kda = f'{kills}/{deaths}/{assists}'
+        
+        participant['kda'] = kda
+        
+        participant_id = participant['stats']['participantId']
+        
+        for playerid in game_json['participantIdentities']:
+            if playerid['participantId'] == participant_id:
+                summoner_name = playerid['player']['summonerName']
+                
+                stats = player_stats(server, summoner_name)
+                tier = stats['tier']
+                rank = stats['rank']
+                
+                tier = f'{tier} {rank}'
+        
+        participant['tier'] = tier
+        participant['summoner_name'] = summoner_name
+        
+    return game_json, blue_team_json, blue_participants_json, red_team_json, red_participants_json
     
 
 def get_time(unix_millisecons):
@@ -249,3 +286,85 @@ def get_time(unix_millisecons):
     else:
         time_diff = str(time_diff) + ' days ago'
     return time_diff
+
+def get_champ_name(key):
+    if key == '876':
+        champ_name =  'Lillia'
+    
+    else:
+        r = requests.get("http://ddragon.leagueoflegends.com/cdn/10.13.1/data/en_US/champion.json")
+        j = r.json()
+        data = j["data"]
+        by_key = {x['key']: x for x in data.values()}
+        champ_name = (by_key.get(key)['id'])
+    return champ_name
+
+def in_game_info(server, summoner_id):
+    URL = "https://" + server + ".api.riotgames.com/lol/spectator/v4/active-games/by-summoner/" + (summoner_id) + "?api_key=" + ApiKey
+    response = requests.get(URL)
+    search_was_successful = (response.status_code == 200)
+    not_in_game = (response.status_code == 404)
+
+    in_game_json = response.json()
+    
+    in_game_json['success'] = search_was_successful
+    in_game_json['fail'] = not_in_game
+
+    if search_was_successful:
+
+        blue_participants_json = in_game_json['participants'][:5]
+        red_participants_json = in_game_json['participants'][5:]
+
+        for participant in blue_participants_json:
+            key = participant['championId']
+            key = str(key)
+            champ_name = get_champ_name(key)
+            participant['champion_name'] = champ_name
+            
+            summoner_name = participant['summonerName']
+                    
+            stats = player_stats(server, summoner_name)
+            tier = stats['tier']
+            rank = stats['rank']
+            tier = f'{tier} {rank}'
+            participant['tier'] = tier
+            
+            
+            wins = stats['wins']
+            defeats = stats['losses']
+            total_games = stats['total_games']
+            win_rate = stats['win_rate']
+            
+            ranked_stats = f"{wins}/{defeats}   W={win_rate}% ({total_games} Played)"
+            participant['ranked_stats'] = ranked_stats
+            
+            
+        for participant in red_participants_json:
+            key = participant['championId']
+            key = str(key)
+            champ_name = get_champ_name(key)
+            participant['champion_name'] = champ_name
+            
+            summoner_name = participant['summonerName']
+                    
+            stats = player_stats(server, summoner_name)
+            tier = stats['tier']
+            rank = stats['rank']
+            tier = f'{tier} {rank}'
+            participant['tier'] = tier
+            
+            
+            wins = stats['wins']
+            defeats = stats['losses']
+            total_games = stats['total_games']
+            win_rate = stats['win_rate']
+
+            ranked_stats = f"{wins}/{defeats}   W={win_rate}% ({total_games} Played)"
+            participant['ranked_stats'] = ranked_stats
+            
+        return in_game_json, blue_participants_json, red_participants_json
+    
+    elif not_in_game:
+        blue_participants_json = {}
+        red_participants_json = {}
+        return in_game_json, blue_participants_json, red_participants_json

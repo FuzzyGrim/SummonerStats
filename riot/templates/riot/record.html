@@ -1,18 +1,33 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'riot/record.css' %}">
+
 {% block content %}
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
 
     <title>{{ stats.name }}</title>
-    <link crossorigin="anonymous"
-    href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css"
-    integrity="sha256-8B1OaG0zT7uYA572S2xOxWACq9NXYPQ+U5kHPV1bJN4="
-    rel="stylesheet"/>
-    <h1><strong>RIOT API</strong></h1>
+</head>
 
+<body>
 
-    <p><strong>{{ stats.name }}</strong> </p>    
-    <p>Tier: <strong>{{ stats.tier }} {{ stats.rank }}</strong></p>    
-    <p>Winrate: <strong>W: {{ stats.wins }} / L: {{ stats.losses }} ({{stats.win_rate }}%)</strong></p>
+    <main>
+        <h1>RIOT API</h1>
 
-    <table class="table is-fullwidth is-striped is-bordered">
+        <p><strong>{{ stats.name }}</strong> </p>    
+        <p>Tier: <strong>{{ stats.tier }} {{ stats.rank }}</strong></p>    
+        <p>Winrate: <strong>W: {{ stats.wins }} / L: {{ stats.losses }} ({{stats.win_rate }}%)</strong></p>
+
+    </main>
+
+    <table class="table table-bordered">
         <thead>
         <tr>
             <th>Champion</th>
@@ -27,7 +42,7 @@
         <tbody>
         {% for game in games %}
         <tr>
-            <th><a href="/{{stats.server}}/{{stats.name}}/{{game.champion_name}}">{{ game.champion_name }}</a></th>
+            <th><a href="/{{stats.server}}/{{stats.name}}/{{game.champion_name}}/info">{{ game.champion_name }}</a></th>
             <td>{{ game.win }}</td>
             <td><a href="/{{stats.server}}/{{game.gameId}}/info">{{ game.gameId }}</a></td>
             <td>{{ game.gameMode }}</td>
@@ -39,4 +54,12 @@
         </tbody>
     </table> 
 
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+</body>
+
+</html>
 {% endblock %}

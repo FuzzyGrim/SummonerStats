@@ -4,7 +4,7 @@
 
 {% block content %}
 <head>
-    <title>{{ game_info.server }} : {{ game_info.gameId }}</title>
+    <title>{{ game_info.summoner_name }} In-Game</title>
 
     <!-- Required meta tags -->
     <meta charset="utf-8">
@@ -19,17 +19,16 @@
 
     <main>
     <h1>RIOT API</h1>
-    </main>
+    
+
+    {% if game_info.success %}
 
     <table class="table">
         <thead>
             <tr>
                 <th scope="col">Game ID</th>
                 <th scope="col">Server</th>
-                <th scope="col">When</th>
-                <th scope="col">Duration</th>
                 <th scope="col">Game Mode</th>
-                <th scope="col">Season</th>
             </tr>
         </thead>
 
@@ -37,21 +36,15 @@
             <tr>
                 <td>{{ game_info.gameId }}</td>
                 <td>{{ game_info.server }}</td>
-                <td>{{ game_info.gameCreation }}</td>
-                <td>{{ game_info.gameDuration }}</td>
                 <td>{{ game_info.gameMode }}</td>
-                <td>{{ game_info.seasonId }}</td>
             </tr>
         </tbody>
 
         <thead>
             <tr>
-                <th scope="col">{{ blue_team.win }} (Blue Team)</th>
+                <th scope="col">(Blue Team)</th>
                 <th scope="col">Rank</th>
-                <th scope="col">KDA</th>
-                <th scope="col">Damage</th>
-                <th scope="col">CS</th>
-                <th scope="col">Vision Score</th>
+                <th scope="col">Win-rate</th>
             
             </tr>
         </thead>
@@ -61,22 +54,16 @@
             <tr >
                 <td>{{ player.champion_name }}/<a href="/{{game_info.server}}/{{player.summoner_name}}"> {{ player.summoner_name }}</a></td>
                 <td>{{ player.tier }}</a></td>
-                <td>{{ player.kda }}</td>
-                <td>{{ player.stats.totalDamageDealtToChampions }}</td>
-                <td>{{ player.stats.totalMinionsKilled }}</td>
-                <td>{{ player.stats.visionScore }}</td>
+                <td>{{ player.ranked_stats }}</a></td>
             </tr>
             {% endfor %}
         </tbody>
 
         <thead>
             <tr>
-                <th scope="col">{{ red_team.win }} (Red Team)</th>
+                <th scope="col">(Red Team)</th>
                 <th scope="col">Rank</th>
-                <th scope="col">KDA</th>
-                <th scope="col">Damage</th>
-                <th scope="col">CS</th>
-                <th scope="col">Vision Score</th>
+                <th scope="col">Win-rate</th>
             
             </tr>
         </thead>
@@ -86,17 +73,19 @@
             <tr>
                 <td>{{ player.champion_name }}/<a href="/{{game_info.server}}/{{player.summoner_name}}"> {{ player.summoner_name }}</a></td>
                 <td>{{ player.tier }}</a></td>
-                <td>{{ player.kda }}</td>
-                <td>{{ player.stats.totalDamageDealtToChampions }}</td>
-                <td>{{ player.stats.totalMinionsKilled }}</td>
-                <td>{{ player.stats.visionScore }}</td>
+                <td>{{ player.ranked_stats }}</a></td>
             </tr>
             {% endfor %}
         </tbody>
 
     </table>
 
+    {% elif game_info.fail %}
+        <p>Summoner not in a game</strong></p>
 
+    {% endif %}
+
+    </main>
 <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
