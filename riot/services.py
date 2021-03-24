@@ -1,8 +1,9 @@
 import requests
 import datetime
 from pprint import pprint
+from dotenv import load_dotenv
 
-ApiKey = "RGAPI-7626556c-f7f2-49a8-aef3-9f0e71934b0f"
+ApiKey = os.getenv('RIOT_TOKEN')
 
 def get_main_data(server, name):
     URL = "https://" + server + ".api.riotgames.com/lol/summoner/v4/summoners/by-name/" + name + "?api_key=" + ApiKey
