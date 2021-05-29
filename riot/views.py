@@ -2,7 +2,6 @@ from django.shortcuts import render
 from django.http import Http404, HttpResponse
 import requests
 from .services import *
-from pprint import pprint
 
 
 def index(request):
@@ -21,7 +20,7 @@ def user_info(request, server, summoner_name):
     account_id = stats['accountId']
     
     games = past_games(server, account_id)
-    
+
     return render(request, 'riot/record.html', {'stats': stats, "games": games})
 
 def champ_info(request, server, summoner_name, champion_name):

@@ -1,12 +1,12 @@
 import requests
 import datetime
 from pprint import pprint
-from dotenv import load_dotenv
+from secret import API
 
-ApiKey = os.getenv('RIOT_TOKEN')
+API_KEY = API
 
 def get_main_data(server, name):
-    URL = "https://" + server + ".api.riotgames.com/lol/summoner/v4/summoners/by-name/" + name + "?api_key=" + ApiKey
+    URL = "https://" + server + ".api.riotgames.com/lol/summoner/v4/summoners/by-name/" + name + "?api_key=" + API_KEY
     response = requests.get(URL)
     search_was_successful = (response.status_code == 200)
     summoner_not_found = (response.status_code == 404)
@@ -22,7 +22,7 @@ def player_stats(server, summoner_name):
     summoner_id = user_json['id']
     account_id = user_json['accountId']
     
-    URL = "https://" + server + ".api.riotgames.com/lol/league/v4/entries/by-summoner/" + summoner_id + "?api_key=" + ApiKey
+    URL = "https://" + server + ".api.riotgames.com/lol/league/v4/entries/by-summoner/" + summoner_id + "?api_key=" + API_KEY
     response = requests.get(URL)
     stats_json = response.json()
     
@@ -53,7 +53,7 @@ def player_stats(server, summoner_name):
     return stats_json
 
 def past_games(server, account_id):
-    URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matchlists/by-account/" + account_id + "?api_key=" + ApiKey
+    URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matchlists/by-account/" + account_id + "?api_key=" + API_KEY
     response = requests.get(URL)
     old_games_json = response.json()
     del old_games_json['matches'][5:]
@@ -66,7 +66,7 @@ def past_games(server, account_id):
         
         gameid = match['gameId']
         
-        URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matches/" + str(gameid) + "?api_key=" + ApiKey
+        URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matches/" + str(gameid) + "?api_key=" + API_KEY
         response = requests.get(URL)
         game_json = response.json()
         
@@ -112,7 +112,7 @@ def champion_information(server, summoner_name, champion_name):
     summoner_id = user_json['id']
     account_id = user_json['accountId']
     
-    URL = "https://" + server + ".api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/" + summoner_id  + '/by-champion/' + champ_key + "?api_key=" + ApiKey
+    URL = "https://" + server + ".api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/" + summoner_id  + '/by-champion/' + champ_key + "?api_key=" + API_KEY
     response = requests.get(URL)
     champ_json = response.json()
     champ_json['champ_name'] = champion_name
@@ -131,7 +131,7 @@ def champion_information(server, summoner_name, champion_name):
 
 def champion_games(server, account_id, champion_id):
     champion_id = str(champion_id)
-    URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matchlists/by-account/" + account_id  + '?champion=' + champion_id + "&api_key=" + ApiKey
+    URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matchlists/by-account/" + account_id  + '?champion=' + champion_id + "&api_key=" + API_KEY
     response = requests.get(URL)
     champ_games_json = response.json()
     del champ_games_json['matches'][5:]
@@ -144,7 +144,7 @@ def champion_games(server, account_id, champion_id):
         
         gameid = match['gameId']
         
-        URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matches/" + str(gameid) + "?api_key=" + ApiKey
+        URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matches/" + str(gameid) + "?api_key=" + API_KEY
         response = requests.get(URL)
         game_json = response.json()
         
@@ -180,7 +180,7 @@ def champion_games(server, account_id, champion_id):
     
 
 def game_information(server, gameid):
-    URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matches/" + str(gameid) + "?api_key=" + ApiKey
+    URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matches/" + str(gameid) + "?api_key=" + API_KEY
     response = requests.get(URL)
     game_json = response.json()
     
@@ -289,19 +289,17 @@ def get_time(unix_millisecons):
     return time_diff
 
 def get_champ_name(key):
-    if key == '876':
-        champ_name =  'Lillia'
+
+    r = requests.get("https://ddragon.leagueoflegends.com/cdn/11.11.1/data/en_US/champion.json")
+    j = r.json()
+    data = j["data"]
+    by_key = {x['key']: x for x in data.values()}
+    champ_name = (by_key.get(key)['id'])
     
-    else:
-        r = requests.get("http://ddragon.leagueoflegends.com/cdn/10.13.1/data/en_US/champion.json")
-        j = r.json()
-        data = j["data"]
-        by_key = {x['key']: x for x in data.values()}
-        champ_name = (by_key.get(key)['id'])
     return champ_name
 
 def in_game_info(server, summoner_id):
-    URL = "https://" + server + ".api.riotgames.com/lol/spectator/v4/active-games/by-summoner/" + (summoner_id) + "?api_key=" + ApiKey
+    URL = "https://" + server + ".api.riotgames.com/lol/spectator/v4/active-games/by-summoner/" + (summoner_id) + "?api_key=" + API_KEY
     response = requests.get(URL)
     search_was_successful = (response.status_code == 200)
     not_in_game = (response.status_code == 404)
