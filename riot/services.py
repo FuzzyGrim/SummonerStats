@@ -8,10 +8,12 @@ API_KEY = API
 
 def get_main_data(server, name):
     URL = "https://" + server + ".api.riotgames.com/lol/summoner/v4/summoners/by-name/" + name + "?api_key=" + API_KEY
+
     response = requests.get(URL)
     search_was_successful = (response.status_code == 200)
     summoner_not_found = (response.status_code == 404)
     user_json = response.json()
+
     user_json['success'] = search_was_successful
     user_json['fail'] = summoner_not_found
     user_json['server'] = server
@@ -30,6 +32,7 @@ def player_stats(server, summoner_name):
     try:
         stats_json = stats_json[0]
     
+    # IndexError if player haven't played any game
     except IndexError:
         stats_json = {'tier': 'Unranked', 'rank': '0',
                     'summonerId': summoner_id, 
@@ -53,15 +56,24 @@ def player_stats(server, summoner_name):
     
     return stats_json
 
-def past_games(server, account_id):
+def past_games(server, account_id, start=0, end=10):
+
+    load_more_boolean= None
+    
     URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matchlists/by-account/" + account_id + "?api_key=" + API_KEY
     response = requests.get(URL)
     old_games_json = response.json()
-    del old_games_json['matches'][1:]
 
-    startTime= datetime.datetime.now()
+    if start != 0:
+        end = 10 + int(end)
 
-    for match in old_games_json['matches']:
+    old_games_json = old_games_json['matches'][start:end]
+
+    if start != 0:
+        load_more_boolean = {'boolean': True}
+
+
+    for match in old_games_json:
         key = match['champion']
         key = str(key)
 
@@ -72,29 +84,24 @@ def past_games(server, account_id):
         gameid = match['gameId']
         
         URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matches/" + str(gameid) + "?api_key=" + API_KEY
-        print(URL)
+        
         response = requests.get(URL)
         game_json = response.json()
         
-        try: 
-            game_duration_seconds = game_json['gameDuration'] 
-            game_duration = str(datetime.timedelta(seconds=game_duration_seconds))
-            print('game duration:' + game_duration)
-        except KeyError:
-            pprint(game_json)
-            game_duration = 'ERROR'
+        game_duration_seconds = game_json['gameDuration'] 
+        game_duration = str(datetime.timedelta(seconds=game_duration_seconds))
 
         match['game_duration'] = game_duration
         
         game_mode = game_json['gameMode']
-        #pprint(game_json)
+
         match['gameMode'] = game_mode
-        #pprint(match)
         
         game_creation = game_json['gameCreation']  
         time_diff = get_time(game_creation)
         match['time_diff'] = time_diff
         
+        # Find user's stats through both teams players
         for player in game_json['participants']:
             if str(player['championId']) == key:
                 win = player['stats']["win"]
@@ -111,16 +118,13 @@ def past_games(server, account_id):
             match['win'] = 'Defeat'
         else:
             match['win'] = 'Victory'
-
-    timeElapsed=datetime.datetime.now()-startTime
-    print('Time elapsed (hh:mm:ss.ms) {}'.format(timeElapsed))
     
-    return old_games_json['matches']
+    return old_games_json, load_more_boolean
 
 def champion_information(server, summoner_name, champion_name):
-    r = requests.get("http://ddragon.leagueoflegends.com/cdn/10.13.1/data/en_US/champion.json")
-    j = r.json()
-    data = j["data"]
+    request = requests.get("http://ddragon.leagueoflegends.com/cdn/10.13.1/data/en_US/champion.json")
+    json_file = request.json()
+    data = json_file["data"]
     by_id = {x['id']: x for x in data.values()}
     champ_key = (by_id.get(champion_name)['key'])
     
@@ -203,8 +207,6 @@ def game_information(server, gameid):
     
     game_json['server'] = server
     
-    pprint(game_json)
-
     game_duration_seconds = game_json['gameDuration'] 
     game_duration = str(datetime.timedelta(seconds=game_duration_seconds))
     game_json['gameDuration'] = game_duration

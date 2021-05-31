@@ -19,20 +19,23 @@ def user_info(request, server, summoner_name):
     stats = player_stats(server, summoner_name)
     
     account_id = stats['accountId']
-    
-    games = past_games(server, account_id)
 
-    page = request.GET.get('page', 1)
+    startTime= datetime.datetime.now()
 
-    paginator = Paginator(games, 5)
-    try:
-        games = paginator.page(page)
-    except PageNotAnInteger:
-        games = paginator.page(1)
-    except EmptyPage:
-        games = paginator.page(paginator.num_pages)
+    games, load_more_boolean = past_games(server, account_id)
 
-    return render(request, 'riot/record.html', {'stats': stats, "games": games})
+    timeElapsed=datetime.datetime.now()-startTime
+    print('Time elapsed (hh:mm:ss.ms) {}'.format(timeElapsed))
+
+    more_games= {}
+
+    if ('number') in request.GET:
+        load_number = request.GET['number']
+        more_games, load_more_boolean = past_games(server, account_id, start=10, end=load_number)
+
+    pprint(more_games)
+
+    return render(request, 'riot/record.html', {'stats': stats, "games": games, "more_games":more_games, 'load_more_boolean': load_more_boolean})
 
 def champ_info(request, server, summoner_name, champion_name):
     

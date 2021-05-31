@@ -9,11 +9,16 @@
     <h1>RIOT API</h1>
 
     <form method="get">
-        <label><input value="EUW1" type="radio" name="server" checked>EUW</label>
-        <label><input value="NA1" type="radio" name="server">NA</label>
-        <label><input value="EUN1" type="radio" name="server">EUN</label>
-        <label><input value="KR" type="radio" name="server">KR</label>
+        <label for="server">Choose server</label>
 
+        <select id="server" name="server">
+            <option value="EUW1" >EUW</option>
+            <option value="NA1" >NA</option>
+            <option value="EUN1" >EUN</option>
+            <option value="KR" >Korea</option>
+        </select>
+
+        <br>
         <br>
 
         <input type="text" name="summoners_name" placeholder="Summoner name" required>
@@ -26,6 +31,7 @@
         <p>Level: <strong>{{ user.summonerLevel }}</strong></p>    
         <p>Summoner id: <strong>{{ user.id }}</strong></p>
         <p>Account id: <strong>{{ user.accountId }}</strong></p>
+        <p>puuid: <strong>{{ user.puuid }}</strong></p>
 
         <a href='/{{user.server}}/{{user.name}}' class="button">More information</a>
         <a href='/{{user.server}}/{{user.name}}/In-Game' class="button" style = "margin-left: 1em;">In-Game</a>
