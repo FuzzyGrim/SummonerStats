@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import Http404, HttpResponse
 import requests
 from .services import *
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 def index(request):
@@ -20,6 +21,16 @@ def user_info(request, server, summoner_name):
     account_id = stats['accountId']
     
     games = past_games(server, account_id)
+
+    page = request.GET.get('page', 1)
+
+    paginator = Paginator(games, 5)
+    try:
+        games = paginator.page(page)
+    except PageNotAnInteger:
+        games = paginator.page(1)
+    except EmptyPage:
+        games = paginator.page(paginator.num_pages)
 
     return render(request, 'riot/record.html', {'stats': stats, "games": games})
 

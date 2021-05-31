@@ -32,37 +32,59 @@
 
     </main>
 
-    <table class="table table-bordered">
-        <thead>
-        <tr>
-            <th>Champion</th>
-            <th>Win</th>
-            <th>Game Id</th>
-            <th>Game Mode</th>
-            <th>KDA</th>
-            <th>Game Duration</th>
-            <th>When</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for game in champ_games %}
-        <tr >
-            <th><a href="/{{champ.server}}/{{champ.name}}/{{champ.champ_name}}/info">{{ game.champion_name }}</a></th>
-            <td>{{ game.win }}</td>
-            <td><a href="/{{champ.server}}/{{game.gameId}}/info">{{ game.gameId }}</a></td>
-            <td>{{ game.gameMode }}</td>
-            <td>{{ game.kills }}/{{ game.deaths }}/{{ game.assist }}</td>
-            <td>{{ game.game_duration }}</td>
-            <td>{{ game.time_diff }}</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table> 
-
-<!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
-</body>
+    <div class="container" style="max-width:700px">
+        <div class="game-history">
+            <div class="row infinite-container">
+                {% for game in champ_games %}
+                <div class="col-md-12 infinite-item">
+                        <a href="/{{champ.server}}/{{champ.name}}/{{champ.champ_name}}/info" style="font-size:18px;font-weight:bold;">{{ game.champion_name }}</a>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h2 class="text-muted">{{ game.kills }}/{{ game.deaths }}/{{ game.assist }}</h2>
+                            <h2 class="text-muted">{{game.win}}</h2>
+                            <h2 class="text-muted">{{game.gameMode}}</h2>
+                            <h2 class="text-muted">{{game.game_duration}}</h2>
+                            <h2 class="text-muted">{{game.time_diff}}</h2>
+                            <a href="/{{champ.server}}/{{game.gameId}}/info">{{ game.gameId }}</a>
+                            <br>
+                            <br>
+                            <br>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="loading">
+                <button class="btn btn-primary loading">
+                    <span class="spinner-border spinner-border-sm"></span>
+                    Please wait, loading more games...
+                </button>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    {% if games.has_next %}
+                    <a class="infinite-more-link" href="?page={{ games.next_page_number }}"></a>
+                    {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <script src="{% static 'js/jquery.waypoints.min.js' %}"></script>
+    <script src="/static/js/infinite.min.js"></script>
+    <script>
+        var infinite = new Waypoint.Infinite({
+            element: $('.infinite-container')[0],
+    
+            offset: '50%',
+    
+            onBeforePageLoad: function () {
+                $('.loading').show();
+            },
+            onAfterPageLoad: function () {
+                $('.loading').hide();
+            }
+    
+        });
+    </script>
 {% endblock %}

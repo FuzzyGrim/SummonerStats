@@ -3,6 +3,7 @@ import datetime
 from pprint import pprint
 from secret import API
 
+
 API_KEY = API
 
 def get_main_data(server, name):
@@ -56,26 +57,39 @@ def past_games(server, account_id):
     URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matchlists/by-account/" + account_id + "?api_key=" + API_KEY
     response = requests.get(URL)
     old_games_json = response.json()
-    del old_games_json['matches'][5:]
-    
+    del old_games_json['matches'][1:]
+
+    startTime= datetime.datetime.now()
+
     for match in old_games_json['matches']:
         key = match['champion']
         key = str(key)
+
         champ_name = get_champ_name(key)
+
         match['champion_name'] = champ_name
         
         gameid = match['gameId']
         
         URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matches/" + str(gameid) + "?api_key=" + API_KEY
+        print(URL)
         response = requests.get(URL)
         game_json = response.json()
         
-        game_duration_seconds = game_json['gameDuration'] 
-        game_duration = str(datetime.timedelta(seconds=game_duration_seconds))
+        try: 
+            game_duration_seconds = game_json['gameDuration'] 
+            game_duration = str(datetime.timedelta(seconds=game_duration_seconds))
+            print('game duration:' + game_duration)
+        except KeyError:
+            pprint(game_json)
+            game_duration = 'ERROR'
+
         match['game_duration'] = game_duration
         
-        game_mode = game_json['gameMode'] 
+        game_mode = game_json['gameMode']
+        #pprint(game_json)
         match['gameMode'] = game_mode
+        #pprint(match)
         
         game_creation = game_json['gameCreation']  
         time_diff = get_time(game_creation)
@@ -94,9 +108,12 @@ def past_games(server, account_id):
         match['assist'] = assists
         
         if match['win'] == False:
-            match['win'] = 'False'
+            match['win'] = 'Defeat'
         else:
-            match['win'] = 'True'
+            match['win'] = 'Victory'
+
+    timeElapsed=datetime.datetime.now()-startTime
+    print('Time elapsed (hh:mm:ss.ms) {}'.format(timeElapsed))
     
     return old_games_json['matches']
 
@@ -134,7 +151,7 @@ def champion_games(server, account_id, champion_id):
     URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matchlists/by-account/" + account_id  + '?champion=' + champion_id + "&api_key=" + API_KEY
     response = requests.get(URL)
     champ_games_json = response.json()
-    del champ_games_json['matches'][5:]
+    del champ_games_json['matches'][20:]
     
     for match in champ_games_json['matches']:
         key = match['champion']
@@ -172,9 +189,9 @@ def champion_games(server, account_id, champion_id):
         match['assist'] = assists
         
         if match['win'] == False:
-            match['win'] = 'False'
+            match['win'] = 'Defeat'
         else:
-            match['win'] = 'True'
+            match['win'] = 'Victory'
     
     return champ_games_json['matches']
     
@@ -186,6 +203,8 @@ def game_information(server, gameid):
     
     game_json['server'] = server
     
+    pprint(game_json)
+
     game_duration_seconds = game_json['gameDuration'] 
     game_duration = str(datetime.timedelta(seconds=game_duration_seconds))
     game_json['gameDuration'] = game_duration
