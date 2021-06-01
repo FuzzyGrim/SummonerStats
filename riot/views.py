@@ -16,26 +16,19 @@ def index(request):
     return render(request, 'riot/index.html', {'user': user})
 
 def user_info(request, server, summoner_name):
+
+    startTime= datetime.datetime.now()
     stats = player_stats(server, summoner_name)
     
     account_id = stats['accountId']
 
-    startTime= datetime.datetime.now()
 
-    games, load_more_boolean = past_games(server, account_id)
+    games = past_games(server, account_id)
 
     timeElapsed=datetime.datetime.now()-startTime
     print('Time elapsed (hh:mm:ss.ms) {}'.format(timeElapsed))
-
-    more_games= {}
-
-    if ('number') in request.GET:
-        load_number = request.GET['number']
-        more_games, load_more_boolean = past_games(server, account_id, start=10, end=load_number)
-
-    pprint(more_games)
-
-    return render(request, 'riot/record.html', {'stats': stats, "games": games, "more_games":more_games, 'load_more_boolean': load_more_boolean})
+    
+    return render(request, 'riot/record.html', {'stats': stats, "games": games})
 
 def champ_info(request, server, summoner_name, champion_name):
     

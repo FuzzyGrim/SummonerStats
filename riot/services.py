@@ -56,24 +56,16 @@ def player_stats(server, summoner_name):
     
     return stats_json
 
-def past_games(server, account_id, start=0, end=10):
-
-    load_more_boolean= None
+def past_games(server, account_id):
     
     URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matchlists/by-account/" + account_id + "?api_key=" + API_KEY
     response = requests.get(URL)
     old_games_json = response.json()
 
-    if start != 0:
-        end = 10 + int(end)
-
-    old_games_json = old_games_json['matches'][start:end]
-
-    if start != 0:
-        load_more_boolean = {'boolean': True}
-
-
+    old_games_json = old_games_json['matches'][:30]
+    
     for match in old_games_json:
+
         key = match['champion']
         key = str(key)
 
@@ -81,45 +73,16 @@ def past_games(server, account_id, start=0, end=10):
 
         match['champion_name'] = champ_name
         
-        gameid = match['gameId']
-        
-        URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matches/" + str(gameid) + "?api_key=" + API_KEY
-        
-        response = requests.get(URL)
-        game_json = response.json()
-        
-        game_duration_seconds = game_json['gameDuration'] 
-        game_duration = str(datetime.timedelta(seconds=game_duration_seconds))
-
-        match['game_duration'] = game_duration
-        
-        game_mode = game_json['gameMode']
-
-        match['gameMode'] = game_mode
-        
-        game_creation = game_json['gameCreation']  
+        game_creation = match['timestamp']  
         time_diff = get_time(game_creation)
         match['time_diff'] = time_diff
-        
-        # Find user's stats through both teams players
-        for player in game_json['participants']:
-            if str(player['championId']) == key:
-                win = player['stats']["win"]
-                kills = player['stats']["kills"]
-                deaths = player['stats']["deaths"]
-                assists = player['stats']["assists"]
-        
-        match['win'] = win
-        match['kills'] = kills
-        match['deaths'] = deaths
-        match['assist'] = assists
-        
-        if match['win'] == False:
-            match['win'] = 'Defeat'
+
+        if match['role'] == 'SOLO':
+            match['position'] = match['lane']
         else:
-            match['win'] = 'Victory'
-    
-    return old_games_json, load_more_boolean
+            match['position'] = match['role'][4:]
+
+    return old_games_json
 
 def champion_information(server, summoner_name, champion_name):
     request = requests.get("http://ddragon.leagueoflegends.com/cdn/10.13.1/data/en_US/champion.json")
