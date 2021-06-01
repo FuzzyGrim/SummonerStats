@@ -25,8 +25,11 @@ def user_info(request, server, summoner_name):
 
     games = past_games(server, account_id)
 
+    #if ('load') in request.GET:
+
+
     timeElapsed=datetime.datetime.now()-startTime
-    print('Time elapsed (hh:mm:ss.ms) {}'.format(timeElapsed))
+    #print('Time elapsed (hh:mm:ss.ms) {}'.format(timeElapsed))
     
     return render(request, 'riot/record.html', {'stats': stats, "games": games})
 

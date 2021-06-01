@@ -27,16 +27,14 @@
         <div class="row infinite-container">
             {% for game in games %}
             <div class="col-md-12 infinite-item">
-                    <a href="/{{stats.server}}/{{stats.name}}/{{game.champion_name}}/info" style="font-size:18px;font-weight:bold;">{{ game.champion_name }}</a>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h4 class="text-muted">{{game.position}}</h4>
-                        <h4 class="text-muted">{{game.time_diff}}</h4>
-                        <a href="/{{stats.server}}/{{game.gameId}}/info">{{ game.gameId }}</a>
-                        <br>
-                        
+                    <h4><a href="/{{stats.server}}/{{stats.name}}/{{game.champion_name}}/info">{{ game.champion_name }}</a> {{game.position}} {{game.time_diff}} <a href="/{{stats.server}}/{{game.gameId}}/info">{{ game.gameId }}</a></h4>
+  
+                        <form method="get">
+                            <button name="load"type="submit">Load more</button>
+                        </form>
                         <br>
                         <br>
-                </div>
+                        <br>
             </div>
             {% endfor %}
         </div>

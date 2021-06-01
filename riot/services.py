@@ -85,12 +85,17 @@ def past_games(server, account_id):
     return old_games_json
 
 def champion_information(server, summoner_name, champion_name):
-    request = requests.get("http://ddragon.leagueoflegends.com/cdn/10.13.1/data/en_US/champion.json")
-    json_file = request.json()
+    startTime= datetime.datetime.now()
+    r = requests.get("https://ddragon.leagueoflegends.com/realms/na.json")
+    j = r.json()
+    patch = j['dd']
+    r = requests.get("https://ddragon.leagueoflegends.com/cdn/" + patch + "/data/en_US/champion.json")
+    json_file = r.json()
     data = json_file["data"]
     by_id = {x['id']: x for x in data.values()}
     champ_key = (by_id.get(champion_name)['key'])
     
+    timeElapsed=datetime.datetime.now()-startTime
     user_json = get_main_data(server, summoner_name)
     summoner_name = user_json['name']
     summoner_id = user_json['id']
@@ -273,8 +278,10 @@ def get_time(unix_millisecons):
     return time_diff
 
 def get_champ_name(key):
-
-    r = requests.get("https://ddragon.leagueoflegends.com/cdn/11.11.1/data/en_US/champion.json")
+    r = requests.get("https://ddragon.leagueoflegends.com/realms/na.json")
+    j = r.json()
+    patch = j['dd']
+    r = requests.get("https://ddragon.leagueoflegends.com/cdn/" + patch + "/data/en_US/champion.json")
     j = r.json()
     data = j["data"]
     by_key = {x['key']: x for x in data.values()}
