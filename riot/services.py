@@ -57,13 +57,12 @@ def player_stats(server, summoner_name):
     return stats_json
 
 def past_games(server, account_id):
-    
     URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matchlists/by-account/" + account_id + "?api_key=" + API_KEY
     response = requests.get(URL)
     old_games_json = response.json()
 
-    old_games_json = old_games_json['matches'][:30]
-    
+    old_games_json = old_games_json['matches']
+        
     for match in old_games_json:
 
         key = match['champion']
@@ -82,7 +81,56 @@ def past_games(server, account_id):
         else:
             match['position'] = match['role'][4:]
 
+        match['game_id'] = str(match['gameId'])
+
     return old_games_json
+
+def summoner_game_summary(server, gameId, champion_key):
+    URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matches/" + str(gameId) + "?api_key=" + API_KEY
+    print(URL)
+
+    response = requests.get(URL)
+    game_json = response.json()
+
+    game_duration_seconds = game_json['gameDuration'] 
+    game_duration = str(datetime.timedelta(seconds=game_duration_seconds))
+
+    summoner_stats = {}
+
+    summoner_stats['game_duration'] = game_duration
+    summoner_stats['game_mode'] = game_json['gameMode']
+
+    # Find user's stats through both teams players
+    for player in game_json['participants']:
+        if str(player['championId']) == champion_key:
+            win = player['stats']["win"]
+            kills = player['stats']["kills"]
+            deaths = player['stats']["deaths"]
+            assists = player['stats']["assists"]
+            vision_score = player['stats']["visionScore"]
+            cs = player['stats']["totalMinionsKilled"]
+            cs_min = round(player['timeline']["creepsPerMinDeltas"]["10-20"],2)
+    
+    summoner_stats['win'] = win
+    summoner_stats['kills'] = kills
+    summoner_stats['deaths'] = deaths
+    summoner_stats['assist'] = assists
+    summoner_stats['vision_score'] = vision_score
+    summoner_stats['cs'] = cs
+    summoner_stats['cs_min'] = cs_min
+    
+    if summoner_stats['win'] == False:
+        summoner_stats['win'] = 'Defeat'
+    else:
+        summoner_stats['win'] = 'Victory'
+
+    summoner_stats['success'] = True
+
+    summoner_stats['game_id'] = gameId
+
+    return summoner_stats
+
+
 
 def champion_information(server, summoner_name, champion_name):
     startTime= datetime.datetime.now()

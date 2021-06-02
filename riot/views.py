@@ -9,7 +9,7 @@ def index(request):
     user = {}
     if ('summoners_name' and 'server') in request.GET:
         username = request.GET['summoners_name']
-        server = (request.GET['server'] )
+        server = request.GET['server']
 
         user = get_main_data(server, username)
 
@@ -17,21 +17,21 @@ def index(request):
 
 def user_info(request, server, summoner_name):
 
-    startTime= datetime.datetime.now()
     stats = player_stats(server, summoner_name)
     
     account_id = stats['accountId']
 
-
     games = past_games(server, account_id)
 
-    #if ('load') in request.GET:
+    summoner = {}
 
+    if ('load') in request.GET:
+        gameId, champ_key = (request.GET['load']).split("|")
+        
+        summoner = summoner_game_summary(server, gameId, champ_key)
 
-    timeElapsed=datetime.datetime.now()-startTime
-    #print('Time elapsed (hh:mm:ss.ms) {}'.format(timeElapsed))
     
-    return render(request, 'riot/record.html', {'stats': stats, "games": games})
+    return render(request, 'riot/record.html', {'stats': stats, "games": games, "summoner": summoner})
 
 def champ_info(request, server, summoner_name, champion_name):
     

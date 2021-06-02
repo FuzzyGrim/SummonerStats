@@ -8,7 +8,6 @@
 <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>{{ stats.name }}</title>
 </head>
@@ -22,23 +21,28 @@
 
 </main>
 
-<div class="container" style="max-width:700px">
-    <div class="game-history">
-        <div class="row infinite-container">
-            {% for game in games %}
-            <div class="col-md-12 infinite-item">
-                    <h4><a href="/{{stats.server}}/{{stats.name}}/{{game.champion_name}}/info">{{ game.champion_name }}</a> {{game.position}} {{game.time_diff}} <a href="/{{stats.server}}/{{game.gameId}}/info">{{ game.gameId }}</a></h4>
-  
-                        <form method="get">
-                            <button name="load"type="submit">Load more</button>
-                        </form>
-                        <br>
-                        <br>
-                        <br>
-            </div>
-            {% endfor %}
-        </div>
+<div class="game-history">
+    <div class="row infinite-container">
+        {% for game in games %}
+            <h4><a href="/{{stats.server}}/{{stats.name}}/{{game.champion_name}}/info">{{ game.champion_name }}</a> {{game.position}} {{game.time_diff}} <a href="/{{stats.server}}/{{game.gameId}}/info">{{ game.game_id}}</a></h4>
 
+            <form method="get">
+                    <button name="load" type="submit" value="{{game.game_id}}|{{game.champion}}">Show some stats</button>
+            </form>
+            
+            {% if summoner.success %}
+                {% if summoner.game_id == game.game_id %}
+                    <h2 class="text-muted">{{summoner.win}}</h2>
+                    <h2 class="text-muted">{{ summoner.kills }}/{{ summoner.deaths }}/{{ summoner.assist }}  with {{summoner.cs}}cs with {{summoner.cs_min}} per minute and a vision score of {{summoner.vision_score}}</h2>
+                    <h2 class="text-muted">Game mode = {{summoner.game_mode}}</h2>
+                    <h2 class="text-muted">{{summoner.game_duration}}</h2>
+
+                    <br>
+                    <br>
+                    <br>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
     </div>
 </div>
 
