@@ -133,7 +133,6 @@ def summoner_game_summary(server, gameId, champion_key):
 
 
 def champion_information(server, summoner_name, champion_name):
-    startTime= datetime.datetime.now()
     r = requests.get("https://ddragon.leagueoflegends.com/realms/na.json")
     j = r.json()
     patch = j['dd']
@@ -143,7 +142,6 @@ def champion_information(server, summoner_name, champion_name):
     by_id = {x['id']: x for x in data.values()}
     champ_key = (by_id.get(champion_name)['key'])
     
-    timeElapsed=datetime.datetime.now()-startTime
     user_json = get_main_data(server, summoner_name)
     summoner_name = user_json['name']
     summoner_id = user_json['id']
