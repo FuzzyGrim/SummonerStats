@@ -1,6 +1,5 @@
 import requests
 import datetime
-from pprint import pprint
 from secret import API
 
 
@@ -56,34 +55,30 @@ def player_stats(server, summoner_name):
     
     return stats_json
 
-def past_games(server, account_id):
+def past_games_json(server, account_id):
     URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matchlists/by-account/" + account_id + "?api_key=" + API_KEY
     response = requests.get(URL)
     old_games_json = response.json()
-
     old_games_json = old_games_json['matches']
-
-    for match in old_games_json:
-
-        key = match['champion']
-        key = str(key)
-
-        champ_name = get_champ_name(key)
-
-        match['champion_name'] = champ_name
-        
-        game_creation = match['timestamp']  
-        time_diff = get_time(game_creation)
-        match['time_diff'] = time_diff
-
-        if match['role'] == 'SOLO':
-            match['position'] = match['lane']
-        else:
-            match['position'] = match['role'][4:]
-
-        match['game_id'] = str(match['gameId'])
-
     return old_games_json
+
+def past_games(champion_key, lane, role, timestamp):
+
+    key = champion_key
+    key = str(key)
+
+    champ_name = get_champ_name(key)
+        
+
+    if role == 'SOLO':
+        position = lane
+    else:
+        position = role[4:]
+
+    game_creation = timestamp
+    game_length = get_time(game_creation)
+
+    return champ_name, position, game_length
 
 def summoner_game_summary(server, gameId, champion_key):
     URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matches/" + str(gameId) + "?api_key=" + API_KEY

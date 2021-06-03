@@ -23,12 +23,13 @@
 
 <div class="game-history">
     <div class="row infinite-container">
-        {% for game in games %}
+        {% for game in game_info_list %}
             <h4><a href="/{{stats.server}}/{{stats.name}}/{{game.champion_name}}/info">{{ game.champion_name }}</a> {{game.position}} {{game.time_diff}} <a href="/{{stats.server}}/{{game.gameId}}/info">{{ game.game_id}}</a></h4>
 
-            <form method="get">
-                    <button name="load" type="submit" value="{{game.game_id}}|{{game.champion}}">Show user's stats</button>
-            </form>
+    <form method="post">
+            {% csrf_token %}
+            <button name="load" type="submit" value="{{game.game_id}}|{{game.champion}}">Show user's stats</button>
+    </form>
             
             <div id="load_more">
             {% if summoner.success %}
@@ -47,5 +48,27 @@
         {% endfor %}
     </div>
 </div>
+
+{% if games.has_other_pages %}
+  <ul class="pagination">
+    {% if games.has_previous %}
+      <li><a href="?page={{ games.previous_page_number }}">&laquo;</a></li>
+    {% else %}
+      <li class="disabled"><span>&laquo;</span></li>
+    {% endif %}
+    {% for i in games.paginator.page_range %}
+      {% if games.number == i %}
+        <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+      {% else %}
+        <li><a href="?page={{ i }}">{{ i }}</a></li>
+      {% endif %}
+    {% endfor %}
+    {% if games.has_next %}
+      <li><a href="?page={{ games.next_page_number }}">&raquo;</a></li>
+    {% else %}
+      <li class="disabled"><span>&raquo;</span></li>
+    {% endif %}
+  </ul>
+{% endif %}
 
 {% endblock %}
