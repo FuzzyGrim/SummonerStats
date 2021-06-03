@@ -62,7 +62,7 @@ def past_games(server, account_id):
     old_games_json = response.json()
 
     old_games_json = old_games_json['matches']
-        
+
     for match in old_games_json:
 
         key = match['champion']
@@ -87,7 +87,6 @@ def past_games(server, account_id):
 
 def summoner_game_summary(server, gameId, champion_key):
     URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matches/" + str(gameId) + "?api_key=" + API_KEY
-    print(URL)
 
     response = requests.get(URL)
     game_json = response.json()
@@ -109,7 +108,7 @@ def summoner_game_summary(server, gameId, champion_key):
             assists = player['stats']["assists"]
             vision_score = player['stats']["visionScore"]
             cs = player['stats']["totalMinionsKilled"]
-            cs_min = round(player['timeline']["creepsPerMinDeltas"]["10-20"],2)
+            cs_min = round(player['timeline']["creepsPerMinDeltas"]["0-10"],1)
     
     summoner_stats['win'] = win
     summoner_stats['kills'] = kills

@@ -25,7 +25,9 @@ def user_info(request, server, summoner_name):
 
     summoner = {}
 
+
     if ('load') in request.GET:
+        
         gameId, champ_key = (request.GET['load']).split("|")
         
         summoner = summoner_game_summary(server, gameId, champ_key)
