@@ -82,7 +82,7 @@ def past_games(champion_key, lane, role, timestamp):
 
 def summoner_game_summary(server, gameId, champion_key):
     URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matches/" + str(gameId) + "?api_key=" + API_KEY
-
+    
     response = requests.get(URL)
     game_json = response.json()
 
