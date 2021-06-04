@@ -8,7 +8,8 @@
 
     <h1>RIOT API</h1>
 
-    <form method="get">
+    <form method="post">
+        {% csrf_token %}
         <label for="server">Choose server</label>
 
         <select id="server" name="server">
@@ -24,24 +25,5 @@
         <input type="text" name="summoners_name" placeholder="Summoner name" required>
         <button type="submit">search on database</button>
     </form>
-
-    <main>
-    {% if user.success %}
-        <p><strong>{{ user.name }}</strong> </p>    
-        <p>Level: <strong>{{ user.summonerLevel }}</strong></p>    
-        <p>Summoner id: <strong>{{ user.id }}</strong></p>
-        <p>Account id: <strong>{{ user.accountId }}</strong></p>
-        <p>puuid: <strong>{{ user.puuid }}</strong></p>
-
-        <a href='/{{user.server}}/{{user.name}}' class="button">More information</a>
-        <a href='/{{user.server}}/{{user.name}}/In-Game' class="button" style = "margin-left: 1em;">In-Game</a>
-        
-    {% elif user.fail %}
-        <p>Summoner not found</strong></p>
-
-
-    {% endif %}
-
-    </main>
 
 {% endblock %}

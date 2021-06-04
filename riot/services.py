@@ -15,45 +15,48 @@ def get_main_data(server, name):
 
     user_json['success'] = search_was_successful
     user_json['fail'] = summoner_not_found
-    user_json['server'] = server
     return user_json
 
 def player_stats(server, summoner_name):
     user_json = get_main_data(server, summoner_name)
-    summoner_name = user_json['name']
-    summoner_id = user_json['id']
-    account_id = user_json['accountId']
-    
-    URL = "https://" + server + ".api.riotgames.com/lol/league/v4/entries/by-summoner/" + summoner_id + "?api_key=" + API_KEY
-    response = requests.get(URL)
-    stats_json = response.json()
-    
-    try:
-        stats_json = stats_json[0]
-    
-    # IndexError if player haven't played any game
-    except IndexError:
-        stats_json = {'tier': 'Unranked', 'rank': '0',
-                    'summonerId': summoner_id, 
-                    'leaguePoints': '0', 
-                    'wins': '0', 'losses': '0', 
-                    'hotStreak': False}
+    if user_json['success']:
+        summoner_name = user_json['name']
+        summoner_id = user_json['id']
+        account_id = user_json['accountId']
+        
+        URL = "https://" + server + ".api.riotgames.com/lol/league/v4/entries/by-summoner/" + summoner_id + "?api_key=" + API_KEY
+        response = requests.get(URL)
+        stats_json = response.json()
+        
+        try:
+            stats_json = stats_json[0]
+        
+        # IndexError if player haven't played any game
+        except IndexError:
+            stats_json = {'tier': 'Unranked', 'rank': '0',
+                        'summonerId': summoner_id, 
+                        'leaguePoints': '0', 
+                        'wins': '0', 'losses': '0', 
+                        'hotStreak': False}
 
-    wins = stats_json['wins']
-    defeats = stats_json['losses']
-    total_games = int(wins) + int(defeats)
-    stats_json['total_games'] = str(total_games)
-    
-    try: 
-        stats_json['win_rate'] = str(round(((int(wins) / total_games) * 100), 1))
-    except ZeroDivisionError: 
-        stats_json['win_rate'] = 0
+        wins = stats_json['wins']
+        defeats = stats_json['losses']
+        total_games = int(wins) + int(defeats)
+        stats_json['total_games'] = str(total_games)
+        
+        try: 
+            stats_json['win_rate'] = str(round(((int(wins) / total_games) * 100), 1))
+        except ZeroDivisionError: 
+            stats_json['win_rate'] = 0
 
-    stats_json['name'] = summoner_name
-    stats_json['accountId'] = account_id
-    stats_json['server'] = server
+        stats_json['name'] = summoner_name
+        stats_json['accountId'] = account_id
+        stats_json['server'] = server
+        
+    elif user_json['fail']:
+            stats_json = {}
     
-    return stats_json
+    return user_json, stats_json
 
 def past_games_json(server, account_id):
     URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matchlists/by-account/" + account_id + "?api_key=" + API_KEY
@@ -263,7 +266,7 @@ def game_information(server, gameid):
             if playerid['participantId'] == participant_id:
                 summoner_name = playerid['player']['summonerName']
                 
-                stats = player_stats(server, summoner_name)
+                user, stats = player_stats(server, summoner_name)
                 tier = stats['tier']
                 rank = stats['rank']
                 
@@ -293,7 +296,7 @@ def game_information(server, gameid):
             if playerid['participantId'] == participant_id:
                 summoner_name = playerid['player']['summonerName']
                 
-                stats = player_stats(server, summoner_name)
+                user, stats = player_stats(server, summoner_name)
                 tier = stats['tier']
                 rank = stats['rank']
                 
@@ -353,7 +356,7 @@ def in_game_info(server, summoner_id):
             
             summoner_name = participant['summonerName']
                     
-            stats = player_stats(server, summoner_name)
+            user, stats = player_stats(server, summoner_name)
             tier = stats['tier']
             rank = stats['rank']
             tier = f'{tier} {rank}'
@@ -377,7 +380,7 @@ def in_game_info(server, summoner_id):
             
             summoner_name = participant['summonerName']
                     
-            stats = player_stats(server, summoner_name)
+            user, stats = player_stats(server, summoner_name)
             tier = stats['tier']
             rank = stats['rank']
             tier = f'{tier} {rank}'

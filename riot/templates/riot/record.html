@@ -1,74 +1,108 @@
 {% load static %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'riot/record.css' %}">
-
 {% block content %}
 <!doctype html>
 <html lang="en">
-<head>
+  <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
 
     <title>{{ stats.name }}</title>
-</head>
+  </head>
 
-<main>
-    <h1>RIOT API</h1>
+  <body>
+    {% if user.success %}
+      <main>
+          <h1>RIOT API</h1>
 
-    <p><strong>{{ stats.name }}</strong> </p>    
-    <p>Tier: <strong>{{ stats.tier }} {{ stats.rank }}</strong></p>    
-    <p>Winrate: <strong>W: {{ stats.wins }} / L: {{ stats.losses }} ({{stats.win_rate }}%)</strong></p>
+          <p><strong>{{ stats.name }}</strong> </p>    
+          <p>Tier: <strong>{{ stats.tier }} {{ stats.rank }}</strong></p>    
+          <p>Winrate: <strong>W: {{ stats.wins }} / L: {{ stats.losses }} ({{stats.win_rate }}%)</strong></p>
 
-</main>
+          <a href='/{{user.server}}/{{user.name}}/In-Game' class="button" style = "margin-left: 1em;">In-Game</a>
+          <p>Level: <strong>{{ user.summonerLevel }}</strong></p>    
+          <p>Summoner id: <strong>{{ user.id }}</strong></p>
+          <p>Account id: <strong>{{ user.accountId }}</strong></p>
+          <p>puuid: <strong>{{ user.puuid }}</strong></p>
 
-<div class="game-history">
-    <div class="row infinite-container">
-        {% for game in game_info_list %}
-            <h4><a href="/{{stats.server}}/{{stats.name}}/{{game.champion_name}}/info">{{ game.champion_name }}</a> {{game.position}} {{game.time_diff}} <a href="/{{stats.server}}/{{game.gameId}}/info">{{ game.game_id}}</a></h4>
+      </main>
 
-    <form method="post">
-            {% csrf_token %}
-            <button name="load" type="submit" value="{{game.game_id}}|{{game.champion}}">Show user's stats</button>
-    </form>
-            
-            <div id="load_more">
-            {% if summoner.success %}
-                {% if summoner.game_id == game.game_id %}
-                    <h2 class="text-muted">{{summoner.win}}</h2>
-                    <h2 class="text-muted">{{ summoner.kills }}/{{ summoner.deaths }}/{{ summoner.assist }}  with {{summoner.cs}}cs with {{summoner.cs_min}} per minute and a vision score of {{summoner.vision_score}}</h2>
-                    <h2 class="text-muted">Game mode = {{summoner.game_mode}}</h2>
-                    <h2 class="text-muted">{{summoner.game_duration}}</h2>
+      <div class="game-history">
+          <div class="row infinite-container">
+              {% for game in game_info_list %}
+                  <h4><a href="/{{stats.server}}/{{stats.name}}/{{game.champion_name}}/info">{{ game.champion_name }}</a> {{game.position}} {{game.time_diff}} <a href="/{{stats.server}}/{{game.game_id}}/info">{{ game.game_id}}</a></h4>
 
-                    <br>
-                    <br>
-                    <br>
-                {% endif %}
+          <form method="post">
+                  {% csrf_token %}
+                  <button name="load" type="submit" value="{{game.game_id}}|{{game.champion}}">Show user's stats</button>
+          </form>
+                  
+                  <div id="load_more">
+                  {% if summoner.success %}
+                      {% if summoner.game_id == game.game_id %}
+                          <h2 class="text-muted">{{summoner.win}}</h2>
+                          <h2 class="text-muted">{{ summoner.kills }}/{{ summoner.deaths }}/{{ summoner.assist }}  with {{summoner.cs}}cs with {{summoner.cs_min}} per minute and a vision score of {{summoner.vision_score}}</h2>
+                          <h2 class="text-muted">Game mode = {{summoner.game_mode}}</h2>
+                          <h2 class="text-muted">{{summoner.game_duration}}</h2>
+
+                          <br>
+                          <br>
+                          <br>
+                      {% endif %}
+                  {% endif %}
+                  </div>
+              {% endfor %}
+          </div>
+      </div>
+
+      {% if games.has_other_pages %}
+      <nav aria-label="Page navigation example">
+        <ul class="pagination">
+          {% if games.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ games.previous_page_number }}">&laquo;</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <a class="page-link">&laquo;</a>
+            </li>
+          {% endif %}
+
+          {% for i in games.paginator.page_range %}
+            {% if games.number == i %}
+              <li class="page-item active">
+                <a class="page-link"> {{ i }}</a>
+              </li>
+            {% else %}
+              <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
             {% endif %}
-            </div>
-        {% endfor %}
-    </div>
-</div>
+          {% endfor %}
 
-{% if games.has_other_pages %}
-  <ul class="pagination">
-    {% if games.has_previous %}
-      <li><a href="?page={{ games.previous_page_number }}">&laquo;</a></li>
-    {% else %}
-      <li class="disabled"><span>&laquo;</span></li>
-    {% endif %}
-    {% for i in games.paginator.page_range %}
-      {% if games.number == i %}
-        <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
-      {% else %}
-        <li><a href="?page={{ i }}">{{ i }}</a></li>
+          {% if games.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ games.next_page_number }}">&raquo;</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <a class="page-link">&raquo;</a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
       {% endif %}
-    {% endfor %}
-    {% if games.has_next %}
-      <li><a href="?page={{ games.next_page_number }}">&raquo;</a></li>
-    {% else %}
-      <li class="disabled"><span>&raquo;</span></li>
+
+    {% elif user.fail %}
+      <p>Summoner not found</strong></p>
     {% endif %}
-  </ul>
-{% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
+
+  </body>
+
+</html>
 
 {% endblock %}
