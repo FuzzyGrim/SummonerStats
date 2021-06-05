@@ -1,5 +1,6 @@
 {% load static %}
 
+<link rel="stylesheet" type="text/css" href="{% static 'riot/record.css' %}">
 {% block content %}
 <!doctype html>
 <html lang="en">
@@ -11,54 +12,124 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
 
-    <title>{{ stats.name }}</title>
+    <title>{{ ranked_stats.summonerName }}</title>
   </head>
 
   <body>
-    {% if user.success %}
+    {% if user_account_info.success %}
       <main>
           <h1>RIOT API</h1>
 
-          <p><strong>{{ stats.name }}</strong> </p>    
-          <p>Tier: <strong>{{ stats.tier }} {{ stats.rank }}</strong></p>    
-          <p>Winrate: <strong>W: {{ stats.wins }} / L: {{ stats.losses }} ({{stats.win_rate }}%)</strong></p>
+          <p><strong>{{ ranked_stats.summonerName }}</strong> </p>    
+          <p>Tier: <strong>{{ ranked_stats.tier }} {{ ranked_stats.rank }}</strong></p>    
+          <p>Winrate (ranked): <strong>W: {{ ranked_stats.wins }} / L: {{ ranked_stats.losses }} ({{ranked_stats.win_rate }}%)</strong></p>
 
-          <a href='/{{user.server}}/{{user.name}}/In-Game' class="button" style = "margin-left: 1em;">In-Game</a>
-          <p>Level: <strong>{{ user.summonerLevel }}</strong></p>    
-          <p>Summoner id: <strong>{{ user.id }}</strong></p>
-          <p>Account id: <strong>{{ user.accountId }}</strong></p>
-          <p>puuid: <strong>{{ user.puuid }}</strong></p>
+          <a href='/{{ranked_stats.server}}/{{user_account_info.name}}/In-Game' class="btn btn-primary" role="button" >In-Game</a>
+          <p>Level: <strong>{{ user_account_info.summonerLevel }}</strong></p>    
+          <p>Summoner id: <strong>{{ user_account_info.id }}</strong></p>
+          <p>Account id: <strong>{{ user_account_info.accountId }}</strong></p>
+          <p>puuid: <strong>{{ user_account_info.puuid }}</strong></p>
 
       </main>
 
-      <div class="game-history">
-          <div class="row infinite-container">
-              {% for game in game_info_list %}
-                  <h4><a href="/{{stats.server}}/{{stats.name}}/{{game.champion_name}}/info">{{ game.champion_name }}</a> {{game.position}} {{game.time_diff}} <a href="/{{stats.server}}/{{game.game_id}}/info">{{ game.game_id}}</a></h4>
-
-          <form method="post">
-                  {% csrf_token %}
-                  <button name="load" type="submit" value="{{game.game_id}}|{{game.champion}}">Show user's stats</button>
-          </form>
-                  
-                  <div id="load_more">
-                  {% if summoner.success %}
-                      {% if summoner.game_id == game.game_id %}
-                          <h2 class="text-muted">{{summoner.win}}</h2>
-                          <h2 class="text-muted">{{ summoner.kills }}/{{ summoner.deaths }}/{{ summoner.assist }}  with {{summoner.cs}}cs with {{summoner.cs_min}} per minute and a vision score of {{summoner.vision_score}}</h2>
-                          <h2 class="text-muted">Game mode = {{summoner.game_mode}}</h2>
-                          <h2 class="text-muted">{{summoner.game_duration}}</h2>
-
-                          <br>
-                          <br>
-                          <br>
-                      {% endif %}
-                  {% endif %}
-                  </div>
-              {% endfor %}
-          </div>
-      </div>
       
+      <div class="container" style="border:2px solid black;">
+        <br>
+        {% for game in game_info_list %}
+          <div class="container" style="border:1px solid rgb(64, 97, 71);">
+            <br>
+            <h4><a href="/{{ranked_stats.server}}/{{ranked_stats.summonerName}}/{{game.champion_name}}/info">{{ game.champion_name }}</a> {{game.position}} {{game.time_diff}} <a href="/{{ranked_stats.server}}/{{game.game_id}}/info">{{ game.game_id}}</a></h4>
+
+            <form method="post">
+            {% csrf_token %}
+            <button name="load" type="submit" value="{{game.game_id}}" class="btn btn-info">Show game summary</button>
+            </form>
+            <br>
+              
+            <div id="load_more">
+              {% if game_data.success %}
+                {% if game_data.game_id == game.game_id %}
+                  <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">Game ID</th>
+                            <th scope="col">Server</th>
+                            <th scope="col">When</th>
+                            <th scope="col">Duration</th>
+                            <th scope="col">Game Mode</th>
+                            <th scope="col">Patch</th>
+                        </tr>
+                    </thead>
+          
+                    <tbody>
+                        <tr>
+                            <td>{{ game_data.gameId }}</td>
+                            <td>{{ game_data.platformId }}</td>
+                            <td>{{ game_data.gameCreation }}</td>
+                            <td>{{ game_data.gameDuration }}</td>
+                            <td>{{ game_data.gameMode }}</td>
+                            <td>{{ game_data.gameVersion }}</td>
+                        </tr>
+                    </tbody>
+          
+                    <thead>
+                        <tr>
+                            <th scope="col">{{ game_data.teams.0.win }} (Blue Team)</th>
+                            <th scope="col">Rank</th>
+                            <th scope="col">KDA</th>
+                            <th scope="col">Damage</th>
+                            <th scope="col">CS</th>
+                            <th scope="col">Vision Score</th>
+                        
+                        </tr>
+                    </thead>
+                  
+                    <tbody>
+                        {% for player in game_data.participants|slice:":5" %}
+                        <tr >
+                            <td>{{ player.champion_name }}/<a href="/{{game_data.server}}/{{player.summoner_name}}"> {{ player.summoner_name }}</a></td>
+                            <td>{{ player.tier }}</a></td>
+                            <td>{{ player.stats.kills }}/{{ player.stats.deaths }}/{{ player.stats.assists }}</td>
+                            <td>{{ player.stats.totalDamageDealtToChampions }}</td>
+                            <td>{{ player.stats.totalMinionsKilled }}</td>
+                            <td>{{ player.stats.visionScore }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+          
+                    <thead>
+                        <tr>
+                            <th scope="col">{{ game_data.teams.1.win }} (Red Team)</th>
+                            <th scope="col">Rank</th>
+                            <th scope="col">KDA</th>
+                            <th scope="col">Damage</th>
+                            <th scope="col">CS</th>
+                            <th scope="col">Vision Score</th>
+                        
+                        </tr>
+                    </thead>
+                  
+                    <tbody>
+                        {% for player in game_data.participants|slice:"5:" %}
+                          <tr>
+                            <td>{{ player.champion_name }}/<a href="/{{game_data.server}}/{{player.summoner_name}}"> {{ player.summoner_name }}</a></td>
+                            <td>{{ player.tier }}</a></td>
+                            <td>{{ player.stats.kills }}/{{ player.stats.deaths }}/{{ player.stats.assists }}</td>
+                            <td>{{ player.stats.totalDamageDealtToChampions }}</td>
+                            <td>{{ player.stats.totalMinionsKilled }}</td>
+                            <td>{{ player.stats.visionScore }}</td>
+                          </tr>
+                        {% endfor %}
+                    </tbody>
+                  </table>
+                  <br>
+                {% endif %}
+              {% endif %}
+            </div>
+          </div>
+          <br>
+        {% endfor %}
+      </div>
       <br>
 
       {% if games.has_other_pages %}
@@ -97,7 +168,7 @@
       </nav>
       {% endif %}
 
-    {% elif user.fail %}
+    {% elif user_account_info.fail %}
       <p>Summoner not found</strong></p>
     {% endif %}
 

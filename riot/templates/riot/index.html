@@ -4,26 +4,44 @@
 
 {% block content %}
 
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+
     <title>Home</title>
+  </head>
 
-    <h1>RIOT API</h1>
+  <body>
+        <main>
 
-    <form method="post">
-        {% csrf_token %}
-        <label for="server">Choose server</label>
+        <h1>RIOT API</h1>
 
-        <select id="server" name="server">
-            <option value="EUW1" >EUW</option>
-            <option value="NA1" >NA</option>
-            <option value="EUN1" >EUN</option>
-            <option value="KR" >Korea</option>
-        </select>
+        <form method="post">
+            {% csrf_token %}
+            <label for="server">Choose server</label>
 
-        <br>
-        <br>
+            <select id="server" name="server">
+                <option value="EUW1" >EUW</option>
+                <option value="NA1" >NA</option>
+                <option value="EUN1" >EUN</option>
+                <option value="KR" >Korea</option>
+            </select>
 
-        <input type="text" name="summoners_name" placeholder="Summoner name" required>
-        <button type="submit">search on database</button>
-    </form>
+            <br>
+            <br>
 
+            <input type="text" name="summoners_name" placeholder="Summoner name" required>
+            <button type="submit">search on database</button>
+        </form>
+
+        </main>
+    </body>
+
+</html>
 {% endblock %}
