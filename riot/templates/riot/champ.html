@@ -87,7 +87,7 @@
                         <tbody>
                             {% for player in game_data.participants|slice:":5" %}
                             <tr >
-                                <td>{{ player.champion_name }}/<a href="/{{game_data.server}}/{{player.summoner_name}}"> {{ player.summoner_name }}</a></td>
+                                <td>{{ player.champion_name }}/<a href="/{{champ.server}}/{{player.summoner_name}}"> {{ player.summoner_name }}</a></td>
                                 <td>{{ player.tier }}</a></td>
                                 <td>{{ player.stats.kills }}/{{ player.stats.deaths }}/{{ player.stats.assists }}</td>
                                 <td>{{ player.stats.totalDamageDealtToChampions }}</td>
@@ -112,7 +112,7 @@
                         <tbody>
                             {% for player in game_data.participants|slice:"5:" %}
                               <tr>
-                                <td>{{ player.champion_name }}/<a href="/{{game_data.server}}/{{player.summoner_name}}"> {{ player.summoner_name }}</a></td>
+                                <td>{{ player.champion_name }}/<a href="/{{champ.server}}/{{player.summoner_name}}"> {{ player.summoner_name }}</a></td>
                                 <td>{{ player.tier }}</a></td>
                                 <td>{{ player.stats.kills }}/{{ player.stats.deaths }}/{{ player.stats.assists }}</td>
                                 <td>{{ player.stats.totalDamageDealtToChampions }}</td>
