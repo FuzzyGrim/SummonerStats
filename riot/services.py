@@ -65,7 +65,6 @@ def past_games_json(server, account_id):
 def champion_games_json(server, account_id, champion_id):
     champion_id = str(champion_id)
     URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matchlists/by-account/" + account_id  + '?champion=' + champion_id + "&api_key=" + API_KEY
-    print(URL)
     response = requests.get(URL)
     old_games_json = response.json()
     old_games_json = old_games_json['matches']
