@@ -160,16 +160,17 @@ def game_summary(server, gameid):
         
         # IndexError if player haven't played any game
         except IndexError:
-            stats_json = {'tier': 'Unranked', 'rank': '0',
-                        'summonerId': summonerId, 
-                        'leaguePoints': '0', 
-                        'wins': '0', 'losses': '0', 
-                        'hotStreak': False}
+            stats_json = {'tier': 'Unranked', 'rank': None,
+                        'summonerId': summonerId}
         
         tier = stats_json['tier']
         rank = stats_json['rank']
 
-        game_json['participants'][current_player]['tier'] = f'{tier} {rank}'
+        if rank != None:
+            game_json['participants'][current_player]['tier'] = f'{tier} {rank}'
+        elif rank == None:
+            game_json['participants'][current_player]['tier'] = f'{tier}'
+            
         game_json['participants'][current_player]['summoner_name'] = player['player']['summonerName']        
 
     return game_json
