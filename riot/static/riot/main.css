@@ -1,0 +1,56 @@
+@font-face {
+  font-family: 'Aquire';
+  src: url(../fonts/aquire-font/Aquire.otf);
+}
+
+body {
+  background: url('../assets/poro.jpg') no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+ }
+
+/* Remove margin of form in navbar */
+.d-flex{
+  margin: 0;
+ }
+
+.navbar .navbar-brand {
+  font-family: 'Aquire';
+  font-size: 2em;
+  padding: 0 0.1em 0 0.1em;
+}
+
+.nav-link {
+  font-size: 1.3em;
+}
+
+main > h1 {
+  font-family: 'Aquire';
+  text-align: center;
+  font-size: 5em;
+}
+
+select {
+  border-radius: 8px 0px 0px 8px;
+  border-right: none;
+  border-width: 2px;
+  background-color: #FFFFFF;
+}
+
+main > form > .input-group > .input-form {
+  background-color: #FFFFFF;
+  width: 20em;
+}
+
+@media only screen and (max-width: 460px) {
+  main > form > .input-group > .input-form { 
+    width: 15em;
+  }
+}
