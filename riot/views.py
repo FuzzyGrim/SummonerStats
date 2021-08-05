@@ -5,17 +5,23 @@ from .services import *
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 def index(request):
+
     user = {}
+
+    # If user submits the form, it will redirect to the user profile page
     if ('summoners_name' and 'server') in request.POST:
         summoner_name = request.POST['summoners_name']
         server = request.POST['server']
 
         return redirect(server+"/"+summoner_name+"/")
 
+    # Show the index page by default
     return render(request, 'riot/index.html', {'user': user})
 
 def user_info(request, server, summoner_name):
-
+    """
+    Get the main data of player from the summoner name and server
+    """
     user_account_info, ranked_stats = player_ranked_stats(server, summoner_name)
     
     if user_account_info['success']:
@@ -62,13 +68,13 @@ def user_info(request, server, summoner_name):
             
             game_data = game_summary(server, gameId)
 
-            return render(request, 'riot/record.html', {'user_account_info': user_account_info, 'ranked_stats': ranked_stats, "games": games, "game_info_list": game_info_list, 'game_data': game_data})
+            return render(request, 'riot/user-profile.html', {'user_account_info': user_account_info, 'ranked_stats': ranked_stats, "games": games, "game_info_list": game_info_list, 'game_data': game_data})
 
         else:
-            return render(request, 'riot/record.html', {'user_account_info': user_account_info, 'ranked_stats': ranked_stats, "games": games, "game_info_list": game_info_list})
+            return render(request, 'riot/user-profile.html', {'user_account_info': user_account_info, 'ranked_stats': ranked_stats, "games": games, "game_info_list": game_info_list})
     
     
-    return render(request, 'riot/record.html', {'user_account_info': user_account_info, 'ranked_stats': ranked_stats})
+    return render(request, 'riot/user-profile.html', {'user_account_info': user_account_info, 'ranked_stats': ranked_stats})
 
 def champ_info(request, server, summoner_name, champion_name):
     
