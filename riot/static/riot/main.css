@@ -37,18 +37,11 @@ main > h1 {
   font-size: 5em;
 }
 
-select {
-  border-radius: 8px 0px 0px 8px;
-  border-right: none;
-  border-width: 2px;
-  background-color: #FFFFFF;
-}
-
 main > form > .input-group > .input-form {
-  background-color: #FFFFFF;
   width: 20em;
 }
 
+/* make input box smaller for mobile phones */
 @media only screen and (max-width: 460px) {
   main > form > .input-group > .input-form { 
     width: 15em;
