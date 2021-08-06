@@ -1,106 +1,107 @@
 {% load static %}
 
 <link rel="stylesheet" type="text/css" href="{% static 'riot/record.css' %}">
-
 {% block content %}
-<head>
-    <title>{{ game_info.server }} : {{ game_info.gameId }}</title>
-
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
-
-</head>
-
-<body>
-
-    <main>
-    <h1>RIOT API</h1>
-    </main>
-
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">Game ID</th>
-                <th scope="col">Server</th>
-                <th scope="col">When</th>
-                <th scope="col">Duration</th>
-                <th scope="col">Game Mode</th>
-                <th scope="col">Season</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            <tr>
-                <td>{{ game_info.gameId }}</td>
-                <td>{{ game_info.server }}</td>
-                <td>{{ game_info.gameCreation }}</td>
-                <td>{{ game_info.gameDuration }}</td>
-                <td>{{ game_info.gameMode }}</td>
-                <td>{{ game_info.seasonId }}</td>
-            </tr>
-        </tbody>
-
-        <thead>
-            <tr>
-                <th scope="col">{{ blue_team.win }} (Blue Team)</th>
-                <th scope="col">Rank</th>
-                <th scope="col">KDA</th>
-                <th scope="col">Damage</th>
-                <th scope="col">CS</th>
-                <th scope="col">Vision Score</th>
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>{{ game_info.server }} : {{ game_info.gameId }}</title>
+    
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    
+    </head>
+    
+    <body>
+    
+        <main>
+        <h1>RIOT API</h1>
+        </main>
+    
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Game ID</th>
+                    <th scope="col">Server</th>
+                    <th scope="col">When</th>
+                    <th scope="col">Duration</th>
+                    <th scope="col">Game Mode</th>
+                    <th scope="col">Season</th>
+                </tr>
+            </thead>
+    
+            <tbody>
+                <tr>
+                    <td>{{ game_info.gameId }}</td>
+                    <td>{{ game_info.server }}</td>
+                    <td>{{ game_info.gameCreation }}</td>
+                    <td>{{ game_info.gameDuration }}</td>
+                    <td>{{ game_info.gameMode }}</td>
+                    <td>{{ game_info.seasonId }}</td>
+                </tr>
+            </tbody>
+    
+            <thead>
+                <tr>
+                    <th scope="col">{{ blue_team.win }} (Blue Team)</th>
+                    <th scope="col">Rank</th>
+                    <th scope="col">KDA</th>
+                    <th scope="col">Damage</th>
+                    <th scope="col">CS</th>
+                    <th scope="col">Vision Score</th>
+                
+                </tr>
+            </thead>
             
-            </tr>
-        </thead>
-        
-        <tbody>
-            {% for player in blue_players %}
-            <tr >
-                <td>{{ player.champion_name }}/<a href="/{{game_info.server}}/{{player.summoner_name}}"> {{ player.summoner_name }}</a></td>
-                <td>{{ player.tier }}</a></td>
-                <td>{{ player.kda }}</td>
-                <td>{{ player.stats.totalDamageDealtToChampions }}</td>
-                <td>{{ player.stats.totalMinionsKilled }}</td>
-                <td>{{ player.stats.visionScore }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-
-        <thead>
-            <tr>
-                <th scope="col">{{ red_team.win }} (Red Team)</th>
-                <th scope="col">Rank</th>
-                <th scope="col">KDA</th>
-                <th scope="col">Damage</th>
-                <th scope="col">CS</th>
-                <th scope="col">Vision Score</th>
+            <tbody>
+                {% for player in blue_players %}
+                <tr >
+                    <td>{{ player.champion_name }}/<a href="/{{game_info.server}}/{{player.summoner_name}}"> {{ player.summoner_name }}</a></td>
+                    <td>{{ player.tier }}</a></td>
+                    <td>{{ player.kda }}</td>
+                    <td>{{ player.stats.totalDamageDealtToChampions }}</td>
+                    <td>{{ player.stats.totalMinionsKilled }}</td>
+                    <td>{{ player.stats.visionScore }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+    
+            <thead>
+                <tr>
+                    <th scope="col">{{ red_team.win }} (Red Team)</th>
+                    <th scope="col">Rank</th>
+                    <th scope="col">KDA</th>
+                    <th scope="col">Damage</th>
+                    <th scope="col">CS</th>
+                    <th scope="col">Vision Score</th>
+                
+                </tr>
+            </thead>
             
-            </tr>
-        </thead>
-        
-        <tbody>
-            {% for player in red_players %}
-            <tr>
-                <td>{{ player.champion_name }}/<a href="/{{game_info.server}}/{{player.summoner_name}}"> {{ player.summoner_name }}</a></td>
-                <td>{{ player.tier }}</a></td>
-                <td>{{ player.kda }}</td>
-                <td>{{ player.stats.totalDamageDealtToChampions }}</td>
-                <td>{{ player.stats.totalMinionsKilled }}</td>
-                <td>{{ player.stats.visionScore }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+            <tbody>
+                {% for player in red_players %}
+                <tr>
+                    <td>{{ player.champion_name }}/<a href="/{{game_info.server}}/{{player.summoner_name}}"> {{ player.summoner_name }}</a></td>
+                    <td>{{ player.tier }}</a></td>
+                    <td>{{ player.kda }}</td>
+                    <td>{{ player.stats.totalDamageDealtToChampions }}</td>
+                    <td>{{ player.stats.totalMinionsKilled }}</td>
+                    <td>{{ player.stats.visionScore }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+    
+        </table>
+    
+    
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    </body>
 
-    </table>
+</html>
 
-
-<!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
-</body>
 {% endblock %}
