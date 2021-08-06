@@ -22,6 +22,14 @@ def user_info(request, server, summoner_name):
     """
     Get the main data of player from the summoner name and server
     """
+    
+    # If user uses navbar search
+    if ('summoners_name' and 'server') in request.POST:
+        summoner_name = request.POST['summoners_name']
+        server = request.POST['server']
+
+        return redirect("/"+server+"/"+summoner_name+"/")
+
     user_account_info, ranked_stats = player_ranked_stats(server, summoner_name)
     
     if user_account_info['success']:
@@ -72,7 +80,6 @@ def user_info(request, server, summoner_name):
 
         else:
             return render(request, 'riot/user-profile.html', {'user_account_info': user_account_info, 'ranked_stats': ranked_stats, "games": games, "game_info_list": game_info_list})
-    
     
     return render(request, 'riot/user-profile.html', {'user_account_info': user_account_info, 'ranked_stats': ranked_stats})
 

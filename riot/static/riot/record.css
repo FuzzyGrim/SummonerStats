@@ -1,4 +1,43 @@
+@font-face {
+  font-family: 'Aquire';
+  src: url(../fonts/aquire-font/Aquire.otf);
+}
+
+/* Remove margin of form in navbar */
+.d-flex{
+  margin: 0;
+ }
+
+.navbar .navbar-brand {
+  font-family: 'Aquire';
+  font-size: 2em;
+  padding: 0 0.1em 0 0.1em;
+}
+
+.nav-link {
+  font-size: 1.3em;
+}
+
 main{
     text-align: center;
+    margin-top: 6em;
   }
 
+main > form > .input-group > .input-form {
+  width: 20em;
+}
+
+/* make input box smaller for mobile phones */
+@media only screen and (max-width: 460px) {
+  main > form > .input-group > .input-form { 
+    width: 15em;
+  }
+}
+
+.user-not-found {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+}
