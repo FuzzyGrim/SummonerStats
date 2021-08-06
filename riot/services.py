@@ -1,26 +1,63 @@
 import requests
 import datetime
 from secret import API
+import time
 
 API_KEY = API
 
-def get_main_data(server, name):
+def get_identifiable_data(server, name):
+    """Request: https://SERVER.api.riotgames.com/lol/summoner/v4/summoners/by-name/NAME
+
+    Args:
+        server (string): Player's region
+        summoner_name (string): Summoner name
+
+    Returns:
+        JSON with: 
+            accountId 	    string 	Encrypted account ID. Max length 56 characters.
+            profileIconId 	int 	ID of the summoner icon associated with the summoner.
+            revisionDate 	long 	Date summoner was last modified specified as epoch milliseconds.
+            name 	        string 	Summoner name.
+            id 	            string 	Encrypted summoner ID. Max length 63 characters.
+            puuid 	        string 	Encrypted PUUID. Exact length of 78 characters.
+            summonerLevel 	long 	Summoner level associated with the summoner. 
+    """
+
     URL = "https://" + server + ".api.riotgames.com/lol/summoner/v4/summoners/by-name/" + \
         name + "?api_key=" + API_KEY
- 
+    
     response = requests.get(URL)
-    search_was_successful = (response.status_code == 200)
-    summoner_not_found = (response.status_code == 404)
+
     user_json = response.json()
 
-    user_json['success'] = search_was_successful
-    user_json['fail'] = summoner_not_found
+    user_json['success'] = (response.status_code == 200)
+    user_json['user_not_found'] = (response.status_code == 404)
     return user_json
 
+
 def player_ranked_stats(server, summoner_name):
+    """Get summoner's ranked stats
 
-    user_json = get_main_data(server, summoner_name)
+    Args:
+        server (string): Player's region
+        summoner_name (string): Summoner name
 
+    Returns:
+        JSON with:
+            leagueId 	    string 	
+            summonerId 	    string 	Player's encrypted summonerId.
+            summonerName 	string 	
+            queueType 	    string 	eg: RANKED_SOLO_5x5
+            tier 	        string 	
+            rank 	        string 	The player's division within a tier.
+            leaguePoints 	int 	
+            wins 	        int 	Winning team on Summoners Rift.
+            losses 	        int 	Losing team on Summoners Rift.
+    """
+
+    user_json = get_identifiable_data(server, summoner_name)
+
+    # If the inputted summoner is found
     if user_json['success']:
 
         summoner_id = user_json['id']
@@ -32,28 +69,24 @@ def player_ranked_stats(server, summoner_name):
         try:
             stats_json = stats_json[0]
 
+            # Total games = number of wins + number of defeats
+            total_games = int(stats_json['wins']) + int(stats_json['losses'])
+            stats_json['total_games'] = str(total_games)
+
+            stats_json['win_rate'] = str(
+                round(((int(stats_json['wins']) / total_games) * 100), 1))
+        
         # IndexError if player haven't played any game
         except IndexError:
-            stats_json = {'tier': 'Unranked', 'rank': '0',
-                          'summonerId': summoner_id,
-                          'leaguePoints': '0',
-                          'wins': '0', 'losses': '0',
-                          'hotStreak': False}
+            stats_json = {'no_games': True}
 
-        wins = stats_json['wins']
-        defeats = stats_json['losses']
-        total_games = int(wins) + int(defeats)
-        stats_json['total_games'] = str(total_games)
+        except KeyError:
+            if stats_json['status']['status_code'] == 429:
+                print ("Rate limit exceeded")
 
-        try:
-            stats_json['win_rate'] = str(
-                round(((int(wins) / total_games) * 100), 1))
-        except ZeroDivisionError:
-            stats_json['win_rate'] = 0
+        user_json['server'] = server
 
-        stats_json['server'] = server
-
-    elif user_json['fail']:
+    elif user_json['user_not_found']:
         stats_json = {}
 
     return user_json, stats_json
@@ -104,7 +137,7 @@ def champion_stats(server, summoner_name, champion_name):
     by_id = {x['id']: x for x in data.values()}
     champ_key = (by_id.get(champion_name)['key'])
 
-    user_json = get_main_data(server, summoner_name)
+    user_json = get_identifiable_data(server, summoner_name)
 
     summoner_id = user_json['id']
     account_id = user_json['accountId']
