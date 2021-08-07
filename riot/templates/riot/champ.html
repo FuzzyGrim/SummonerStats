@@ -4,173 +4,208 @@
 
 {% block content %}
 <html lang="en">
-    <head>
-        <title>{{ champ.name }}: {{ champ.champ_name }}</title>
+  <head>
+      <title>{{ champ.name }}: {{ champ.champ_name }}</title>
 
-        <!-- Required meta tags -->
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+      <!-- Required meta tags -->
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <!-- Bootstrap CSS -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
-        
-    </head>
+      <!-- Bootstrap CSS -->
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+      
+  </head>
 
 
-    <body>
+  <body>
+    <nav class="navbar fixed-top navbar-expand-lg navbar-light" style="background-color: #e3f2fd;">
 
-        <main>
-        <h1>RIOT API</h1>
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/">LOLDATA</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active rounded home" href="/"> <i class="bi bi-house"></i> Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link rounded champion" href="#"> <i class="bi bi-trophy"></i> Champions</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link rounded live-game" href="#"> <i class="bi bi-broadcast"></i> Live-Game</a>
+            </li>
+          </ul>
+          <form class="d-flex" method="post">
+            {% csrf_token %}
+            <div class="input-group">
+              <input class="form" type="text" name="summoners_name" placeholder="Summoner name" aria-label="Search" style="padding-left: .5em;" required>
+              <select id="server" name="server" class="form-select">
+                <option value="EUW1" >EUW</option>
+                <option value="NA1" >NA</option>
+                <option value="EUN1" >EUN</option>
+                <option value="KR" >KR</option>
+              </select>
+              <button class="btn btn-outline-success" type="submit"><i class="bi bi-search"></i></button>
+          </div>
+          </form>
+        </div>
+      </div>
+    </nav>
+    <main>
+      <h1>RIOT API</h1>
 
-            <p><strong>{{ champ.summoner_name }}</strong> </p>    
-            <p>Summoner ID: <strong>{{ champ.summonerId }}</strong></p>    
-            <p>Account ID: <strong>{{ champ.accountId }}</strong></p>    
-            <p>Champion name: <strong>{{ champ.champ_name }}</strong></p>
-            <p>Champion id: <strong>{{ champ.championId }}</strong></p>
-            <p>Champion mastery: <strong>{{ champ.championLevel }}</strong></p>
-            <p>Champion points: <strong>{{ champ.championPoints }}</strong></p>
-            <p>Last time: <strong>{{ champ.last_time }}</strong></p>
+      <p><strong>{{ champ.summoner_name }}</strong> </p>    
+      <p>Summoner ID: <strong>{{ champ.summonerId }}</strong></p>    
+      <p>Account ID: <strong>{{ champ.accountId }}</strong></p>    
+      <p>Champion name: <strong>{{ champ.champ_name }}</strong></p>
+      <p>Champion id: <strong>{{ champ.championId }}</strong></p>
+      <p>Champion mastery: <strong>{{ champ.championLevel }}</strong></p>
+      <p>Champion points: <strong>{{ champ.championPoints }}</strong></p>
+      <p>Last time: <strong>{{ champ.last_time }}</strong></p>
 
-        </main>
+    </main>
 
-        <div class="container" style="border:2px solid black;">
+      <div class="container" style="border:2px solid black;">
+        <br>
+        {% for game in game_info_list %}
+          <span class="anchor" id="{{forloop.counter}}"></span>
+          <div class="container" style="border:1px solid rgb(64, 97, 71);">
             <br>
-            {% for game in game_info_list %}
-              <div class="container" style="border:1px solid rgb(64, 97, 71);">
-                <br>
-                <h4><a href="/{{champ.server}}/{{champ.summonerName}}/{{champ.champ_name}}/info">{{ champ.champ_name }}</a> {{game.position}} {{game.time_diff}} <a href="/{{champ.server}}/{{game.game_id}}/info">{{ game.game_id}}</a></h4>
-    
-                <form method="post">
-                {% csrf_token %}
-                <button name="load" type="submit" value="{{game.game_id}}" class="btn btn-info">Show game summary</button>
-                </form>
-                <br>
+            <h4><a href="/{{champ.server}}/{{champ.summonerName}}/{{champ.champ_name}}/info">{{ champ.champ_name }}</a> {{game.position}} {{game.time_diff}} <a href="/{{champ.server}}/{{game.game_id}}/info">{{ game.game_id}}</a></h4>
+
+            <form action="#{{forloop.counter}}" method="post">
+            {% csrf_token %}
+            <button name="load" type="submit" value="{{game.game_id}}" class="btn btn-info">Show game summary</button>
+            </form>
+            <br>
+              
+            <div id="load_more">
+              {% if game_data.success %}
+                {% if game_data.game_id == game.game_id %}
+                  <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">Game ID</th>
+                            <th scope="col">Server</th>
+                            <th scope="col">When</th>
+                            <th scope="col">Duration</th>
+                            <th scope="col">Game Mode</th>
+                            <th scope="col">Patch</th>
+                        </tr>
+                    </thead>
+          
+                    <tbody>
+                        <tr>
+                            <td>{{ game_data.gameId }}</td>
+                            <td>{{ game_data.platformId }}</td>
+                            <td>{{ game_data.gameCreation }}</td>
+                            <td>{{ game_data.gameDuration }}</td>
+                            <td>{{ game_data.gameMode }}</td>
+                            <td>{{ game_data.gameVersion }}</td>
+                        </tr>
+                    </tbody>
+          
+                    <thead>
+                        <tr>
+                            <th scope="col">{{ game_data.teams.0.win }} (Blue Team)</th>
+                            <th scope="col">Rank</th>
+                            <th scope="col">KDA</th>
+                            <th scope="col">Damage</th>
+                            <th scope="col">CS</th>
+                            <th scope="col">Vision Score</th>
+                        
+                        </tr>
+                    </thead>
                   
-                <div id="load_more">
-                  {% if game_data.success %}
-                    {% if game_data.game_id == game.game_id %}
-                      <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th scope="col">Game ID</th>
-                                <th scope="col">Server</th>
-                                <th scope="col">When</th>
-                                <th scope="col">Duration</th>
-                                <th scope="col">Game Mode</th>
-                                <th scope="col">Patch</th>
-                            </tr>
-                        </thead>
-              
-                        <tbody>
-                            <tr>
-                                <td>{{ game_data.gameId }}</td>
-                                <td>{{ game_data.platformId }}</td>
-                                <td>{{ game_data.gameCreation }}</td>
-                                <td>{{ game_data.gameDuration }}</td>
-                                <td>{{ game_data.gameMode }}</td>
-                                <td>{{ game_data.gameVersion }}</td>
-                            </tr>
-                        </tbody>
-              
-                        <thead>
-                            <tr>
-                                <th scope="col">{{ game_data.teams.0.win }} (Blue Team)</th>
-                                <th scope="col">Rank</th>
-                                <th scope="col">KDA</th>
-                                <th scope="col">Damage</th>
-                                <th scope="col">CS</th>
-                                <th scope="col">Vision Score</th>
-                            
-                            </tr>
-                        </thead>
-                      
-                        <tbody>
-                            {% for player in game_data.participants|slice:":5" %}
-                            <tr >
-                                <td>{{ player.champion_name }}/<a href="/{{champ.server}}/{{player.summoner_name}}"> {{ player.summoner_name }}</a></td>
-                                <td>{{ player.tier }}</a></td>
-                                <td>{{ player.stats.kills }}/{{ player.stats.deaths }}/{{ player.stats.assists }}</td>
-                                <td>{{ player.stats.totalDamageDealtToChampions }}</td>
-                                <td>{{ player.stats.totalMinionsKilled }}</td>
-                                <td>{{ player.stats.visionScore }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-              
-                        <thead>
-                            <tr>
-                                <th scope="col">{{ game_data.teams.1.win }} (Red Team)</th>
-                                <th scope="col">Rank</th>
-                                <th scope="col">KDA</th>
-                                <th scope="col">Damage</th>
-                                <th scope="col">CS</th>
-                                <th scope="col">Vision Score</th>
-                            
-                            </tr>
-                        </thead>
-                      
-                        <tbody>
-                            {% for player in game_data.participants|slice:"5:" %}
-                              <tr>
-                                <td>{{ player.champion_name }}/<a href="/{{champ.server}}/{{player.summoner_name}}"> {{ player.summoner_name }}</a></td>
-                                <td>{{ player.tier }}</a></td>
-                                <td>{{ player.stats.kills }}/{{ player.stats.deaths }}/{{ player.stats.assists }}</td>
-                                <td>{{ player.stats.totalDamageDealtToChampions }}</td>
-                                <td>{{ player.stats.totalMinionsKilled }}</td>
-                                <td>{{ player.stats.visionScore }}</td>
-                              </tr>
-                            {% endfor %}
-                        </tbody>
-                      </table>
-                      <br>
-                    {% endif %}
-                  {% endif %}
-                </div>
-              </div>
-              <br>
-            {% endfor %}
+                    <tbody>
+                        {% for player in game_data.participants|slice:":5" %}
+                        <tr >
+                            <td>{{ player.champion_name }}/<a href="/{{champ.server}}/{{player.summoner_name}}"> {{ player.summoner_name }}</a></td>
+                            <td>{{ player.tier }}</a></td>
+                            <td>{{ player.stats.kills }}/{{ player.stats.deaths }}/{{ player.stats.assists }}</td>
+                            <td>{{ player.stats.totalDamageDealtToChampions }}</td>
+                            <td>{{ player.stats.totalMinionsKilled }}</td>
+                            <td>{{ player.stats.visionScore }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+          
+                    <thead>
+                        <tr>
+                            <th scope="col">{{ game_data.teams.1.win }} (Red Team)</th>
+                            <th scope="col">Rank</th>
+                            <th scope="col">KDA</th>
+                            <th scope="col">Damage</th>
+                            <th scope="col">CS</th>
+                            <th scope="col">Vision Score</th>
+                        
+                        </tr>
+                    </thead>
+                  
+                    <tbody>
+                        {% for player in game_data.participants|slice:"5:" %}
+                          <tr>
+                            <td>{{ player.champion_name }}/<a href="/{{champ.server}}/{{player.summoner_name}}"> {{ player.summoner_name }}</a></td>
+                            <td>{{ player.tier }}</a></td>
+                            <td>{{ player.stats.kills }}/{{ player.stats.deaths }}/{{ player.stats.assists }}</td>
+                            <td>{{ player.stats.totalDamageDealtToChampions }}</td>
+                            <td>{{ player.stats.totalMinionsKilled }}</td>
+                            <td>{{ player.stats.visionScore }}</td>
+                          </tr>
+                        {% endfor %}
+                    </tbody>
+                  </table>
+                  <br>
+                {% endif %}
+              {% endif %}
+            </div>
           </div>
           <br>
-    
-          {% if games.has_other_pages %}
-          <nav aria-label="Page navigation example">
-            <ul class="pagination justify-content-center">
-              {% if games.has_previous %}
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ games.previous_page_number }}">&laquo;</a>
-                </li>
-              {% else %}
-                <li class="page-item disabled">
-                  <a class="page-link">&laquo;</a>
-                </li>
-              {% endif %}
-    
-              {% for i in games.paginator.page_range %}
-                {% if games.number == i %}
-                  <li class="page-item active">
-                    <a class="page-link"> {{ i }}</a>
-                  </li>
-                {% else %}
-                  <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
-                {% endif %}
-              {% endfor %}
-    
-              {% if games.has_next %}
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ games.next_page_number }}">&raquo;</a>
-                </li>
-              {% else %}
-                <li class="page-item disabled">
-                  <a class="page-link">&raquo;</a>
-                </li>
-              {% endif %}
-            </ul>
-          </nav>
+        {% endfor %}
+      </div>
+      <br>
+
+      {% if games.has_other_pages %}
+      <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center">
+          {% if games.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ games.previous_page_number }}">&laquo;</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <a class="page-link">&laquo;</a>
+            </li>
           {% endif %}
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+          {% for i in games.paginator.page_range %}
+            {% if games.number == i %}
+              <li class="page-item active">
+                <a class="page-link"> {{ i }}</a>
+              </li>
+            {% else %}
+              <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+            {% endif %}
+          {% endfor %}
 
-    </body>
+          {% if games.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ games.next_page_number }}">&raquo;</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <a class="page-link">&raquo;</a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+  </body>
 </html>
 {% endblock %}
