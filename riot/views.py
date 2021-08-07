@@ -30,13 +30,13 @@ def user_info(request, server, summoner_name):
 
         return redirect("/"+server+"/"+summoner_name+"/")
 
-    user_account_info, ranked_stats = player_ranked_stats(server, summoner_name)
+    user_account_info, ranked_stats = get_ranked_stats(server, summoner_name)
     
     if user_account_info['success']:
 
         account_id = user_account_info['accountId']
 
-        games_list = past_games_json(server, account_id)
+        games_list = get_past_games(server, account_id)
 
         page = request.GET.get('page', 1)
 
@@ -57,10 +57,12 @@ def user_info(request, server, summoner_name):
                 lane = match['lane']
                 role = match['role']
                 timestamp = match['timestamp']
-                champ_name, position, game_length = past_games(champion_key, lane, role, timestamp)
+                champ_name = get_champion_name(champion_key)
+                position = get_position(lane, role)
+                game_date = get_game_date(timestamp)
                 game_dict['champion_name'] = champ_name
                 game_dict['position'] = position
-                game_dict['time_diff'] = game_length
+                game_dict['date'] = game_date
                 game_dict['game_id'] = str(match['gameId'])
                 game_dict['champion'] = champion_key
 
@@ -85,13 +87,13 @@ def user_info(request, server, summoner_name):
 
 def champ_info(request, server, summoner_name, champion_name):
     
-    champ = champion_stats(server, summoner_name, champion_name)
+    champ = get_champion_stats(server, summoner_name, champion_name)
 
     server = champ['server']
     account_id = champ['accountId']
     champion_id = champ['championId'] 
     
-    champ_games = champion_games_json(server, account_id, champion_id)
+    champ_games = get_champion_matchlist(server, account_id, champion_id)
 
     page = request.GET.get('page', 1)
     paginator = Paginator(champ_games, 20)
@@ -112,10 +114,12 @@ def champ_info(request, server, summoner_name, champion_name):
             lane = match['lane']
             role = match['role']
             timestamp = match['timestamp']
-            champ_name, position, game_length = past_games(champion_key, lane, role, timestamp)
+            champ_name = get_champion_name(champion_key)
+            position = get_position(lane, role)
+            game_date = get_game_date(timestamp)
             game_dict['champion_name'] = champ_name
             game_dict['position'] = position
-            game_dict['time_diff'] = game_length
+            game_dict['date'] = game_date
             game_dict['game_id'] = str(match['gameId'])
             game_dict['champion'] = champion_key
 
@@ -134,13 +138,8 @@ def champ_info(request, server, summoner_name, champion_name):
     
     return render(request, 'riot/champ.html', {'champ': champ, "games": games, "game_info_list": game_info_list})
 
-def game_info(request, server, game_id):
-    game_info= game_summary(server, game_id)
-    
-    return render(request, 'riot/game.html', {'game_info': game_info})
-
 def in_game(request, server, summoner_name):
-    user, stats = player_ranked_stats(server, summoner_name)
+    user, stats = get_ranked_stats(server, summoner_name)
     summoner_id = stats['summonerId']
 
     game_info, blue_players, red_players = in_game_info(server, summoner_id)

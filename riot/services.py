@@ -35,7 +35,7 @@ def get_identifiable_data(server, name):
     return user_json
 
 
-def player_ranked_stats(server, summoner_name):
+def get_ranked_stats(server, summoner_name):
     """Get summoner's ranked stats
 
     Args:
@@ -91,7 +91,7 @@ def player_ranked_stats(server, summoner_name):
 
     return user_json, stats_json
 
-def past_games_json(server, account_id):
+def get_past_games(server, account_id):
     URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matchlists/by-account/" + \
         account_id + "?api_key=" + API_KEY
     response = requests.get(URL)
@@ -99,7 +99,7 @@ def past_games_json(server, account_id):
     old_games_json = old_games_json['matches']
     return old_games_json
 
-def champion_games_json(server, account_id, champion_id):
+def get_champion_matchlist(server, account_id, champion_id):
     champion_id = str(champion_id)
     URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matchlists/by-account/" + \
         account_id + '?champion=' + champion_id + "&api_key=" + API_KEY
@@ -108,25 +108,54 @@ def champion_games_json(server, account_id, champion_id):
     old_games_json = old_games_json['matches']
     return old_games_json
 
-def past_games(champion_key, lane, role, timestamp):
+def get_champion_name(champion_key):
 
     key = champion_key
     key = str(key)
 
-    champ_name = get_champ_name(key)
+    r = requests.get("https://ddragon.leagueoflegends.com/realms/na.json")
+    j = r.json()
+    patch = j['dd']
+    r = requests.get("https://ddragon.leagueoflegends.com/cdn/" +
+                     patch + "/data/en_US/champion.json")
+    j = r.json()
+    data = j["data"]
+    by_key = {x['key']: x for x in data.values()}
+    champ_name = (by_key.get(key)['id'])
+
+    return champ_name
+
+def get_position(lane, role):
 
     if role == 'SOLO' or role == 'DUO' or role == 'NONE':
         position = lane
     else:
         position = role[4:]
 
-    game_creation = timestamp
-    game_length = get_time(game_creation)
+    return position
 
-    return champ_name, position, game_length
+def get_game_date(timestamp):
+
+    unix_millisecons = datetime.date.fromtimestamp(timestamp/1000.0)
+    game_length = get_time(timestamp)
+
+    return game_length
 
 
-def champion_stats(server, summoner_name, champion_name):
+def get_time(unix_millisecons):
+    unix_millisecons = datetime.date.fromtimestamp(unix_millisecons/1000.0)
+    today = datetime.date.today()
+    time_diff = abs((today - unix_millisecons).days)
+    if time_diff == 0:
+        time_diff = 'Today'
+    elif time_diff == 1:
+        time_diff = 'Yesterday'
+    else:
+        time_diff = str(time_diff) + ' days ago'
+    return time_diff
+
+
+def get_champion_stats(server, summoner_name, champion_name):
     r = requests.get("https://ddragon.leagueoflegends.com/realms/na.json")
     j = r.json()
     patch = j['dd']
@@ -181,7 +210,7 @@ def game_summary(server, gameid):
     for participant in game_json['participants']:
         key = participant['championId']
         key = str(key)
-        champ_name = get_champ_name(key)
+        champ_name = get_champion_name(key)
         participant['champion_name'] = champ_name
 
     current_player = -1
@@ -217,33 +246,6 @@ def game_summary(server, gameid):
     return game_json
 
 
-def get_time(unix_millisecons):
-    unix_millisecons = datetime.date.fromtimestamp(unix_millisecons/1000.0)
-    today = datetime.date.today()
-    time_diff = abs((today - unix_millisecons).days)
-    if time_diff == 0:
-        time_diff = 'Today'
-    elif time_diff == 1:
-        time_diff = 'Yesterday'
-    else:
-        time_diff = str(time_diff) + ' days ago'
-    return time_diff
-
-
-def get_champ_name(key):
-    r = requests.get("https://ddragon.leagueoflegends.com/realms/na.json")
-    j = r.json()
-    patch = j['dd']
-    r = requests.get("https://ddragon.leagueoflegends.com/cdn/" +
-                     patch + "/data/en_US/champion.json")
-    j = r.json()
-    data = j["data"]
-    by_key = {x['key']: x for x in data.values()}
-    champ_name = (by_key.get(key)['id'])
-
-    return champ_name
-
-
 def in_game_info(server, summoner_id):
     URL = "https://" + server + ".api.riotgames.com/lol/spectator/v4/active-games/by-summoner/" + \
         (summoner_id) + "?api_key=" + API_KEY
@@ -264,12 +266,12 @@ def in_game_info(server, summoner_id):
         for participant in blue_participants_json:
             key = participant['championId']
             key = str(key)
-            champ_name = get_champ_name(key)
+            champ_name = get_champion_name(key)
             participant['champion_name'] = champ_name
 
             summoner_name = participant['summonerName']
 
-            user, stats = player_ranked_stats(server, summoner_name)
+            user, stats = get_ranked_stats(server, summoner_name)
             tier = stats['tier']
             rank = stats['rank']
             tier = f'{tier} {rank}'
@@ -286,12 +288,12 @@ def in_game_info(server, summoner_id):
         for participant in red_participants_json:
             key = participant['championId']
             key = str(key)
-            champ_name = get_champ_name(key)
+            champ_name = get_champion_name(key)
             participant['champion_name'] = champ_name
 
             summoner_name = participant['summonerName']
 
-            user, stats = player_ranked_stats(server, summoner_name)
+            user, stats = get_ranked_stats(server, summoner_name)
             tier = stats['tier']
             rank = stats['rank']
             tier = f'{tier} {rank}'
