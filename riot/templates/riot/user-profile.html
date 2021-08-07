@@ -55,33 +55,32 @@
 
     {% if user_account_info.success %}
       <main>
-          <h1>RIOT API</h1>
+        <h1>RIOT API</h1>
 
-          <p><strong>{{ ranked_stats.summonerName }}</strong> </p>   
-          
-          {%if ranked_stats.no_games %}
-            <p>Unranked</p>
-          {% else %}
-            <p>Tier: <strong>{{ ranked_stats.tier }} {{ ranked_stats.rank }}</strong></p>    
-            <p>Winrate (ranked): <strong>W: {{ ranked_stats.wins }} / L: {{ ranked_stats.losses }} ({{ranked_stats.win_rate }}%)</strong></p>
-          {% endif %}
-          <a href='/{{user_account_info.server}}/{{user_account_info.name}}/In-Game' class="btn btn-primary" role="button" >In-Game</a>
-          <p>Level: <strong>{{ user_account_info.summonerLevel }}</strong></p>    
-          <p>Summoner id: <strong>{{ user_account_info.id }}</strong></p>
-          <p>Account id: <strong>{{ user_account_info.accountId }}</strong></p>
-          <p>puuid: <strong>{{ user_account_info.puuid }}</strong></p>
+        <p><strong>{{ ranked_stats.summonerName }}</strong> </p>   
+        
+        {%if ranked_stats.no_games %}
+          <p>Unranked</p>
+        {% else %}
+          <p>Tier: <strong>{{ ranked_stats.tier }} {{ ranked_stats.rank }}</strong></p>    
+          <p>Winrate (ranked): <strong>W: {{ ranked_stats.wins }} / L: {{ ranked_stats.losses }} ({{ranked_stats.win_rate }}%)</strong></p>
+        {% endif %}
+        <a href='/{{user_account_info.server}}/{{user_account_info.name}}/In-Game' class="btn btn-primary" role="button" >In-Game</a>
+        <p>Level: <strong>{{ user_account_info.summonerLevel }}</strong></p>    
+        <p>Summoner id: <strong>{{ user_account_info.id }}</strong></p>
+        <p>Account id: <strong>{{ user_account_info.accountId }}</strong></p>
+        <p>puuid: <strong>{{ user_account_info.puuid }}</strong></p>
 
       </main>
-
-      
       <div class="container" style="border:2px solid black;">
         <br>
         {% for game in game_info_list %}
+          <span class="anchor" id="{{forloop.counter}}"></span>
           <div class="container" style="border:1px solid rgb(64, 97, 71);">
             <br>
-            <h4><a href="/{{user_account_info.server}}/{{ranked_stats.summonerName}}/{{game.champion_name}}/info">{{ game.champion_name }}</a> {{game.position}} {{game.time_diff}} <a href="/{{user_account_info.server}}/{{game.game_id}}/info">{{ game.game_id}}</a></h4>
+            <h4><a href="/{{user_account_info.server}}/{{ranked_stats.summonerName}}/{{game.champion_name}}/info">{{ game.champion_name }}</a> {{game.position}} {{game.date}} {{ game.game_id}}</h4>
 
-            <form method="post">
+            <form action="#{{forloop.counter}}" method="post">
             {% csrf_token %}
             <button name="load" type="submit" value="{{game.game_id}}" class="btn btn-info">Show game summary</button>
             </form>

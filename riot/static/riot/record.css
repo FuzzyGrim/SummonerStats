@@ -3,7 +3,7 @@
   src: url(../fonts/aquire-font/Aquire.otf);
 }
 
-/* Remove margin of form in navbar */
+/* Remove margin of form in navbar to align with text on the left*/
 .d-flex{
   margin: 0;
  }
@@ -40,4 +40,8 @@ main > form > .input-group > .input-form {
   height: 100vh;
   justify-content: center;
   align-items: center;
+}
+
+.anchor {
+  scroll-margin-top: 8em;
 }
