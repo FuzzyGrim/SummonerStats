@@ -86,7 +86,12 @@ def user_info(request, server, summoner_name):
     return render(request, 'riot/user-profile.html', {'user_account_info': user_account_info, 'ranked_stats': ranked_stats})
 
 def champ_info(request, server, summoner_name, champion_name):
-    
+    if ('summoners_name' and 'server') in request.POST:
+        summoner_name = request.POST['summoners_name']
+        server = request.POST['server']
+
+        return redirect("/"+server+"/"+summoner_name+"/")
+          
     champ = get_champion_stats(server, summoner_name, champion_name)
 
     server = champ['server']
