@@ -1,9 +1,8 @@
 import requests
 import datetime
-from secret import API
-import time
+from decouple import config
 
-API_KEY = API
+API_KEY = config('API')
 
 def get_identifiable_data(server, name):
     """Request: https://SERVER.api.riotgames.com/lol/summoner/v4/summoners/by-name/NAME
@@ -108,22 +107,33 @@ def get_champion_matchlist(server, account_id, champion_id):
     old_games_json = old_games_json['matches']
     return old_games_json
 
-def get_champion_name(champion_key):
+def get_champion_name(champion_key, champ_json):
 
-    key = champion_key
-    key = str(key)
-
-    r = requests.get("https://ddragon.leagueoflegends.com/realms/na.json")
-    j = r.json()
-    patch = j['dd']
-    r = requests.get("https://ddragon.leagueoflegends.com/cdn/" +
-                     patch + "/data/en_US/champion.json")
-    j = r.json()
-    data = j["data"]
-    by_key = {x['key']: x for x in data.values()}
+    key = str(champion_key)
+    by_key = {x['key']: x for x in champ_json.values()}
     champ_name = (by_key.get(key)['id'])
 
     return champ_name
+
+def get_champion_key(champion_name, champ_json):
+    by_id = {x['id']: x for x in champ_json.values()}
+    champ_key = (by_id.get(champion_name)['key'])
+
+    return champ_key
+
+def get_ddragon_champion_json(patch):
+    request = requests.get("https://ddragon.leagueoflegends.com/cdn/" +
+                     patch + "/data/en_US/champion.json")
+    json = request.json()
+    champion_json = json["data"]
+
+    return champion_json
+
+def get_current_patch():
+    request = requests.get("https://ddragon.leagueoflegends.com/realms/na.json")
+    json = request.json()
+    patch = json['dd']
+    return patch
 
 def get_position(lane, role):
 
@@ -137,34 +147,21 @@ def get_position(lane, role):
 def get_game_date(timestamp):
 
     unix_millisecons = datetime.date.fromtimestamp(timestamp/1000.0)
-    game_length = get_time(timestamp)
-
-    return game_length
-
-
-def get_time(unix_millisecons):
-    unix_millisecons = datetime.date.fromtimestamp(unix_millisecons/1000.0)
     today = datetime.date.today()
     time_diff = abs((today - unix_millisecons).days)
     if time_diff == 0:
-        time_diff = 'Today'
+        game_date = 'Today'
     elif time_diff == 1:
-        time_diff = 'Yesterday'
+        game_date = 'Yesterday'
     else:
-        time_diff = str(time_diff) + ' days ago'
-    return time_diff
+        game_date = str(time_diff) + ' days ago'
+
+    return game_date
 
 
-def get_champion_stats(server, summoner_name, champion_name):
-    r = requests.get("https://ddragon.leagueoflegends.com/realms/na.json")
-    j = r.json()
-    patch = j['dd']
-    r = requests.get("https://ddragon.leagueoflegends.com/cdn/" +
-                     patch + "/data/en_US/champion.json")
-    json_file = r.json()
-    data = json_file["data"]
-    by_id = {x['id']: x for x in data.values()}
-    champ_key = (by_id.get(champion_name)['key'])
+def get_champion_stats(server, summoner_name, champion_name, champ_json):
+    
+    champ_key = get_champion_key(champion_name, champ_json)
 
     user_json = get_identifiable_data(server, summoner_name)
 
@@ -181,7 +178,7 @@ def get_champion_stats(server, summoner_name, champion_name):
     champ_json['accountId'] = account_id
 
     last_played = champ_json['lastPlayTime']
-    time_diff = get_time(last_played)
+    time_diff = get_game_date(last_played)
     champ_json['last_time'] = time_diff
 
     champ_json['server'] = server
@@ -189,7 +186,7 @@ def get_champion_stats(server, summoner_name, champion_name):
     return champ_json
 
 
-def game_summary(server, gameid):
+def game_summary(server, gameid, champ_json):
 
     URL = "https://" + server + ".api.riotgames.com/lol/match/v4/matches/" + \
         str(gameid) + "?api_key=" + API_KEY
@@ -204,13 +201,13 @@ def game_summary(server, gameid):
     game_json['gameDuration'] = game_duration
 
     game_creation = game_json['gameCreation']
-    game_creation = get_time(game_creation)
+    game_creation = get_game_date(game_creation)
     game_json['gameCreation'] = game_creation
 
     for participant in game_json['participants']:
         key = participant['championId']
         key = str(key)
-        champ_name = get_champion_name(key)
+        champ_name = get_champion_name(key, champ_json)
         participant['champion_name'] = champ_name
 
     current_player = -1
@@ -246,7 +243,7 @@ def game_summary(server, gameid):
     return game_json
 
 
-def in_game_info(server, summoner_id):
+def in_game_info(server, summoner_id, champ_json):
     URL = "https://" + server + ".api.riotgames.com/lol/spectator/v4/active-games/by-summoner/" + \
         (summoner_id) + "?api_key=" + API_KEY
     response = requests.get(URL)
@@ -266,7 +263,7 @@ def in_game_info(server, summoner_id):
         for participant in blue_participants_json:
             key = participant['championId']
             key = str(key)
-            champ_name = get_champion_name(key)
+            champ_name = get_champion_name(key, champ_json)
             participant['champion_name'] = champ_name
 
             summoner_name = participant['summonerName']
@@ -288,7 +285,7 @@ def in_game_info(server, summoner_id):
         for participant in red_participants_json:
             key = participant['championId']
             key = str(key)
-            champ_name = get_champion_name(key)
+            champ_name = get_champion_name(key, champ_json)
             participant['champion_name'] = champ_name
 
             summoner_name = participant['summonerName']
@@ -313,3 +310,19 @@ def in_game_info(server, summoner_id):
         blue_participants_json = {}
         red_participants_json = {}
         return in_game_json, blue_participants_json, red_participants_json
+
+
+def load_champ_json_session(request):
+    if 'patch' in request.session:
+            patch = request.session['patch']
+    else:
+        request.session['patch'] = get_current_patch()
+        request.session.set_expiry(0)
+        patch = request.session['patch']
+    if 'ddragon_champion_json' in request.session:
+        champ_json = request.session['ddragon_champion_json']
+    else:
+        request.session['ddragon_champion_json'] = get_ddragon_champion_json(patch)
+        request.session.set_expiry(0)
+        champ_json = request.session['ddragon_champion_json']
+    return champ_json

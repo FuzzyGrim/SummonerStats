@@ -4,6 +4,7 @@ import requests
 from .services import *
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
+
 def index(request):
 
     user = {}
@@ -15,7 +16,8 @@ def index(request):
 
         return redirect(server+"/"+summoner_name+"/")
 
-    # Show the index page by default
+    load_champ_json_session(request)
+
     return render(request, 'riot/index.html', {'user': user})
 
 def user_info(request, server, summoner_name):
@@ -38,50 +40,34 @@ def user_info(request, server, summoner_name):
 
         games_list = get_past_games(server, account_id)
 
-        page = request.GET.get('page', 1)
+        champ_json = load_champ_json_session(request)
 
-        paginator = Paginator(games_list, 20)
-        try:
-            games = paginator.page(page)
-            start = games.start_index() - 1
+        game_info_list = []
 
-            end = games.end_index()
-            
-            game_info_list = []
+        for match in games_list:
 
-            for match in games_list[start:end]:
+            game_dict = {}
 
-                game_dict = {}
+            champ_name = get_champion_name(match['champion'], champ_json)
+            position = get_position(match['lane'], match['role'])
+            game_date = get_game_date(match['timestamp'])
+            game_dict['champion_name'] = champ_name
+            game_dict['position'] = position
+            game_dict['date'] = game_date
+            game_dict['game_id'] = str(match['gameId'])
+            game_dict['champion'] = 'champion_key'
 
-                champion_key = match['champion']
-                lane = match['lane']
-                role = match['role']
-                timestamp = match['timestamp']
-                champ_name = get_champion_name(champion_key)
-                position = get_position(lane, role)
-                game_date = get_game_date(timestamp)
-                game_dict['champion_name'] = champ_name
-                game_dict['position'] = position
-                game_dict['date'] = game_date
-                game_dict['game_id'] = str(match['gameId'])
-                game_dict['champion'] = champion_key
-
-                game_info_list.append(game_dict)
-
-        except PageNotAnInteger:
-            games = paginator.page(1)
-        except EmptyPage:
-            games = paginator.page(paginator.num_pages)
+            game_info_list.append(game_dict)
 
         if ('load') in request.POST:
             gameId = (request.POST['load'])
             
-            game_data = game_summary(server, gameId)
+            game_data = game_summary(server, gameId, champ_json)
 
-            return render(request, 'riot/user-profile.html', {'user_account_info': user_account_info, 'ranked_stats': ranked_stats, "games": games, "game_info_list": game_info_list, 'game_data': game_data})
+            return render(request, 'riot/user-profile.html', {'user_account_info': user_account_info, 'ranked_stats': ranked_stats, "game_info_list": game_info_list, 'game_data': game_data})
 
         else:
-            return render(request, 'riot/user-profile.html', {'user_account_info': user_account_info, 'ranked_stats': ranked_stats, "games": games, "game_info_list": game_info_list})
+            return render(request, 'riot/user-profile.html', {'user_account_info': user_account_info, 'ranked_stats': ranked_stats, "game_info_list": game_info_list})
     
     return render(request, 'riot/user-profile.html', {'user_account_info': user_account_info, 'ranked_stats': ranked_stats})
 
@@ -91,63 +77,54 @@ def champ_info(request, server, summoner_name, champion_name):
         server = request.POST['server']
 
         return redirect("/"+server+"/"+summoner_name+"/")
-          
-    champ = get_champion_stats(server, summoner_name, champion_name)
+
+    champ_json = load_champ_json_session(request)
+
+    champ = get_champion_stats(server, summoner_name, champion_name, champ_json)
 
     server = champ['server']
     account_id = champ['accountId']
     champion_id = champ['championId'] 
     
     champ_games = get_champion_matchlist(server, account_id, champion_id)
-
-    page = request.GET.get('page', 1)
-    paginator = Paginator(champ_games, 20)
-
-    try:
-        games = paginator.page(page)
-        start = games.start_index() - 1
-
-        end = games.end_index()
         
-        game_info_list = []
+    game_info_list = []
 
-        for match in champ_games[start:end]:
+    for match in champ_games:
 
-            game_dict = {}
+        game_dict = {}
+        champ_name = get_champion_name(match['champion'], champ_json)
+        position = get_position(match['lane'], match['role'])
+        game_date = get_game_date(match['timestamp'])
+        game_dict['champion_name'] = champ_name
+        game_dict['position'] = position
+        game_dict['date'] = game_date
+        game_dict['game_id'] = str(match['gameId'])
+        game_dict['champion'] = match['champion']
 
-            champion_key = match['champion']
-            lane = match['lane']
-            role = match['role']
-            timestamp = match['timestamp']
-            champ_name = get_champion_name(champion_key)
-            position = get_position(lane, role)
-            game_date = get_game_date(timestamp)
-            game_dict['champion_name'] = champ_name
-            game_dict['position'] = position
-            game_dict['date'] = game_date
-            game_dict['game_id'] = str(match['gameId'])
-            game_dict['champion'] = champion_key
-
-            game_info_list.append(game_dict)
-
-    except PageNotAnInteger:
-        games = paginator.page(1)
-    except EmptyPage:
-        games = paginator.page(paginator.num_pages)
+        game_info_list.append(game_dict)
 
     if ('load') in request.POST:
         gameId = (request.POST['load'])
         
-        game_data = game_summary(server, gameId)
-        return render(request, 'riot/champ.html', {'champ': champ, "games": games, "game_info_list": game_info_list, 'game_data': game_data})
+        game_data = game_summary(server, gameId, champ_json)
+        return render(request, 'riot/champ.html', {'champ': champ, "game_info_list": game_info_list, 'game_data': game_data})
     
-    return render(request, 'riot/champ.html', {'champ': champ, "games": games, "game_info_list": game_info_list})
+    return render(request, 'riot/champ.html', {'champ': champ, "game_info_list": game_info_list})
 
 def in_game(request, server, summoner_name):
     user, stats = get_ranked_stats(server, summoner_name)
     summoner_id = stats['summonerId']
 
-    game_info, blue_players, red_players = in_game_info(server, summoner_id)
+    champ_json = load_champ_json_session(request)
+
+    game_info, blue_players, red_players = in_game_info(server, summoner_id, champ_json)
     game_info['summoner_name'] = summoner_name
     
     return render(request, 'riot/current.html', {'game_info': game_info, 'blue_players': blue_players, 'red_players': red_players})
+
+def entry_index(request, template='riot/user-profile.html'):
+    context = {
+        'game_info_list': Entry.objects.all(),
+    }
+    return render(request, template, context)
