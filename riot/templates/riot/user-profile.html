@@ -17,41 +17,7 @@
   </head>
 
   <body>
-    <nav class="navbar fixed-top navbar-expand-lg navbar-light" style="background-color: #e3f2fd;">
-
-      <div class="container-fluid">
-        <a class="navbar-brand" href="/">LOLDATA</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link active rounded home" href="/"> <i class="bi bi-house"></i> Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link rounded champion" href="#"> <i class="bi bi-trophy"></i> Champions</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link rounded live-game" href="#"> <i class="bi bi-broadcast"></i> Live-Game</a>
-            </li>
-          </ul>
-          <form class="d-flex" method="post">
-            {% csrf_token %}
-            <div class="input-group">
-              <input class="form" type="text" name="summoners_name" placeholder="Summoner name" aria-label="Search" style="padding-left: .5em;" required>
-              <select id="server" name="server" class="form-select">
-                <option value="EUW1" >EUW</option>
-                <option value="NA1" >NA</option>
-                <option value="EUN1" >EUN</option>
-                <option value="KR" >KR</option>
-              </select>
-              <button class="btn btn-outline-success" type="submit"><i class="bi bi-search"></i></button>
-          </div>
-          </form>
-        </div>
-      </div>
-    </nav>
+    {% include "riot/navbar.html" %}
 
     {% if user_account_info.success %}
       <main>
@@ -74,11 +40,12 @@
       </main>
       <div class="container" style="border:2px solid black;">
         <br>
+
         {% for game in game_info_list %}
           <span class="anchor" id="{{forloop.counter}}"></span>
           <div class="container" style="border:1px solid rgb(64, 97, 71);">
             <br>
-            <h4><a href="/{{user_account_info.server}}/{{ranked_stats.summonerName}}/{{game.champion_name}}/info">{{ game.champion_name }}</a> {{game.position}} {{game.date}} {{ game.game_id}}</h4>
+            <h4><a href="/{{user_account_info.server}}/{{ranked_stats.summonerName}}/{{game.champion_name}}/info">{{ game.champion_name }}</a> {{game.position}} {{game.date}} {{ game.game_id}} {{forloop.counter}}</h4>
 
             <form action="#{{forloop.counter}}" method="post">
             {% csrf_token %}
@@ -172,42 +139,7 @@
       </div>
       <br>
 
-      {% if games.has_other_pages %}
-      <nav aria-label="Page navigation example">
-        <ul class="pagination justify-content-center">
-          {% if games.has_previous %}
-            <li class="page-item">
-              <a class="page-link" href="?page={{ games.previous_page_number }}">&laquo;</a>
-            </li>
-          {% else %}
-            <li class="page-item disabled">
-              <a class="page-link">&laquo;</a>
-            </li>
-          {% endif %}
-
-          {% for i in games.paginator.page_range %}
-            {% if games.number == i %}
-              <li class="page-item active">
-                <a class="page-link"> {{ i }}</a>
-              </li>
-            {% else %}
-              <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
-            {% endif %}
-          {% endfor %}
-
-          {% if games.has_next %}
-            <li class="page-item">
-              <a class="page-link" href="?page={{ games.next_page_number }}">&raquo;</a>
-            </li>
-          {% else %}
-            <li class="page-item disabled">
-              <a class="page-link">&raquo;</a>
-            </li>
-          {% endif %}
-        </ul>
-      </nav>
-      {% endif %}
-
+  
     {% elif user_account_info.user_not_found %}
       <p>Summoner not found</strong></p>
     {% endif %}
