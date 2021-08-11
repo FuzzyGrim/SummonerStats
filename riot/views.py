@@ -20,7 +20,7 @@ def index(request):
 
     return render(request, 'riot/index.html', {'user': user})
 
-def user_info(request, server, summoner_name):
+def user_info(request, server, summoner_name, template='riot/user-profile.html'):
     """
     Get the main data of player from the summoner name and server
     """
@@ -59,6 +59,13 @@ def user_info(request, server, summoner_name):
 
             game_info_list.append(game_dict)
 
+        context = {'game_info_list': game_info_list,
+                    'user_account_info': user_account_info, 
+                   'ranked_stats': ranked_stats, 
+        }
+        if request.is_ajax():
+            template = 'riot/include/user-profile-page.html'
+
         if ('load') in request.POST:
             gameId = (request.POST['load'])
             
@@ -67,7 +74,7 @@ def user_info(request, server, summoner_name):
             return render(request, 'riot/user-profile.html', {'user_account_info': user_account_info, 'ranked_stats': ranked_stats, "game_info_list": game_info_list, 'game_data': game_data})
 
         else:
-            return render(request, 'riot/user-profile.html', {'user_account_info': user_account_info, 'ranked_stats': ranked_stats, "game_info_list": game_info_list})
+            return render(request, template, context)
     
     return render(request, 'riot/user-profile.html', {'user_account_info': user_account_info, 'ranked_stats': ranked_stats})
 
@@ -122,9 +129,3 @@ def in_game(request, server, summoner_name):
     game_info['summoner_name'] = summoner_name
     
     return render(request, 'riot/current.html', {'game_info': game_info, 'blue_players': blue_players, 'red_players': red_players})
-
-def entry_index(request, template='riot/user-profile.html'):
-    context = {
-        'game_info_list': Entry.objects.all(),
-    }
-    return render(request, template, context)
