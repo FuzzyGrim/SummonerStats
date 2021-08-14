@@ -19,27 +19,8 @@
 }
 
 main{
-    text-align: center;
-    margin-top: 6em;
-  }
-
-main > form > .input-group > .input-form {
-  width: 20em;
-}
-
-/* make input box smaller for mobile phones */
-@media only screen and (max-width: 460px) {
-  main > form > .input-group > .input-form { 
-    width: 15em;
-  }
-}
-
-.user-not-found {
-  display: flex;
-  width: 100vw;
-  height: 100vh;
-  justify-content: center;
-  align-items: center;
+  text-align: center;
+  padding-top: 6em;
 }
 
 .anchor {

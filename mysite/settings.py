@@ -71,6 +71,16 @@ TEMPLATES = [
     },
 ]
 
+# El-pagination settings
+EL_PAGINATION_PER_PAGE = 20   # How many objects are normally displayed in a page
+# If you use the default show_more template, here you can customize the content of the loader hidden element. HTML is safe here.
+EL_PAGINATION_LOADING = """<div class="d-flex justify-content-center">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                           <br>"""
+
 WSGI_APPLICATION = 'mysite.wsgi.application'
 
 

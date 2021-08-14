@@ -13,22 +13,30 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
 
-    <title>{{ ranked_stats.summonerName }}</title>
+    <title>{{ user_account_info.name }}</title>
   </head>
 
   <body>
     {% include "riot/include/navbar.html" %}
 
+    {% if user_account_info.user_not_found %}
+      <main>
+        <h2>Oh no! We couldn't find summoner "{{ user_account_info.name }}"</h2>
+        <h4>Please double check your spelling or the region selected</h4>
+      </main>
+
+    {% elif user_account_info.success %}
+
       <main>
         <h1>RIOT API</h1>
 
-        <p><strong>{{ ranked_stats.summonerName }}</strong> </p>   
+        <p><strong>{{ user_account_info.name }}</strong> </p>   
         
-        {%if ranked_stats.no_games %}
+        {%if summoner_stats.no_games %}
           <p>Unranked</p>
         {% else %}
-          <p>Tier: <strong>{{ ranked_stats.tier }} {{ ranked_stats.rank }}</strong></p>    
-          <p>Winrate (ranked): <strong>W: {{ ranked_stats.wins }} / L: {{ ranked_stats.losses }} ({{ranked_stats.win_rate }}%)</strong></p>
+          <p>Tier: <strong>{{ summoner_stats.tier }} {{ summoner_stats.rank }}</strong></p>    
+          <p>Winrate (ranked): <strong>W: {{ summoner_stats.wins }} / L: {{ summoner_stats.losses }} ({{summoner_stats.win_rate }}%)</strong></p>
         {% endif %}
         <a href='/{{user_account_info.server}}/{{user_account_info.name}}/In-Game' class="btn btn-primary" role="button" >In-Game</a>
         <p>Level: <strong>{{ user_account_info.summonerLevel }}</strong></p>    
@@ -43,19 +51,19 @@
 
         <!-- Twitter-style Pagination -->
         {% block js %}
-        <script src="http://code.jquery.com/jquery-latest.js"></script>
+        <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
         <script src="{% static 'js/el-pagination.js' %}"></script>
         <script>
           $.endlessPaginate({
               paginateOnScroll: true,
-              paginateOnScrollMargin: 100
+              paginateOnScrollMargin: 500
           });
         </script>
         {% endblock %}
         <!-- Twitter-style Pagination -->
       </div>
-      <br>
-
+      br>
+    {% endif %}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 
   </body>
