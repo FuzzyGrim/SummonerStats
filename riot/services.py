@@ -1,4 +1,4 @@
-# A file that contains functions that consists of code that will be used multiple times in views.py
+# Contains functions that consists of code that will be used multiple times in views.py
 from riot import api_interaction
 
 def load_champ_json_session(request):
@@ -22,7 +22,7 @@ def get_game_summary_list(games, champ_json):
     for match in games:
         game_dict = {}
         champ_name = api_interaction.get_champion_name(match['champion'], champ_json)
-        position = api_interaction.get_position(match['lane'], match['role'])
+        position, order = api_interaction.get_position(match['lane'], match['role'])
         game_date = api_interaction.get_game_date(match['timestamp'])
         game_dict['champion_name'] = champ_name
         game_dict['position'] = position
