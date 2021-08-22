@@ -1,0 +1,98 @@
+{% load el_pagination_tags %}
+{% lazy_paginate game_summary_list %}
+{% for game in game_summary_list %}
+    <span class="anchor" id="{{forloop.counter}}"></span>
+    <div class="container" style="border:1px solid rgb(64, 97, 71);">
+    <br>
+    <h4><a href="/{{user_account_info.server}}/{{user_account_info.name}}/{{game.champion_name}}">{{ game.champion_name }}</a> {{game.position}} {{game.date}} {{ game.game_id}}</h4>
+
+    <form action="#{{forloop.counter}}" method="post">
+    {% csrf_token %}
+    <button name="load" type="submit" value="{{game.game_id}}" class="btn btn-info">Show game summary</button>
+    </form>
+    <br>
+        
+    <div id="load_more">
+        {% if game_data.success %}
+        {% if game_data.game_id == game.game_id %}
+            <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">Game ID</th>
+                    <th scope="col">Server</th>
+                    <th scope="col">When</th>
+                    <th scope="col">Duration</th>
+                    <th scope="col">Game Mode</th>
+                    <th scope="col">Patch</th>
+                </tr>
+            </thead>
+    
+            <tbody>
+                <tr>
+                    <td>{{ game_data.gameId }}</td>
+                    <td>{{ game_data.platformId }}</td>
+                    <td>{{ game_data.gameCreation }}</td>
+                    <td>{{ game_data.gameDuration }}</td>
+                    <td>{{ game_data.gameMode }}</td>
+                    <td>{{ game_data.gameVersion }}</td>
+                </tr>
+            </tbody>
+    
+            <thead>
+                <tr>
+                    <th scope="col">{{ game_data.teams.0.win }} (Blue Team)</th>
+                    <th scope="col">Rank</th>
+                    <th scope="col">KDA</th>
+                    <th scope="col">Damage</th>
+                    <th scope="col">CS</th>
+                    <th scope="col">Vision Score</th>
+                
+                </tr>
+            </thead>
+            
+            <tbody>
+                {% for player in game_data.participants|slice:":5" %}
+                <tr >
+                    <td>{{ player.champion_name }}/<a href="/{{user_account_info.server}}/{{player.summoner_name}}"> {{ player.summoner_name }}</a></td>
+                    <td>{{ player.tier }}</a></td>
+                    <td>{{ player.stats.kills }}/{{ player.stats.deaths }}/{{ player.stats.assists }}</td>
+                    <td>{{ player.stats.totalDamageDealtToChampions }}</td>
+                    <td>{{ player.stats.totalMinionsKilled }}</td>
+                    <td>{{ player.stats.visionScore }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+    
+            <thead>
+                <tr>
+                    <th scope="col">{{ game_data.teams.1.win }} (Red Team)</th>
+                    <th scope="col">Rank</th>
+                    <th scope="col">KDA</th>
+                    <th scope="col">Damage</th>
+                    <th scope="col">CS</th>
+                    <th scope="col">Vision Score</th>
+                
+                </tr>
+            </thead>
+            
+            <tbody>
+                {% for player in game_data.participants|slice:"5:" %}
+                    <tr>
+                    <td>{{ player.champion_name }}/<a href="/{{user_account_info.server}}/{{player.summoner_name}}"> {{ player.summoner_name }}</a></td>
+                    <td>{{ player.tier }}</a></td>
+                    <td>{{ player.stats.kills }}/{{ player.stats.deaths }}/{{ player.stats.assists }}</td>
+                    <td>{{ player.stats.totalDamageDealtToChampions }}</td>
+                    <td>{{ player.stats.totalMinionsKilled }}</td>
+                    <td>{{ player.stats.visionScore }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+            </table>
+            <br>
+        {% endif %}
+        {% endif %}
+    </div>
+    </div>
+    <br>
+{% endfor %}
+{% show_more %}

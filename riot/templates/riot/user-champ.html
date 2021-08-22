@@ -1,0 +1,68 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'riot/record.css' %}">
+
+{% block content %}
+<html lang="en">
+  <head>
+      <title>{{ user_account_info.name }}: {{ summoner_stats.champ_name }}</title>
+
+      <!-- Required meta tags -->
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+
+      <!-- Bootstrap CSS -->
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+      
+  </head>
+
+
+  <body>
+    {% include "riot/include/navbar.html" %}
+    {% if user_account_info.user_not_found %}
+      <main>
+        <h2>Oh no! We couldn't find summoner "{{ user_account_info.name }}"</h2>
+        <h4>Please double check your spelling or the region selected</h4>
+      </main>
+
+    {% elif user_account_info.success %}
+      <main>
+        <h1>RIOT API</h1>
+
+        <p><strong>{{ user_account_info.name }}</strong> </p>    
+        <p>Summoner ID: <strong>{{ summoner_stats.summonerId }}</strong></p>    
+        <p>Account ID: <strong>{{ summoner_stats.accountId }}</strong></p>    
+        <p>Champion name: <strong>{{ summoner_stats.champ_name }}</strong></p>
+        <p>Champion id: <strong>{{ summoner_stats.championId }}</strong></p>
+        <p>Champion mastery: <strong>{{ summoner_stats.championLevel }}</strong></p>
+        <p>Champion points: <strong>{{ summoner_stats.championPoints }}</strong></p>
+        <p>Last time: <strong>{{ summoner_stats.last_time }}</strong></p>
+
+      </main>
+
+      <div class="container" style="border:2px solid black;">
+        <br>
+        {% include "riot/include/user-profile-page.html" %}
+
+        <!-- Twitter-style Pagination -->
+        {% block js %}
+        <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+        <script src="{% static 'js/el-pagination.js' %}"></script>
+        <script>
+          $.endlessPaginate({
+              paginateOnScroll: true,
+              paginateOnScrollMargin: 500
+          });
+        </script>
+        {% endblock %}
+        <!-- Twitter-style Pagination -->
+      </div>
+      br>
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+  </body>
+</html>
+{% endblock %}

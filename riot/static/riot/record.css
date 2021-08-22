@@ -3,7 +3,7 @@
   src: url(../fonts/aquire-font/Aquire.otf);
 }
 
-/* Remove margin of form in navbar */
+/* Remove margin of form in navbar to align with text on the left*/
 .d-flex{
   margin: 0;
  }
@@ -19,25 +19,10 @@
 }
 
 main{
-    text-align: center;
-    margin-top: 6em;
-  }
-
-main > form > .input-group > .input-form {
-  width: 20em;
+  text-align: center;
+  padding-top: 6em;
 }
 
-/* make input box smaller for mobile phones */
-@media only screen and (max-width: 460px) {
-  main > form > .input-group > .input-form { 
-    width: 15em;
-  }
-}
-
-.user-not-found {
-  display: flex;
-  width: 100vw;
-  height: 100vh;
-  justify-content: center;
-  align-items: center;
+.anchor {
+  scroll-margin-top: 8em;
 }
