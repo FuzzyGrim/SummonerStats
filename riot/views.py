@@ -146,6 +146,6 @@ def in_game(request, server, summoner_name):
 
 def getGameData(request, server, summoner_name, gameId):
     champ_json = services.load_champ_json_session(request)
-    game_data = api_interaction.game_summary(server, gameId, champ_json)
+    game_data = services.load_game_summary(request, server, gameId, champ_json)
 
     return JsonResponse(game_data)

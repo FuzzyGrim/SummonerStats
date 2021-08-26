@@ -16,6 +16,16 @@ def load_champ_json_session(request):
         champ_json = request.session['ddragon_champion_json']
     return champ_json
 
+def load_game_summary(request, server, gameId, champ_json):
+    if gameId in request.session:
+        game_data = request.session[gameId]
+
+    else:
+        request.session[gameId] = api_interaction.game_summary(server, gameId, champ_json)
+        request.session.set_expiry(0)
+        game_data = request.session[gameId]
+    return game_data
+
 def get_game_summary_list(games, champ_json):
     game_summary_list = []
 
