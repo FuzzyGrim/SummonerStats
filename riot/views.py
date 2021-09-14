@@ -4,6 +4,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from riot import api_interaction
 from riot import services
 
+
 def index(request):
 
     user = {}
@@ -83,7 +84,6 @@ def champ_info(
     )
 
     if user_account_info["success"]:
-        server = summoner_stats["server"]
         account_id = summoner_stats["accountId"]
         champion_id = summoner_stats["championId"]
 
@@ -102,15 +102,9 @@ def champ_info(
         if request.is_ajax():
             template = "riot/include/user-profile-page.html"
 
-        if ("load") in request.POST:
-            gameId = request.POST["load"]
-
-            game_data = api_interaction.game_summary(server, gameId, champ_json)
-            context["game_data"] = game_data
-            return render(request, template, context)
-
         return render(request, template, context)
 
+    # If user not found
     else:
         # Add summoner name searched to display error message indicating that this summoner does not exist
         user_account_info["name"] = summoner_name
@@ -144,7 +138,7 @@ def in_game(request, server, summoner_name):
     )
 
 
-def getGameData(request, server, summoner_name, gameId):
+def getGameData(request, server, summoner_name, gameId, champion_name = ''):
     champ_json = services.load_champ_json_session(request)
     game_data = services.load_game_summary(request, server, gameId, champ_json)
 

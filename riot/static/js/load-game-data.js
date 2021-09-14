@@ -1,7 +1,7 @@
 var dict = new Object();
 function loadGameData(gameId) {
 $.ajax({
-    url : gameId, // the endpoint
+    url : "tmp/" + gameId, // the endpoint
     method: "GET",
     start_time: new Date().getTime(),
     beforeSend: function(){
