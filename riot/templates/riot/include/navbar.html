@@ -20,15 +20,19 @@
         <form class="d-flex" method="post">
           {% csrf_token %}
           <div class="input-group">
-            <input class="form" type="text" name="summoners_name" placeholder="Summoner name" aria-label="Search" style="padding-left: .5em;" required>
-            <select id="server" name="server" class="form-select">
-              <option value="EUW1" >EUW</option>
-              <option value="NA1" >NA</option>
-              <option value="EUN1" >EUN</option>
-              <option value="KR" >KR</option>
-            </select>
-            <button class="btn btn-outline-success" type="submit"><i class="bi bi-search"></i></button>
-        </div>
+            <div class="col-md-auto">
+              <select id="server" name="server" class="form-select rounded-0 border-0 bg-light">
+                <option value="EUW1" >EUW</option>
+                <option value="NA1" >NA</option>
+                <option value="EUN1" >EUN</option>
+                <option value="KR" >KR</option>
+              </select>
+              </div>
+            <div class="col">
+              <input class="form-control rounded-0 border-0" type="text" name="summoners_name" placeholder="Summoner name" aria-label="Search" required>
+            </div>
+            <button class="btn bg-white text-dark rounded-0" type="submit"><i class="bi bi-search"></i></button>
+          </div>
         </form>
       </div>
     </div>

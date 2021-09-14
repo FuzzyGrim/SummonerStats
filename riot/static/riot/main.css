@@ -9,11 +9,6 @@ body {
   -moz-background-size: cover;
   -o-background-size: cover;
   background-size: cover;
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  height: 100%;
-  width: 100%;
  }
 
 /* Remove margin of form in navbar */
@@ -35,15 +30,4 @@ main > h1 {
   font-family: 'Aquire';
   text-align: center;
   font-size: 5em;
-}
-
-main > form > .input-group > .input-form {
-  width: 20em;
-}
-
-/* make input box smaller for mobile phones */
-@media only screen and (max-width: 460px) {
-  main > form > .input-group > .input-form { 
-    width: 15em;
-  }
 }
