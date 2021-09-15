@@ -1,5 +1,5 @@
 # Contains functions that consists of code that will be used multiple times in views.py
-from riot import api_interaction
+from api import api_interaction
 
 def load_champ_json_session(request):
     if 'patch' in request.session:

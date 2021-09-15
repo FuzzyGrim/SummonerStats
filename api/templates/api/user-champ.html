@@ -1,6 +1,6 @@
 {% load static %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'riot/record.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/record.css' %}">
 
 {% block content %}
 <html lang="en">
@@ -19,7 +19,7 @@
 
 
   <body>
-    {% include "riot/include/navbar.html" %}
+    {% include "api/include/navbar.html" %}
     {% if user_account_info.user_not_found %}
       <main>
         <h2>Oh no! We couldn't find summoner "{{ user_account_info.name }}"</h2>
@@ -28,7 +28,7 @@
 
     {% elif user_account_info.success %}
       <main>
-        <h1>RIOT API</h1>
+        <h1>LOLDATA</h1>
 
         <p><strong>{{ user_account_info.name }}</strong> </p>    
         <p>Summoner ID: <strong>{{ summoner_stats.summonerId }}</strong></p>    
@@ -43,7 +43,7 @@
 
       <div class="container" style="border:2px solid black;">
         <br>
-        {% include "riot/include/user-profile-page.html" %}
+        {% include "api/include/user-profile-page.html" %}
 
         <!-- Twitter-style Pagination -->
         {% block js %}

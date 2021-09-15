@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from riot import api_interaction
-from riot import services
+from api import api_interaction
+from api import services
 
 
 def index(request):
@@ -17,10 +17,10 @@ def index(request):
 
     services.load_champ_json_session(request)
 
-    return render(request, "riot/index.html", {"user": user})
+    return render(request, "api/index.html", {"user": user})
 
 
-def user_info(request, server, summoner_name, template="riot/user-profile.html"):
+def user_info(request, server, summoner_name, template="api/user-profile.html"):
     """
     Get the main data of player from the summoner name and server
     """
@@ -52,7 +52,7 @@ def user_info(request, server, summoner_name, template="riot/user-profile.html")
         }
 
         if request.is_ajax():
-            template = "riot/include/user-profile-page.html"
+            template = "api/include/user-profile-page.html"
 
         return render(request, template, context)
 
@@ -69,7 +69,7 @@ def user_info(request, server, summoner_name, template="riot/user-profile.html")
 
 
 def champ_info(
-    request, server, summoner_name, champion_name, template="riot/user-champ.html"
+    request, server, summoner_name, champion_name, template="api/user-champ.html"
 ):
     # If user submits the form, it will redirect to the user profile page
     if ("summoners_name" and "server") in request.POST:
@@ -100,7 +100,7 @@ def champ_info(
         }
 
         if request.is_ajax():
-            template = "riot/include/user-profile-page.html"
+            template = "api/include/user-profile-page.html"
 
         return render(request, template, context)
 
@@ -129,7 +129,7 @@ def in_game(request, server, summoner_name):
 
     return render(
         request,
-        "riot/current.html",
+        "api/current.html",
         {
             "game_info": game_info,
             "blue_players": blue_players,

@@ -1,7 +1,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
-  <h3 align="center">Riot API Django</h3>
+  <h3 align="center">LOLDATA</h3>
 
   <p align="center">
     Sample description

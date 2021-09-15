@@ -1,6 +1,6 @@
 {% load static %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'riot/record.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/record.css' %}">
 {% block content %}
 <!doctype html>
 <html lang="en">
@@ -17,7 +17,7 @@
   </head>
 
   <body>
-    {% include "riot/include/navbar.html" %}
+    {% include "api/include/navbar.html" %}
 
     {% if user_account_info.user_not_found %}
       <main>
@@ -28,7 +28,7 @@
     {% elif user_account_info.success %}
 
       <main>
-        <h1>RIOT API</h1>
+        <h1>LOLDATA</h1>
 
         <p><strong>{{ user_account_info.name }}</strong> </p>   
         
@@ -47,7 +47,7 @@
       </main>
       <div class="container" style="border:2px solid black;">
         <br>
-        {% include "riot/include/user-profile-page.html" %}
+        {% include "api/include/user-profile-page.html" %}
 
         <!-- Twitter-style Pagination -->
         {% block js %}
