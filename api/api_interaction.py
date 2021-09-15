@@ -83,7 +83,7 @@ def get_ranked_stats(server, summoner_name):
         stats_json = response.json()
 
         try:
-            stats_json = stats_json[0]
+            stats_json = next(item for item in stats_json if item["queueType"] == "RANKED_SOLO_5x5")
 
             # Total games = number of wins + number of defeats
             total_games = int(stats_json["wins"]) + int(stats_json["losses"])
@@ -159,6 +159,7 @@ def get_champion_key(champion_name, champ_json):
 
 
 def get_ddragon_champion_json(patch):
+    print(patch)
     request = requests.get(
         "https://ddragon.leagueoflegends.com/cdn/" + patch + "/data/en_US/champion.json"
     )
