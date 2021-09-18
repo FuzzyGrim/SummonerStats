@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from api import api_interaction
-from api import services
+from api.utils import api_interaction
+from api.utils import sessions
+from api.utils import helpers
 
 
 def index(request):
@@ -15,7 +16,7 @@ def index(request):
         server = request.POST["server"]
         return redirect("/" + server + "/" + summoner_name + "/")
 
-    services.load_champ_json_session(request)
+    sessions.load_champ_json_session(request)
 
     return render(request, "api/index.html", {"user": user})
 
@@ -41,9 +42,9 @@ def user_info(request, server, summoner_name, template="api/user-profile.html"):
 
         games_list = api_interaction.get_past_games(server, account_id)
 
-        champ_json = services.load_champ_json_session(request)
+        champ_json = sessions.load_champ_json_session(request)
 
-        game_summary_list = services.get_game_summary_list(games_list, champ_json)
+        game_summary_list = helpers.get_game_summary_list(games_list, champ_json)
 
         context = {
             "game_summary_list": game_summary_list,
@@ -77,7 +78,7 @@ def champ_info(
         server = request.POST["server"]
         return redirect("/" + server + "/" + summoner_name + "/")
 
-    champ_json = services.load_champ_json_session(request)
+    champ_json = sessions.load_champ_json_session(request)
 
     user_account_info, summoner_stats = api_interaction.get_champion_stats(
         server, summoner_name, champion_name, champ_json
@@ -87,11 +88,11 @@ def champ_info(
         account_id = summoner_stats["accountId"]
         champion_id = summoner_stats["championId"]
 
-        champ_games = api_interaction.get_champion_matchlist(
+        champ_games = api_interaction.get_past_games(
             server, account_id, champion_id
         )
 
-        game_summary_list = services.get_game_summary_list(champ_games, champ_json)
+        game_summary_list = helpers.get_game_summary_list(champ_games, champ_json)
 
         context = {
             "summoner_stats": summoner_stats,
@@ -120,7 +121,7 @@ def in_game(request, server, summoner_name):
     user, stats = api_interaction.get_ranked_stats(server, summoner_name)
     summoner_id = stats["summonerId"]
 
-    champ_json = services.load_champ_json_session(request)
+    champ_json = sessions.load_champ_json_session(request)
 
     game_info, blue_players, red_players = api_interaction.in_game_info(
         server, summoner_id, champ_json
@@ -139,7 +140,7 @@ def in_game(request, server, summoner_name):
 
 
 def getGameData(request, server, summoner_name, gameId, champion_name = ''):
-    champ_json = services.load_champ_json_session(request)
-    game_data = services.load_game_summary(request, server, gameId, champ_json)
+    champ_json = sessions.load_champ_json_session(request)
+    game_data = sessions.load_game_summary(request, server, gameId, champ_json)
 
     return JsonResponse(game_data)
