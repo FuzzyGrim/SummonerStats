@@ -4,6 +4,7 @@ import requests
 from decouple import config
 import aiohttp
 import asyncio
+from pprint import pprint
 
 API_KEY = config("API")
 
@@ -78,32 +79,75 @@ def get_position(lane, role):
 def get_game_summary_list(games, champ_json, puuid=None):
     game_summary_list = []
 
-    for match in games:
-        game_dict = {}
-        platform = (match.split("_"))[0]
-        region = get_region_by_platform(platform)
-        URL = "https://" + region + ".api.riotgames.com/lol/match/v5/matches/" + match + "?api_key=" + API_KEY
-        game_json = get_response_json(URL)
-        participant_number = 0
-        for player in game_json["metadata"]["participants"]:
+    # for match in games:
+    #     game_dict = {}
+    platform = (games[0].split("_"))[0]
+    region = get_region_by_platform(platform)
+    #     URL = "https://" + region + ".api.riotgames.com/lol/match/v5/matches/" + match + "?api_key=" + API_KEY
+    #     game_json = get_response_json(URL)
+    game_summary_list = asyncio.run(get_match_preview(region, games, puuid))
+        # participant_number = 0
+        # for player in game_json["metadata"]["participants"]:
 
-            if player == puuid:
-                break
-            else:
-                participant_number += 1
+        #     if player == puuid:
+        #         break
+        #     else:
+        #         participant_number += 1
 
-        player_json = game_json["info"]["participants"][participant_number]
-        champ_name = player_json["championName"]
-        position = player_json["teamPosition"]
-        game_date = get_date_by_timestamp(game_json["info"]['gameCreation'])
-        game_dict['champion_name'] = champ_name
-        game_dict['position'] = position
-        game_dict['date'] = game_date
-        game_dict['game_id'] = str(game_json["metadata"]['matchId'])
+        # player_json = game_json["info"]["participants"][participant_number]
+        # champ_name = player_json["championName"]
+        # position = player_json["teamPosition"]
+        # game_date = get_date_by_timestamp(game_json["info"]['gameCreation'])
+        # game_dict['champion_name'] = champ_name
+        # game_dict['position'] = position
+        # game_dict['date'] = game_date
+        # game_dict['game_id'] = str(game_json["metadata"]['matchId'])
         
-        game_summary_list.append(game_dict)
+        # game_summary_list.append(game_dict)
 
     return game_summary_list
+
+
+async def get_match_preview (region, games, puuid):
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+
+        for match in games:
+            URL = "https://" + region + ".api.riotgames.com/lol/match/v5/matches/" + match + "?api_key=" + API_KEY
+
+            tasks.append(asyncio.ensure_future(get_preview(session, URL)))
+
+         
+        preview_list = await asyncio.gather(*tasks)
+        game_summary_list = []
+        for match in preview_list:
+            participant_number = 0
+            game_dict = {}
+            for player in match["metadata"]["participants"]:
+
+                if player == puuid:
+                    break
+                else:
+                    participant_number += 1
+
+            player_json = match["info"]["participants"][participant_number]
+            champ_name = player_json["championName"]
+            position = player_json["teamPosition"]
+            game_date = get_date_by_timestamp(match["info"]['gameCreation'])
+            game_dict['champion_name'] = champ_name
+            game_dict['position'] = position
+            game_dict['date'] = game_date
+            game_dict['game_id'] = str(match["metadata"]['matchId'])
+            game_summary_list.append(game_dict)
+
+    return game_summary_list
+
+async def get_preview(session, url):
+    async with session.get(url) as response:
+        print(response.status)
+        stats_json = await response.json()
+        return stats_json
+
 
 def get_region_by_platform(platform):
     if platform == "NA1" or platform == "BR1" or platform == "LA1" or platform == "LA2" or platform == "OC1":
