@@ -1,6 +1,11 @@
 # Helper functions that doesn´t interact with riot API
 import datetime
 import requests
+from decouple import config
+import aiohttp
+import asyncio
+
+API_KEY = config("API")
 
 def get_response_json(URL):
     return requests.get(URL).json()
@@ -70,20 +75,45 @@ def get_position(lane, role):
 
     return position, order
 
-def get_game_summary_list(games, champ_json):
+def get_game_summary_list(games, champ_json, puuid=None):
     game_summary_list = []
 
     for match in games:
         game_dict = {}
-        champ_name = get_champion_name(match['champion'], champ_json)
-        position, order = get_position(match['lane'], match['role'])
-        game_date = get_date_by_timestamp(match['timestamp'])
+        platform = (match.split("_"))[0]
+        region = get_region_by_platform(platform)
+        URL = "https://" + region + ".api.riotgames.com/lol/match/v5/matches/" + match + "?api_key=" + API_KEY
+        game_json = get_response_json(URL)
+        participant_number = 0
+        for player in game_json["metadata"]["participants"]:
+
+            if player == puuid:
+                break
+            else:
+                participant_number += 1
+
+        player_json = game_json["info"]["participants"][participant_number]
+        champ_name = player_json["championName"]
+        position = player_json["teamPosition"]
+        game_date = get_date_by_timestamp(game_json["info"]['gameCreation'])
         game_dict['champion_name'] = champ_name
         game_dict['position'] = position
         game_dict['date'] = game_date
-        game_dict['game_id'] = str(match['gameId'])
-        game_dict['champion'] = match['champion']
-
+        game_dict['game_id'] = str(game_json["metadata"]['matchId'])
+        
         game_summary_list.append(game_dict)
 
     return game_summary_list
+
+def get_region_by_platform(platform):
+    if platform == "NA1" or platform == "BR1" or platform == "LA1" or platform == "LA2" or platform == "OC1":
+        region = "AMERICAS"
+        return region
+
+    elif platform == "EUN1" or platform == "EUW1" or platform == "TR1" or platform == "RU":
+        region = "EUROPE"
+        return region
+        
+    elif platform == "KR" or platform == "JP1":
+        region = "ASIA"
+        return region

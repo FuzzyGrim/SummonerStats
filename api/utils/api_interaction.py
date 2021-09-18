@@ -110,12 +110,12 @@ def get_ranked_stats(server, summoner_name):
     return user_json, stats_json
 
 
-def get_past_games(server, account_id, champion_id=None):
+def get_matchlist(server, puuid, champion_id=None):
     """Request: https://SERVER.api.riotgames.com/lol/match/v4/matchlists/by-account/ACCOUND_ID
 
     Args:
         server              (string)    Player's region
-        account_id          (string)    Summoner name
+        account_id          (string)    
 
     Returns:
         JSON with list of dictionaries with:
@@ -129,6 +129,8 @@ def get_past_games(server, account_id, champion_id=None):
             timestamp 	    (long)      Unix timestamp
     """
 
+    server = helpers.get_region_by_platform(server)
+
     # If user is requesting for match history with certain champion    
     if champion_id:
         champion_id = str(champion_id)
@@ -136,7 +138,7 @@ def get_past_games(server, account_id, champion_id=None):
             "https://"
             + server
             + ".api.riotgames.com/lol/match/v4/matchlists/by-account/"
-            + account_id
+            + puuid
             + "?champion="
             + champion_id
             + "&api_key="
@@ -147,15 +149,14 @@ def get_past_games(server, account_id, champion_id=None):
         URL = (
             "https://"
             + server
-            + ".api.riotgames.com/lol/match/v4/matchlists/by-account/"
-            + account_id
-            + "?api_key="
+            + ".api.riotgames.com/lol/match/v5/matches/by-puuid/"
+            + puuid
+            + "/ids?start=0&count=10&api_key="
             + API_KEY
         )
 
-    old_games_json = helpers.get_response_json(URL)
-    old_games_json = old_games_json["matches"]
-    return old_games_json
+    matchlist_json = helpers.get_response_json(URL)
+    return matchlist_json
 
 
 def get_champion_stats(server, summoner_name, champion_name, champ_json):

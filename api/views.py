@@ -38,13 +38,11 @@ def user_info(request, server, summoner_name, template="api/user-profile.html"):
 
     if user_account_info["success"]:
 
-        account_id = user_account_info["accountId"]
-
-        games_list = api_interaction.get_past_games(server, account_id)
+        games_list = api_interaction.get_matchlist(server, user_account_info["puuid"])
 
         champ_json = sessions.load_champ_json_session(request)
 
-        game_summary_list = helpers.get_game_summary_list(games_list, champ_json)
+        game_summary_list = helpers.get_game_summary_list(games_list, champ_json, user_account_info["puuid"])
 
         context = {
             "game_summary_list": game_summary_list,
@@ -69,9 +67,7 @@ def user_info(request, server, summoner_name, template="api/user-profile.html"):
         return render(request, template, context)
 
 
-def champ_info(
-    request, server, summoner_name, champion_name, template="api/user-champ.html"
-):
+def champ_info(request, server, summoner_name, champion_name, template="api/user-champ.html"):
     # If user submits the form, it will redirect to the user profile page
     if ("summoners_name" and "server") in request.POST:
         summoner_name = request.POST["summoners_name"]
@@ -88,7 +84,7 @@ def champ_info(
         account_id = summoner_stats["accountId"]
         champion_id = summoner_stats["championId"]
 
-        champ_games = api_interaction.get_past_games(
+        champ_games = api_interaction.get_matchlist(
             server, account_id, champion_id
         )
 
