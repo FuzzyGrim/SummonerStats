@@ -45,12 +45,21 @@ def user_info(request,
 
     if user_account_info["success"]:
 
-        games_list = api_interaction.get_matchlist(server, user_account_info["puuid"])
+        games_list = api_interaction.get_matchlist(
+                            server, user_account_info["puuid"])
+
+        # Add match id to database if it's not in there
+        for match in games_list:
+            if not Match.objects.filter(match_id=match).exists():
+                match_object = Match(match_id=match)
+                match_object.save()
 
         champ_json = sessions.load_champ_json_session(request)
 
-        game_summary_list = helpers.get_game_summary_list(games_list, champ_json, user_account_info["puuid"])
-
+        game_summary_list = helpers.get_game_summary_list(
+            games_list, champ_json, user_account_info["puuid"]
+        )
+        
         context = {
             "game_summary_list": game_summary_list,
             "user_account_info": user_account_info,

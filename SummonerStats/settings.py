@@ -65,14 +65,14 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "django.template.context_processors.request",  ## For EL-pagination
+                "django.template.context_processors.request",  # EL-pagination
             ],
         },
     },
 ]
 
 # El-pagination settings
-EL_PAGINATION_PER_PAGE = 3  # How many objects are normally displayed in a page
+EL_PAGINATION_PER_PAGE = 10  # How many objects are normally displayed in a page
 # If you use the default show_more template, here you can customize the content of the loader hidden element. HTML is safe here.
 EL_PAGINATION_LOADING = """<div class="d-flex justify-content-center">
                                 <div class="spinner-border" role="status">
@@ -94,6 +94,10 @@ DATABASES = {
     }
 }
 
+# Default primary key field type
+# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
