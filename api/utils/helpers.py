@@ -4,12 +4,13 @@ import requests
 from decouple import config
 import aiohttp
 import asyncio
-from pprint import pprint
 
 API_KEY = config("API")
 
+
 def get_response_json(URL):
     return requests.get(URL).json()
+
 
 def get_date_by_timestamp(timestamp):
 
@@ -25,6 +26,7 @@ def get_date_by_timestamp(timestamp):
 
     return game_date
 
+
 def get_champion_name(champion_key, champ_json):
 
     key = str(champion_key)
@@ -33,26 +35,32 @@ def get_champion_name(champion_key, champ_json):
 
     return champ_name
 
+
 def get_champion_key(champion_name, champ_json):
     by_id = {x["id"]: x for x in champ_json.values()}
     champ_key = by_id.get(champion_name)["key"]
 
     return champ_key
 
+
 def get_ddragon_champion_json(patch):
     request = requests.get(
-        "https://ddragon.leagueoflegends.com/cdn/" + patch + "/data/en_US/champion.json"
+        "https://ddragon.leagueoflegends.com/cdn/" + patch +
+        "/data/en_US/champion.json"
     )
     json = request.json()
     champion_json = json["data"]
 
     return champion_json
 
+
 def get_current_patch():
-    request = requests.get("https://ddragon.leagueoflegends.com/realms/na.json")
+    request = requests.get(
+        "https://ddragon.leagueoflegends.com/realms/na.json")
     json = request.json()
     patch = json["dd"]
     return patch
+
 
 def get_position(lane, role):
 
@@ -76,48 +84,37 @@ def get_position(lane, role):
 
     return position, order
 
-def get_game_summary_list(games, champ_json, puuid=None):
+
+def get_game_summary_list(games, champ_json, puuid):
     game_summary_list = []
 
-    # for match in games:
-    #     game_dict = {}
     platform = (games[0].split("_"))[0]
     region = get_region_by_platform(platform)
-    #     URL = "https://" + region + ".api.riotgames.com/lol/match/v5/matches/" + match + "?api_key=" + API_KEY
-    #     game_json = get_response_json(URL)
+
+    # divide games in list of 3 games
+    # n = 3
+
+    # games = [games[i * n:(i + 1) * n]
+    # for i in range((len(games) + n - 1) // n )]
+
+    # games = (games[page-1])
+
     game_summary_list = asyncio.run(get_match_preview(region, games, puuid))
-        # participant_number = 0
-        # for player in game_json["metadata"]["participants"]:
-
-        #     if player == puuid:
-        #         break
-        #     else:
-        #         participant_number += 1
-
-        # player_json = game_json["info"]["participants"][participant_number]
-        # champ_name = player_json["championName"]
-        # position = player_json["teamPosition"]
-        # game_date = get_date_by_timestamp(game_json["info"]['gameCreation'])
-        # game_dict['champion_name'] = champ_name
-        # game_dict['position'] = position
-        # game_dict['date'] = game_date
-        # game_dict['game_id'] = str(game_json["metadata"]['matchId'])
-        
-        # game_summary_list.append(game_dict)
 
     return game_summary_list
 
 
-async def get_match_preview (region, games, puuid):
+async def get_match_preview(region, games, puuid):
     async with aiohttp.ClientSession() as session:
         tasks = []
 
         for match in games:
-            URL = "https://" + region + ".api.riotgames.com/lol/match/v5/matches/" + match + "?api_key=" + API_KEY
+            URL = "https://" + region + \
+                ".api.riotgames.com/lol/match/v5/matches/" + \
+                match + "?api_key=" + API_KEY
 
             tasks.append(asyncio.ensure_future(get_preview(session, URL)))
 
-         
         preview_list = await asyncio.gather(*tasks)
         game_summary_list = []
         for match in preview_list:
@@ -142,22 +139,24 @@ async def get_match_preview (region, games, puuid):
 
     return game_summary_list
 
+
 async def get_preview(session, url):
-    async with session.get(url) as response:
-        print(response.status)
+    async with session.get(url, raise_for_status=True) as response:
+        # print(str(response.status) + url)
+
         stats_json = await response.json()
         return stats_json
 
 
 def get_region_by_platform(platform):
-    if platform == "NA1" or platform == "BR1" or platform == "LA1" or platform == "LA2" or platform == "OC1":
+    if platform in ("NA1", "BR1", "LA1", "LA2", "OC1"):
         region = "AMERICAS"
         return region
 
-    elif platform == "EUN1" or platform == "EUW1" or platform == "TR1" or platform == "RU":
+    elif platform in ("EUN1", "EUW1", "TR1", "RU"):
         region = "EUROPE"
         return region
-        
-    elif platform == "KR" or platform == "JP1":
+
+    elif platform in ("KR", "JP1"):
         region = "ASIA"
         return region

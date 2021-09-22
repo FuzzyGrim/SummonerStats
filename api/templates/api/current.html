@@ -55,7 +55,7 @@
             <tr >
                 <td>{{ player.champion_name }}/<a href="/{{game_info.server}}/{{player.summoner_name}}"> {{ player.summoner_name }}</a></td>
                 <td>{{ player.tier }}</a></td>
-                <td>{{ player.ranked_stats }}</a></td>
+                <td>Winrate (ranked): <strong>W: {{ player.wins }} / L: {{ player.losses }} ({{ player.win_rate }}%) in {{ player.total_games }} games</a></td>
             </tr>
             {% endfor %}
         </tbody>
@@ -74,7 +74,7 @@
             <tr>
                 <td>{{ player.champion_name }}/<a href="/{{game_info.server}}/{{player.summoner_name}}"> {{ player.summoner_name }}</a></td>
                 <td>{{ player.tier }}</a></td>
-                <td>{{ player.ranked_stats }}</a></td>
+                <td>Winrate (ranked): <strong>W: {{ player.wins }} / L: {{ player.losses }} ({{ player.win_rate }}%) in {{ player.total_games }} games</a></td>
             </tr>
             {% endfor %}
         </tbody>
