@@ -41,12 +41,12 @@ $.ajax({
             + '<th> Vision Score </th></tr>')
                                                     
         gameJson.participants.slice(0,5).forEach(participant => $('#game-'+ gameId + '-tbody-blue').append(
-            '<tr><td>' + participant.champion_name + '/<a href="/' + gameJson.platformId + '/' + participant.summoner_name + '">' + participant.summoner_name + '</a></td>'
+            '<tr><td>' + participant.championName + '/<a href="/' + gameJson.platformId + '/' + participant.summonerName + '">' + participant.summonerName + '</a></td>'
             + '<td>' + participant.tier +  '</td>'
-            + '<td>' +  participant.stats.kills + '/' +  participant.stats.deaths + '/' +  participant.stats.assists + '</td>'
-            + '<td>' + participant.stats.totalDamageDealtToChampions + '</td>'
-            + '<td>' + participant.stats.totalMinionsKilled + '</td>'
-            + '<td>' + participant.stats.visionScore + '</td></tr>'))
+            + '<td>' +  participant.kills + '/' +  participant.deaths + '/' +  participant.assists + '</td>'
+            + '<td>' + participant.totalDamageDealtToChampions + '</td>'
+            + '<td>' + participant.totalMinionsKilled + '</td>'
+            + '<td>' + participant.visionScore + '</td></tr>'))
 
         $('#game-'+ gameId + '-thead-red').append(
             '<tr><th>' + gameJson.teams[1].win + ' (Red Team) </th>'
@@ -57,12 +57,12 @@ $.ajax({
             + '<th> Vision Score </th></tr>')
 
         gameJson.participants.slice(5,10).forEach(participant => $('#game-'+ gameId + '-tbody-red').append(
-            '<tr><td>' + participant.champion_name + '/<a href="/' + gameJson.platformId + '/' + participant.summoner_name + '">' + participant.summoner_name + '</a></td>'
+            '<tr><td>' + participant.championName + '/<a href="/' + gameJson.platformId + '/' + participant.summonerName + '">' + participant.summonerName + '</a></td>'
             + '<td>' + participant.tier +  '</td>'
-            + '<td>' +  participant.stats.kills + '/' +  participant.stats.deaths + '/' +  participant.stats.assists + '</td>'
-            + '<td>' + participant.stats.totalDamageDealtToChampions + '</td>'
-            + '<td>' + participant.stats.totalMinionsKilled + '</td>'
-            + '<td>' + participant.stats.visionScore + '</td></tr>'))
+            + '<td>' +  participant.kills + '/' +  participant.deaths + '/' +  participant.assists + '</td>'
+            + '<td>' + participant.totalDamageDealtToChampions + '</td>'
+            + '<td>' + participant.totalMinionsKilled + '</td>'
+            + '<td>' + participant.visionScore + '</td></tr>'))
         dict[gameId] = true;
     }
     $('#game-'+gameId).toggle()

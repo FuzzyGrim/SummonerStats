@@ -1,35 +1,36 @@
 {% load el_pagination_tags %}
-{% lazy_paginate game_summary_list %}
-{% for game in game_summary_list %}
+{% lazy_paginate game_list %}
+{% for game in game_list %}
     <div class="container" style="border:1px solid rgb(64, 97, 71);">
         <br>
         <div class="row">
             <div class="col">
-                <a href="/{{user_account_info.server}}/{{user_account_info.name}}/{{game.champion_name}}">{{ game.champion_name }}</a> {{game.position}} {{game.date}} {{ game.game_id}}
+                {{ game.summary_json.player_summary.championName }} {{game.summary_json.player_summary.teamPosition}} {{game.summary_json.date}} {{ game.summary_json.game_id}}
+                {{ game.summary_json.player_summary.kills }}/{{ game.summary_json.player_summary.deaths }}/{{ game.summary_json.player_summary.assists }}
             </div>
             <div class="col-md-auto">
-                <button type="button" class="btn btn-outline-primary" onclick="loadGameData('{{game.game_id}}')">
-                    <span id="show-span-{{game.game_id}}"><i class="bi bi-chevron-double-down"></i></span>
-                    <span style="display: none" id="hide-span-{{game.game_id}}"><i class="bi bi-chevron-double-up"></i></span>
-                    <span style="display: none" id="spinner-span-{{game.game_id}}" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <button type="button" class="btn btn-outline-primary" onclick="loadGameData('{{game.summary_json.game_id}}')">
+                    <span id="show-span-{{game.summary_json.game_id}}"><i class="bi bi-chevron-double-down"></i></span>
+                    <span style="display: none" id="hide-span-{{game.summary_json.game_id}}"><i class="bi bi-chevron-double-up"></i></span>
+                    <span style="display: none" id="spinner-span-{{game.summary_json.game_id}}" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                 </button>
             </div>
         </div>
         <div>
             <br>
-            <table style="display: none" id="game-{{game.game_id}}" class="table table-bordered">
+            <table style="display: none" id="game-{{game.summary_json.game_id}}" class="table table-bordered">
                 <!-- table structure for later editing with javascript -->
-                <thead id='game-{{game.game_id}}-thead-general'>
+                <thead id='game-{{game.summary_json.game_id}}-thead-general'>
                 </thead>
-                <tbody id='game-{{game.game_id}}-tbody-general'>
+                <tbody id='game-{{game.summary_json.game_id}}-tbody-general'>
                 </tbody>
-                <thead id='game-{{game.game_id}}-thead-blue'>
+                <thead id='game-{{game.summary_json.game_id}}-thead-blue'>
                 </thead>
-                <tbody id='game-{{game.game_id}}-tbody-blue'>
+                <tbody id='game-{{game.summary_json.game_id}}-tbody-blue'>
                 </tbody>
-                <thead id='game-{{game.game_id}}-thead-red'>
+                <thead id='game-{{game.summary_json.game_id}}-thead-red'>
                 </thead>
-                <tbody id='game-{{game.game_id}}-tbody-red'>
+                <tbody id='game-{{game.summary_json.game_id}}-tbody-red'>
                 </tbody>
                 <!-- table structure for later editing with javascript -->
             </table>
