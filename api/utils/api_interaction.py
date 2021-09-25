@@ -7,6 +7,7 @@ import aiohttp
 import asyncio
 from api.utils import helpers
 
+
 API_KEY = config("API")
 
 
@@ -37,11 +38,9 @@ def get_identifiable_data(server, summoner_name):
         + "?api_key="
         + API_KEY
     )
-
     response = requests.get(URL)
 
     user_json = response.json()
-
     user_json["success"] = response.status_code == 200
     user_json["user_not_found"] = response.status_code == 404
     return user_json
@@ -81,7 +80,6 @@ def get_ranked_stats(server, summoner_name):
             + "?api_key="
             + API_KEY
         )
-
         stats_json = helpers.get_response_json(URL)
 
         try:
@@ -99,13 +97,8 @@ def get_ranked_stats(server, summoner_name):
                 round(((int(stats_json["wins"]) / total_games) * 100), 1)
             )
 
-        # if player haven't played any game
-        except StopIteration:
-            stats_json = {"no_games": True}
-
         except TypeError:
-            if stats_json["status"]["status_code"] == 429:
-                print("Rate limit exceeded")
+            stats_json = {"no_games": True}
 
         user_json["server"] = server
 
@@ -142,13 +135,74 @@ def get_matchlist(server, puuid):
         + server
         + ".api.riotgames.com/lol/match/v5/matches/by-puuid/"
         + puuid
-        + "/ids?start=0&count=10&api_key="
+        + "/ids?start=0&count=100&api_key="
         + API_KEY
     )
 
     matchlist = helpers.get_response_json(URL)
 
     return matchlist
+
+
+def get_game_summary_list(games, puuid, summoner, page):
+    game_summary_list = []
+    if games:
+
+        platform = (games[0].split("_"))[0]
+
+        region = helpers.get_region_by_platform(platform)
+
+        game_summary_list = asyncio.run(get_match_preview(region,
+                                                          games[:10],
+                                                          puuid,
+                                                          summoner))
+
+    return game_summary_list
+
+
+async def get_match_preview(region, games, puuid, summoner):
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+
+        for match in games:
+            URL = "https://" + region + \
+                ".api.riotgames.com/lol/match/v5/matches/" + \
+                match + "?api_key=" + API_KEY
+
+            tasks.append(asyncio.ensure_future(get_preview(session, URL)))
+
+        preview_list = await asyncio.gather(*tasks)
+        game_summary_list = []
+
+        for match in preview_list:
+
+            participant_number = 0
+            game_dict = {}
+            for player in match["metadata"]["participants"]:
+
+                if player == puuid:
+                    break
+                else:
+                    participant_number += 1
+
+            player_json = match["info"]["participants"][participant_number]
+            game_date = helpers.get_date_by_timestamp(match["info"]
+                                                           ['gameCreation'])
+                               
+            game_dict['date'] = game_date
+            game_dict['game_id'] = str(match["metadata"]['matchId'])
+            game_dict['player_summary'] = player_json
+            game_dict['game_summary'] = match
+            game_summary_list.append(game_dict)
+
+    return game_summary_list
+
+
+async def get_preview(session, url):
+    async with session.get(url, raise_for_status=True) as response:
+
+        stats_json = await response.json()
+        return stats_json
 
 
 def get_champion_stats(server, summoner_name, champion_name, champ_json):
@@ -212,7 +266,7 @@ def get_champion_stats(server, summoner_name, champion_name, champ_json):
     return user_json, champ_json
 
 
-def game_summary(server, gameid, champ_json):
+def game_summary(server, game_json):
     """Request: https://SERVER.api.riotgames.com/lol/match/v4/matches/GAME_ID
 
     Args:
@@ -224,20 +278,6 @@ def game_summary(server, gameid, champ_json):
         JSON: Participants stats and game info
     """
 
-    URL = (
-        "https://"
-        + server
-        + ".api.riotgames.com/lol/match/v4/matches/"
-        + str(gameid)
-        + "?api_key="
-        + API_KEY
-    )
-
-    game_json = helpers.get_response_json(URL)
-
-    game_json["game_id"] = str(game_json["gameId"])
-    game_json["success"] = True
-
     game_duration_seconds = game_json["gameDuration"]
     game_duration = str(datetime.timedelta(seconds=game_duration_seconds))
     game_json["gameDuration"] = game_duration
@@ -246,26 +286,18 @@ def game_summary(server, gameid, champ_json):
     game_creation = helpers.get_date_by_timestamp(game_creation)
     game_json["gameCreation"] = game_creation
 
-    for participant in game_json["participants"]:
-        key = participant["championId"]
-        key = str(key)
-        champ_name = helpers.get_champion_name(key, champ_json)
-        participant["champion_name"] = champ_name
-        participant["stats"]["totalMinionsKilled"] = (
-            participant["stats"]["totalMinionsKilled"]
-            + participant["stats"]["neutralMinionsKilled"]
-        )
+    summoner_id_list = []
 
-        # Add order variable to each participant depending on their
-        # position for later sorting them.
-        position, order = helpers.get_position(
-            participant["timeline"]["lane"], participant["timeline"]["role"]
+    for participant in game_json["participants"]:
+        participant["totalMinionsKilled"] = (
+                participant["totalMinionsKilled"]
+                + participant["neutralMinionsKilled"]
         )
-        participant["order"] = order
+        summoner_id_list.append(participant['summonerId'])
 
     # Change vocabulary from Win/Fail to Victory/Defeat
     for team in game_json["teams"]:
-        if team["win"] == "Win":
+        if team["win"]:
             team["win"] = "Victory"
         else:
             team["win"] = "Defeat"
@@ -273,34 +305,24 @@ def game_summary(server, gameid, champ_json):
     # Get new game_json with the rank of each player. An API
     # call is needed for each player so asyncio was used.
     game_json = asyncio.run(
-        get_players_ranks(server, game_json,
-                          game_json["participantIdentities"])
+        get_players_ranks(server, game_json, summoner_id_list)
     )
-
-    # Sort participants by their role
-    # Order first half, which correspond to the blue side
-    blue_side = sorted(game_json["participants"][:5], key=lambda k: k["order"])
-    # Order last 5 players which are from the red team
-    red_side = sorted(game_json["participants"][5:], key=lambda k: k["order"])
-    all_participants = blue_side + red_side
-    game_json["participants"] = all_participants
 
     return game_json
 
 
-async def get_players_ranks(server, game_json, players_json):
+async def get_players_ranks(server, game_json, summoner_id_list):
     async with aiohttp.ClientSession() as session:
         current_player = 0
         tasks = []
 
-        for player in players_json:
-            summonerId = player["player"]["summonerId"]
+        for summoner_id in summoner_id_list:
 
             URL = (
                 "https://"
                 + server
                 + ".api.riotgames.com/lol/league/v4/entries/by-summoner/"
-                + summonerId
+                + summoner_id
                 + "?api_key="
                 + API_KEY
             )
@@ -321,7 +343,6 @@ async def get_players_ranks(server, game_json, players_json):
                 stats_json = {
                     "tier": "Unranked",
                     "rank": None,
-                    "summonerId": summonerId,
                 }
 
             tier = stats_json["tier"]
@@ -334,10 +355,6 @@ async def get_players_ranks(server, game_json, players_json):
             # If the player doesn´t have rank, display Unranked
             elif rank is None:
                 game_json["participants"][current_player]["tier"] = f"{tier}"
-
-            game_json["participants"][current_player][
-                "summoner_name"] = players_json[
-                    current_player]["player"]["summonerName"]
 
             current_player += 1
 
