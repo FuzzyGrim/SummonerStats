@@ -2,8 +2,6 @@
 import datetime
 import requests
 from decouple import config
-import aiohttp
-import asyncio
 
 API_KEY = config("API")
 
@@ -83,69 +81,6 @@ def get_position(lane, role):
         order = 0
 
     return position, order
-
-
-def get_game_summary_list(games, champ_json, puuid):
-    game_summary_list = []
-
-    platform = (games[0].split("_"))[0]
-    region = get_region_by_platform(platform)
-
-    # divide games in list of 3 games
-    # n = 3
-
-    # games = [games[i * n:(i + 1) * n]
-    # for i in range((len(games) + n - 1) // n )]
-
-    # games = (games[page-1])
-
-    game_summary_list = asyncio.run(get_match_preview(region, games, puuid))
-
-    return game_summary_list
-
-
-async def get_match_preview(region, games, puuid):
-    async with aiohttp.ClientSession() as session:
-        tasks = []
-
-        for match in games:
-            URL = "https://" + region + \
-                ".api.riotgames.com/lol/match/v5/matches/" + \
-                match + "?api_key=" + API_KEY
-
-            tasks.append(asyncio.ensure_future(get_preview(session, URL)))
-
-        preview_list = await asyncio.gather(*tasks)
-        game_summary_list = []
-        for match in preview_list:
-            participant_number = 0
-            game_dict = {}
-            for player in match["metadata"]["participants"]:
-
-                if player == puuid:
-                    break
-                else:
-                    participant_number += 1
-
-            player_json = match["info"]["participants"][participant_number]
-            champ_name = player_json["championName"]
-            position = player_json["teamPosition"]
-            game_date = get_date_by_timestamp(match["info"]['gameCreation'])
-            game_dict['champion_name'] = champ_name
-            game_dict['position'] = position
-            game_dict['date'] = game_date
-            game_dict['game_id'] = str(match["metadata"]['matchId'])
-            game_summary_list.append(game_dict)
-
-    return game_summary_list
-
-
-async def get_preview(session, url):
-    async with session.get(url, raise_for_status=True) as response:
-        # print(str(response.status) + url)
-
-        stats_json = await response.json()
-        return stats_json
 
 
 def get_region_by_platform(platform):
