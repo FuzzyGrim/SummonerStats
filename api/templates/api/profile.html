@@ -1,6 +1,6 @@
 {% load static %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'css/record.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/profile.css' %}">
 {% block content %}
 <!doctype html>
 <html lang="en">
@@ -39,15 +39,15 @@
           <p>Winrate (ranked): <strong>W: {{ summoner_stats.wins }} / L: {{ summoner_stats.losses }} ({{summoner_stats.win_rate }}%)</strong></p>
         {% endif %}
         <a href='/{{user_account_info.server}}/{{user_account_info.name}}/In-Game' class="btn btn-primary" role="button" >In-Game</a>
-        <p>Level: <strong>{{ user_account_info.summonerLevel }}</strong></p>    
+        <p>Level: <strong>{{ user_account_info.summonerLevel }}</strong></p>
         <p>Summoner id: <strong>{{ user_account_info.id }}</strong></p>
-        <p>Account id: <strong>{{ user_account_info.accountId }}</strong></p>
+
         <p>puuid: <strong>{{ user_account_info.puuid }}</strong></p>
 
       </main>
       <div class="container" style="border:2px solid black;">
         <br>
-        {% include "api/include/user-profile-page.html" %}
+        {% include "api/include/games.html" %}
 
         <!-- Twitter-style Pagination -->
         {% block js %}

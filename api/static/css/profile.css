@@ -3,6 +3,11 @@
   src: url(../fonts/aquire-font/Aquire.otf);
 }
 
+body{
+  background-color: #A0B7C7;
+  color: white;
+}
+
 /* Remove margin of form in navbar to align with text on the left*/
 .d-flex{
   margin: 0;

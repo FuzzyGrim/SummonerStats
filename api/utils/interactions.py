@@ -1,10 +1,12 @@
-# Contains functions that interacts with RIOT's API.
+"""
+Contains functions that interacts with RIOT's API.
+"""
 
-import requests
+import asyncio
 import datetime
+import requests
 from decouple import config
 import aiohttp
-import asyncio
 from api.utils import helpers
 
 
@@ -21,7 +23,6 @@ def get_identifiable_data(server, summoner_name):
 
     Returns:
         JSON with:
-            accountId 	    (string)
             profileIconId 	(int)
             revisionDate 	(long) 	    Date last modified in epoch milliseconds.
             name 	        (string) 	Summoner name.
@@ -30,7 +31,7 @@ def get_identifiable_data(server, summoner_name):
             summonerLevel 	(long)
     """
 
-    URL = (
+    url = (
         "https://"
         + server
         + ".api.riotgames.com/lol/summoner/v4/summoners/by-name/"
@@ -38,7 +39,7 @@ def get_identifiable_data(server, summoner_name):
         + "?api_key="
         + API_KEY
     )
-    response = requests.get(URL)
+    response = requests.get(url)
 
     user_json = response.json()
     user_json["success"] = response.status_code == 200
@@ -72,7 +73,7 @@ def get_ranked_stats(server, summoner_name):
     # If the inputted summoner is found
     if user_json["success"]:
 
-        URL = (
+        url = (
             "https://"
             + server
             + ".api.riotgames.com/lol/league/v4/entries/by-summoner/"
@@ -80,7 +81,7 @@ def get_ranked_stats(server, summoner_name):
             + "?api_key="
             + API_KEY
         )
-        stats_json = helpers.get_response_json(URL)
+        stats_json = helpers.get_response_json(url)
 
         try:
             # Search dictionary corresponding to ranked solo because there
@@ -130,7 +131,7 @@ def get_matchlist(server, puuid):
 
     server = helpers.get_region_by_platform(server)
 
-    URL = (
+    url = (
         "https://"
         + server
         + ".api.riotgames.com/lol/match/v5/matches/by-puuid/"
@@ -139,12 +140,15 @@ def get_matchlist(server, puuid):
         + API_KEY
     )
 
-    matchlist = helpers.get_response_json(URL)
+    matchlist = helpers.get_response_json(url)
 
     return matchlist
 
 
-def get_game_summary_list(games, puuid, summoner, page):
+def get_game_summary_list(games, puuid):
+    """
+    Gets the main data from each game to show on the user profile page
+    """
     game_summary_list = []
     if games:
 
@@ -154,116 +158,63 @@ def get_game_summary_list(games, puuid, summoner, page):
 
         game_summary_list = asyncio.run(get_match_preview(region,
                                                           games[:10],
-                                                          puuid,
-                                                          summoner))
+                                                          puuid))
 
     return game_summary_list
 
 
-async def get_match_preview(region, games, puuid, summoner):
+async def get_match_preview(region, games, puuid):
+    """
+    Async http request for getting game json and organizing the players data
+    """
     async with aiohttp.ClientSession() as session:
         tasks = []
 
         for match in games:
-            URL = "https://" + region + \
+            url = "https://" + region + \
                 ".api.riotgames.com/lol/match/v5/matches/" + \
                 match + "?api_key=" + API_KEY
 
-            tasks.append(asyncio.ensure_future(get_preview(session, URL)))
+            tasks.append(asyncio.ensure_future(get_preview(session, url)))
 
         preview_list = await asyncio.gather(*tasks)
-        game_summary_list = []
+        game_preview_list = []
 
         for match in preview_list:
 
-            participant_number = 0
             game_dict = {}
-            for player in match["metadata"]["participants"]:
+            participant_number = 0
 
-                if player == puuid:
-                    break
-                else:
-                    participant_number += 1
+            while match["metadata"]["participants"][participant_number] != puuid:
+                participant_number += 1
 
             player_json = match["info"]["participants"][participant_number]
             game_date = helpers.get_date_by_timestamp(match["info"]
-                                                           ['gameCreation'])
-                               
-            game_dict['date'] = game_date
-            game_dict['game_id'] = str(match["metadata"]['matchId'])
-            game_dict['player_summary'] = player_json
-            game_dict['game_summary'] = match
-            game_summary_list.append(game_dict)
+                                                           ["gameCreation"])
 
-    return game_summary_list
+            game_dict["date"] = game_date
+            game_dict["game_id"] = str(match["metadata"]["matchId"])
+            game_dict["player_summary"] = player_json
+            game_dict["game_summary"] = match
+            if match["info"]["gameMode"] == "CLASSIC":
+                game_mode = helpers.get_game_mode(match["info"]["queueId"])
+                game_dict["game_mode"] = game_mode
+                game_dict["game_summary"]["info"]["gameMode"] = game_mode
+            else:
+                game_dict["game_mode"] = match["info"]["gameMode"]
+            game_preview_list.append(game_dict)
+
+    return game_preview_list
 
 
 async def get_preview(session, url):
+    """
+    Async to get the json from the request
+    """
     async with session.get(url, raise_for_status=True) as response:
 
         stats_json = await response.json()
         return stats_json
-
-
-def get_champion_stats(server, summoner_name, champion_name, champ_json):
-    """Request:
-    https://SERVER.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/SUMMONER_NAME/by-champion/CHAMPION_ID
-
-    Args:
-        server              (string)
-        summoner_name       (string)
-        champion_name       (string)
-        champ_json          (string)    Relating champion key with its name
-
-    Returns:
-        JSON with:
-            championPointsUntilNextLevel 	(long)
-            chestGranted 	                (boolean)
-            championId 	                    (long)
-            championLevel 	                (int)
-            summonerId 	                    (string)
-            championPoints 	                (int)
-            championPointsSinceLastLevel 	(long)
-            tokensEarned 	                (int)
-    """
-
-    champ_key = helpers.get_champion_key(champion_name, champ_json)
-
-    user_json = get_identifiable_data(server, summoner_name)
-
-    if user_json["success"]:
-
-        summoner_id = user_json["id"]
-        account_id = user_json["accountId"]
-
-        URL = (
-            "https://"
-            + server
-            + ".api.riotgames.com/lol/champion-mastery/v4/"
-            + "champion-masteries/by-summoner/"
-            + summoner_id
-            + "/by-champion/"
-            + champ_key
-            + "?api_key="
-            + API_KEY
-        )
-
-        champ_json = helpers.get_response_json(URL)
-        champ_json["champ_name"] = champion_name
-
-        champ_json["summoner_name"] = summoner_name
-        champ_json["accountId"] = account_id
-
-        last_played = champ_json["lastPlayTime"]
-        time_diff = helpers.get_date_by_timestamp(last_played)
-        champ_json["last_time"] = time_diff
-
-        champ_json["server"] = server
-
-    elif user_json["user_not_found"]:
-        champ_json = {}
-
-    return user_json, champ_json
 
 
 def game_summary(server, game_json):
@@ -271,8 +222,7 @@ def game_summary(server, game_json):
 
     Args:
         server          (string)
-        gameid          (long)
-        champ_json      (string)    Relating champion key with its name
+        game_json       (dictionary)
 
     Returns:
         JSON: Participants stats and game info
@@ -290,8 +240,8 @@ def game_summary(server, game_json):
 
     for participant in game_json["participants"]:
         participant["totalMinionsKilled"] = (
-                participant["totalMinionsKilled"]
-                + participant["neutralMinionsKilled"]
+            participant["totalMinionsKilled"]
+            + participant["neutralMinionsKilled"]
         )
         summoner_id_list.append(participant['summonerId'])
 
@@ -312,13 +262,16 @@ def game_summary(server, game_json):
 
 
 async def get_players_ranks(server, game_json, summoner_id_list):
+    """
+    Async to get each player's rank from the game
+    """
     async with aiohttp.ClientSession() as session:
         current_player = 0
         tasks = []
 
         for summoner_id in summoner_id_list:
 
-            URL = (
+            url = (
                 "https://"
                 + server
                 + ".api.riotgames.com/lol/league/v4/entries/by-summoner/"
@@ -327,7 +280,7 @@ async def get_players_ranks(server, game_json, summoner_id_list):
                 + API_KEY
             )
 
-            tasks.append(asyncio.ensure_future(get_rank(session, URL)))
+            tasks.append(asyncio.ensure_future(get_rank(session, url)))
 
         stats_json_list = await asyncio.gather(*tasks)
         for stats_json in stats_json_list:
@@ -338,7 +291,7 @@ async def get_players_ranks(server, game_json, summoner_id_list):
                     if item["queueType"] == "RANKED_SOLO_5x5"
                 )
 
-            # If the player doesn´t have rank, set tier to Unranked
+            # If the player doesn't have rank, set tier to Unranked
             except StopIteration:
                 stats_json = {
                     "tier": "Unranked",
@@ -352,7 +305,7 @@ async def get_players_ranks(server, game_json, summoner_id_list):
                 game_json["participants"][current_player][
                     "tier"] = f"{tier} {rank}"
 
-            # If the player doesn´t have rank, display Unranked
+            # If the player doesn't have rank, display Unranked
             elif rank is None:
                 game_json["participants"][current_player]["tier"] = f"{tier}"
 
@@ -362,85 +315,9 @@ async def get_players_ranks(server, game_json, summoner_id_list):
 
 
 async def get_rank(session, url):
+    """
+    Async to get the json from the request
+    """
     async with session.get(url) as response:
         stats_json = await response.json()
         return stats_json
-
-
-def in_game_info(server, summoner_id, champ_json):
-    """Request:https://SERVER.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/SUMMONER_ID
-
-    Args:
-        server              (string)
-        summoner_id         (string)    Encrypted summoner ID.
-        champ_json          (string)    Relating champion key with its name
-
-    Returns:
-        JSON: Participants stats and game info
-    """
-    URL = (
-        "https://"
-        + server
-        + ".api.riotgames.com/lol/spectator/v4/active-games/by-summoner/"
-        + (summoner_id)
-        + "?api_key="
-        + API_KEY
-    )
-    response = requests.get(URL)
-    search_was_successful = response.status_code == 200
-    not_in_game = response.status_code == 404
-
-    in_game_json = response.json()
-
-    in_game_json["success"] = search_was_successful
-    in_game_json["fail"] = not_in_game
-
-    if search_was_successful:
-
-        blue_participants_json = in_game_json["participants"][:5]
-        red_participants_json = in_game_json["participants"][5:]
-
-        for participant in blue_participants_json:
-            key = participant["championId"]
-            key = str(key)
-            champ_name = helpers.get_champion_name(key, champ_json)
-            participant["champion_name"] = champ_name
-
-            summoner_name = participant["summonerName"]
-
-            user, stats = get_ranked_stats(server, summoner_name)
-            tier = stats["tier"]
-            rank = stats["rank"]
-            tier = f"{tier} {rank}"
-            participant["tier"] = tier
-
-            participant["wins"] = stats["wins"]
-            participant["losses"] = stats["losses"]
-            participant["total_games"] = stats["total_games"]
-            participant["win_rate"] = stats["win_rate"]
-
-        for participant in red_participants_json:
-            key = participant["championId"]
-            key = str(key)
-            champ_name = helpers.get_champion_name(key, champ_json)
-            participant["champion_name"] = champ_name
-
-            summoner_name = participant["summonerName"]
-
-            user, stats = get_ranked_stats(server, summoner_name)
-            tier = stats["tier"]
-            rank = stats["rank"]
-            tier = f"{tier} {rank}"
-            participant["tier"] = tier
-
-            participant["wins"] = stats["wins"]
-            participant["losses"] = stats["losses"]
-            participant["total_games"] = stats["total_games"]
-            participant["win_rate"] = stats["win_rate"]
-
-        return in_game_json, blue_participants_json, red_participants_json
-
-    elif not_in_game:
-        blue_participants_json = {}
-        red_participants_json = {}
-        return in_game_json, blue_participants_json, red_participants_json

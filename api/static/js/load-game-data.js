@@ -19,7 +19,7 @@ $.ajax({
         $('#game-'+ gameId + '-thead-general').append(
             '<tr><th> GameId </th>'
             + '<th> Server </th>'
-            + '<th> When </th>'
+            + '<th> Date </th>'
             + '<th> Duration </th>'
             + '<th> Game Mode </th>'
             + '<th> Patch </th></tr>')
