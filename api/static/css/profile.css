@@ -24,6 +24,18 @@ body{
 }
 
 main{
-  text-align: center;
   padding-top: 6em;
+}
+
+main .items{
+  width:20px;
+  height:20px;
+}
+
+main .stats{
+  border:2px solid black;
+}
+
+main .container{
+  border:2px solid black;
 }

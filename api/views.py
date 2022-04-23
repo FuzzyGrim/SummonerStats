@@ -8,6 +8,7 @@ from api.utils import interactions
 from api.utils import sessions
 import api.models
 
+
 def index(request):
     """
     Home page
@@ -48,21 +49,23 @@ def user_info(request,
 
         summary_not_in_database = []
 
-        # Add match id to database if it's not in there
         for match in games_list:
 
             if match == 'status':
                 continue
 
+            # if match id with summoner name not found, create object in database
             if not api.models.Match.objects.filter(match_id=match,
                                         summoner=summoner_name).exists():
 
                 match_object = api.models.Match(match_id=match, summoner=summoner_name)
                 match_object.save()
 
+            # if match summary not in database, add it to the list
             if api.models.Match.objects.filter(match_id=match, summoner=summoner_name,
                                     summary_json__exact={}).exists():
                 summary_not_in_database.append(match)
+
 
         game_summary_list = api.utils.interactions.get_game_summary_list(
                                                     summary_not_in_database,
@@ -75,13 +78,13 @@ def user_info(request,
             game_object.save()
 
         context = {
-            "game_list": api.models.Match.objects.all().filter(summoner=summoner_name),
+            "game_list": api.models.Match.objects.all().filter(summoner=summoner_name).order_by('-match_id'),
             "game_summary_list": game_summary_list,
             "user_account_info": user_account_info,
             "summoner_stats": summoner_stats,
         }
 
-        if request.is_ajax():
+        if is_ajax(request):
             template = "api/include/games.html"
 
     # If user not found
@@ -93,6 +96,7 @@ def user_info(request,
             "user_account_info": user_account_info,
             "summoner_stats": summoner_stats,
         }
+
     return render(request, template, context)
 
 
@@ -108,3 +112,6 @@ def get_game_data(request, server, summoner_name, game_id):
                                                 game_id, game_info_json)
 
     return JsonResponse(game_info_json)
+
+def is_ajax(request):
+    return request.headers.get('x-requested-with') == 'XMLHttpRequest'
