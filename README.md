@@ -1,13 +1,10 @@
 <!-- PROJECT LOGO -->
-<br />
 <p align="center">
   <h3 align="center">LOLDATA</h3>
 
   <p align="center">
     Sample description
-    <br />
-    <br />
-    <br />
+
     <a href="https://github.com/othneildrew/Best-README-Template">View Demo</a>
     ·
     <a href="https://github.com/othneildrew/Best-README-Template/issues">Report Bug</a>
