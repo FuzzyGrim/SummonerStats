@@ -84,7 +84,7 @@ def user_info(request,
             "summoner_stats": summoner_stats,
         }
 
-        if is_ajax(request):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             template = "api/include/games.html"
 
     # If user not found
