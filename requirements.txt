@@ -1,0 +1,4 @@
+aiohttp
+django
+django-el-pagination
+python-decouple
