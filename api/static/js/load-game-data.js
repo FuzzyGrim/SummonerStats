@@ -4,13 +4,6 @@ $.ajax({
     url : "tmp/" + gameId, // the endpoint
     method: "GET",
     start_time: new Date().getTime(),
-    beforeSend: function(){
-    $('#spinner-span-'+ gameId).show();
-    },
-    complete: function(){
-    console.log('This request took '+(new Date().getTime() - this.start_time)+' ms');
-    $('#spinner-span-'+ gameId).hide();
-    },
     error: function(xhr, status, error) {
     alert("Rate limitation error");
     },
@@ -66,8 +59,6 @@ $.ajax({
         dict[gameId] = true;
     }
     $('#game-'+gameId).toggle()
-    $('#show-span-'+ gameId).toggle();
-    $('#hide-span-'+ gameId).toggle();
         
     }
 });

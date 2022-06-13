@@ -1,42 +1,89 @@
 {% load el_pagination_tags %}
 {% lazy_paginate game_list %}
 {% for game in game_list %}
-    <div class="container" style="border:1px solid rgb(64, 97, 71);">
-        <br>
-        <div class="row">
-            <div class="col">
-                {{ game.summary_json.player_summary.championName }} {{game.summary_json.player_summary.teamPosition}} {{game.summary_json.date}} {{ game.summary_json.game_id}}
-                {{ game.summary_json.player_summary.kills }}/{{ game.summary_json.player_summary.deaths }}/{{ game.summary_json.player_summary.assists }}
-                {{ game.summary_json.game_mode }}
+
+    {% if game.summary_json.game_summary.info.gameType != "CUSTOM_GAME" %}
+
+        {% if game.summary_json.player_summary.win %}
+            <div class="container mb-2" style="background-color: #A3CFEC;">
+        {% else %}
+            <div class="container mb-2" style="background-color: #E2B6B3;">
+        {% endif %}
+            <div class="row" onclick="loadGameData('{{game.summary_json.game_id}}')" style="cursor: pointer;">
+
+                <div class="col-2">
+                    <p>{{ game.summary_json.game_mode }}</p>
+
+                    <p>
+                    {% if game.summary_json.game_mode == "ARAM" %}
+                        <img src="https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/content/src/leagueclient/gamemodeassets/aram/img/game-select-icon-active.png" style="width:48px;height:48px;">
+                    {% else %}
+                        <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-{{game.summary_json.player_summary.teamPosition|lower}}.png" style="width:48px;height:48px;">
+                    {% endif %}
+                    </p>
+                    
+                    <p>{{game.summary_json.date}}</p>
+                </div>
+
+                <div class="col-2">
+                    <p>{{ game.summary_json.player_summary.championName|title }} </p>
+                    <img src="https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/{{ game.summary_json.player_summary.championId }}.png" style="width:64px;height:64px;">
+                </div>
+
+                <div class="col-2">
+                    <p>{{ game.summary_json.player_summary.kills }}/{{ game.summary_json.player_summary.deaths }}/{{ game.summary_json.player_summary.assists }}</p>
+                    <p>{{ game.summary_json.player_summary.kda }} KDA</p>
+
+                </div>
+
+                <div class="col-2">
+                    {% for item in game.summary_json.player_summary.items %}
+                        <!-- Ornn upgraded items -->
+                        {% if item >= 7000 and item < 8000 %}
+                            <img class="items" src="https://ddragon.bangingheads.net/cdn/{{ game.summary_json.patch }}/img/item/{{ item }}.png">
+
+                        {% elif item != 0 %}
+                            <img class="items" src="https://ddragon.leagueoflegends.com/cdn/{{ game.summary_json.patch }}/img/item/{{ item }}.png">
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <div class="col-xl-4 ms-auto">
+                    <table class="table table-borderless table-sm">
+                        <tbody>
+                            {% for matchup in game.summary_json.game_summary.info.matchups %}
+                            <tr>
+                                <td> <a class="d-inline-block text-truncate" style="max-width: 80px; float: right; font-size: 12px;">{{ matchup.0.summonerName }} </a></td>
+                                <td> <img class= "champion-face rounded-circle" style="width: 1rem; height: 1rem;" src="https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/{{ matchup.0.championId }}.png"></td>
+
+                                <td> <img class= "champion-face rounded-circle" style="width: 1rem; height: 1rem;" src="https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/{{ matchup.1.championId }}.png"></td>
+                                <td> <a class="d-inline-block text-truncate" style="max-width: 80px; font-size: 12px;">{{ matchup.1.summonerName }} </a></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="col-md-auto">
-                <button type="button" class="btn btn-outline-primary" onclick="loadGameData('{{game.summary_json.game_id}}')">
-                    <span id="show-span-{{game.summary_json.game_id}}"><i class="bi bi-chevron-double-down"></i></span>
-                    <span style="display: none" id="hide-span-{{game.summary_json.game_id}}"><i class="bi bi-chevron-double-up"></i></span>
-                    <span style="display: none" id="spinner-span-{{game.summary_json.game_id}}" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                </button>
+            <div>
+                <table style="display: none" id="game-{{game.summary_json.game_id}}" class="table table-bordered">
+                    <!-- table structure for later editing with javascript -->
+                    <thead id='game-{{game.summary_json.game_id}}-thead-general'>
+                    </thead>
+                    <tbody id='game-{{game.summary_json.game_id}}-tbody-general'>
+                    </tbody>
+                    <thead id='game-{{game.summary_json.game_id}}-thead-blue'>
+                    </thead>
+                    <tbody id='game-{{game.summary_json.game_id}}-tbody-blue'>
+                    </tbody>
+                    <thead id='game-{{game.summary_json.game_id}}-thead-red'>
+                    </thead>
+                    <tbody id='game-{{game.summary_json.game_id}}-tbody-red'>
+                    </tbody>
+                    <!-- table structure for later editing with javascript -->
+                </table>
             </div>
         </div>
-        <div>
-            <br>
-            <table style="display: none" id="game-{{game.summary_json.game_id}}" class="table table-bordered">
-                <!-- table structure for later editing with javascript -->
-                <thead id='game-{{game.summary_json.game_id}}-thead-general'>
-                </thead>
-                <tbody id='game-{{game.summary_json.game_id}}-tbody-general'>
-                </tbody>
-                <thead id='game-{{game.summary_json.game_id}}-thead-blue'>
-                </thead>
-                <tbody id='game-{{game.summary_json.game_id}}-tbody-blue'>
-                </tbody>
-                <thead id='game-{{game.summary_json.game_id}}-thead-red'>
-                </thead>
-                <tbody id='game-{{game.summary_json.game_id}}-tbody-red'>
-                </tbody>
-                <!-- table structure for later editing with javascript -->
-            </table>
-        </div>
-    </div>
-    <br>
+
+    {% endif %}
 {% endfor %}
 {% show_more %}

@@ -23,37 +23,72 @@
 
         <p><strong>{{ user_account_info.name }}</strong> </p>   
         
-        {%if summoner_stats.no_games %}
-          <p>Unranked</p>
-        {% else %}
-          <p>Tier: <strong>{{ summoner_stats.tier }} {{ summoner_stats.rank }}</strong></p>    
-          <p>Winrate (ranked): <strong>W: {{ summoner_stats.wins }} / L: {{ summoner_stats.losses }} ({{summoner_stats.win_rate }}%)</strong></p>
-        {% endif %}
         <a href='/{{user_account_info.server}}/{{user_account_info.name}}/In-Game' class="btn btn-primary" role="button" >In-Game</a>
         <p>Level: <strong>{{ user_account_info.summonerLevel }}</strong></p>
         <p>Summoner id: <strong>{{ user_account_info.id }}</strong></p>
 
         <p>puuid: <strong>{{ user_account_info.puuid }}</strong></p>
 
-      </main>
-      <div class="container" style="border:2px solid black;">
-        <br>
-        {% include "api/include/games.html" %}
+        <div class="container py-3">
 
-        <!-- Twitter-style Pagination -->
-        {% block js %}
-        <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
-        <script src="{% static 'js/el-pagination.js' %}"></script>
-        <script>
-          $.endlessPaginate({
-              paginateOnScroll: true,
-              paginateOnScrollMargin: 20
-          });
-        </script>
-        {% endblock %}
-        <!-- Twitter-style Pagination -->
-      </div>
-      <br>
+          <div class="row justify-content-around">
+
+            <div class="col-4">
+
+              <div class="col stats">
+                
+                {% if summoner_stats.RANKED_SOLO_5x5.tier == "Unranked" %}
+                  <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-regalia/unranked.png">
+                  Ranked Solo: Unranked
+
+                {% else %}
+                  <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-regalia/{{ summoner_stats.RANKED_SOLO_5x5.tier|lower }}.png">
+                  Ranked Solo: <strong>{{ summoner_stats.RANKED_SOLO_5x5.tier }} {{ summoner_stats.RANKED_SOLO_5x5.rank }}</strong>
+                  {{ summoner_stats.RANKED_SOLO_5x5.leaguePoints }} LP / 
+                  {{ summoner_stats.RANKED_SOLO_5x5.wins }}W {{ summoner_stats.RANKED_SOLO_5x5.losses }}L {{ summoner_stats.RANKED_SOLO_5x5.win_rate }}% WR
+                {% endif %}
+              
+              </div>
+              
+              <div class="col stats">
+
+                {% if summoner_stats.RANKED_FLEX_SR.tier == "Unranked" %}
+                  <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-regalia/unranked.png">
+                  Ranked Flex: Unranked
+
+                {% else %}
+                  <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-regalia/{{ summoner_stats.RANKED_FLEX_SR.tier|lower }}.png">
+                  Ranked Flex: <strong>{{ summoner_stats.RANKED_FLEX_SR.tier }} {{ summoner_stats.RANKED_FLEX_SR.rank }}</strong>
+                  LP: {{  summoner_stats.RANKED_FLEX_SR.leaguePoints}}
+                  Winrate (ranked): <strong>W: {{ summoner_stats.RANKED_FLEX_SR.wins }} / L: {{ summoner_stats.RANKED_FLEX_SR.losses }} ({{summoner_stats.RANKED_FLEX_SR.win_rate }}%)</strong>
+                {% endif %}
+
+              </div>
+              <div class="col stats">Column</div>
+            </div>
+
+            <div class="col-md-8">
+              {% include "api/include/games.html" %}
+      
+              <!-- Twitter-style Pagination -->
+              {% block js %}
+              <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+              <script src="{% static 'js/el-pagination.js' %}"></script>
+              <script>
+                $.endlessPaginate({
+                    paginateOnScroll: true,
+                    paginateOnScrollMargin: 20
+                });
+              </script>
+              {% endblock %}
+              <!-- Twitter-style Pagination -->
+            </div>
+
+          </div>
+
+        </div>
+
+      </main>
     {% endif %}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>  </body>
     <script src="{% static 'js/load-game-data.js' %}"></script>
