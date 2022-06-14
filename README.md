@@ -3,7 +3,6 @@
 <h3 align="center">SummonerStats</h3>
 
 <p align="center">
-  Sample description
   <br />
   <br />
   <a href="https://github.com/othneildrew/Best-README-Template">View Demo</a>
