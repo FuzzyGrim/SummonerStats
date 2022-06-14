@@ -31,6 +31,16 @@ main{
   padding-top: 6em;
 }
 
+main .stats-box {
+  text-align: center;
+  width: 25vw;
+}
+
+main .stats-box .rank-img {
+  max-width: 4em;
+  max-height: 100%;
+}
+
 main .items{
   width:20px;
   height:20px;
