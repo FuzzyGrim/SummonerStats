@@ -6,15 +6,22 @@
 
 <!doctype html>
 <html lang="en">
-  
-  {% include "api/include/head.html" %}
+
+  <head>
+    {% include "api/include/tags.html" %}
+    <title>SummonerStats</title>
+  </head>
 
   <body>
 
     {% include "api/include/navbar.html" %}    
 
     <main class="position-absolute top-50 start-50 translate-middle">
-      <h1>LOLDATA</h1>
+
+      <div class="title">
+        <img class="img-fluid" src="{% static 'favicon/icon-260x260.png' %}" width="80" height="80" alt="" class="d-inline-block align-middle">
+        <span class="align-middle">SummonerStats</span>
+      </div>
       
       <form class="d-flex" method="post">
         {% csrf_token %}
@@ -36,7 +43,8 @@
 
     </main>
     
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>  </body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+  </body>
 
 </html>
 {% endblock %}
