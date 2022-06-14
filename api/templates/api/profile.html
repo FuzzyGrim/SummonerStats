@@ -1,11 +1,15 @@
 {% load static %}
 
 <link rel="stylesheet" type="text/css" href="{% static 'css/profile.css' %}">
+
 {% block content %}
 <!doctype html>
 <html lang="en">
 
-  {% include "api/include/head.html" %}
+  <head>
+    {% include "api/include/tags.html" %}
+    <title>{{ user_account_info.name }} | SummonerStats</title>
+  </head>
 
   <body>
     {% include "api/include/navbar.html" %}
@@ -19,18 +23,53 @@
     {% elif user_account_info.success %}
 
       <main>
-        <h1>LOLDATA</h1>
 
-        <p><strong>{{ user_account_info.name }}</strong> </p>   
+        <div class="container">
+
+          <div class="d-flex justify-content-around pt-4 pb-1 mb-5" style="align-items: center">
+
+            <div class="icon position-relative">
+
+              <img class="border border-secondary" style="border-radius: 20%; max-width: 100%; height: 6.5em" src="https://raw.communitydragon.org/latest/game/assets/ux/summonericons/profileicon{{ user_account_info.profileIconId }}.png">
+              <span class="position-absolute top-0 start-50 translate-middle badge bg-dark text-bg-primary border border-secondary">{{ user_account_info.summonerLevel }}</span>
+              <div style="color:white; text-align: center; font-size: 1em;"><strong>{{ user_account_info.name }}</strong> </div>   
+            </div>
+
+            <div class="stats rounded-2" style="text-align: center; width: 25vw;">
+              <strong><span style="color: white; text-align: center; font-size: 1.2em;">Ranked Solo</span></strong>
+              <hr>
+              <div class="rank" style="display: inline-block;">
+                {% if summoner_stats.RANKED_SOLO_5x5.tier == "Unranked" %}
+                  <img style="max-width: 100%; height: 4em" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.png">
+                  <strong>UNRANKED</strong>
+
+                {% else %}
+                  <span><img style="max-width: 100%; height: 4em" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/{{ summoner_stats.RANKED_SOLO_5x5.tier|lower }}.png"> </span>
+                  <span style="white-space: pre"><strong class="fs-6">{{ summoner_stats.RANKED_SOLO_5x5.tier }} {{ summoner_stats.RANKED_SOLO_5x5.rank }}   {{ summoner_stats.RANKED_SOLO_5x5.leaguePoints }} LP </strong>   {{ summoner_stats.RANKED_SOLO_5x5.wins }}-{{ summoner_stats.RANKED_SOLO_5x5.losses }}   {{ summoner_stats.RANKED_SOLO_5x5.win_rate }}% WR </span>
+                {% endif %}
+              </div>
+            
+            </div>
+            
+            <div class="stats rounded-2" style="text-align: center; width: 25vw;">
+              <strong><span style="color: white; text-align: center; font-size: 1.2em;">Ranked Flex</span></strong>
+              <hr>
+
+              <div class="rank" style="display: inline-block;">
+
+                {% if summoner_stats.RANKED_FLEX_SR.tier == "Unranked" %}
+                  <img style="max-width: 100%; height: 4em" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.png">
+                  <strong>UNRANKED</strong>
+
+                {% else %}
+                  <span><img style="max-width: 100%; height: 4em" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/{{ summoner_stats.RANKED_FLEX_SR.tier|lower }}.png"></span>
+                  <span style="white-space: pre"><strong class="fs-6">{{ summoner_stats.RANKED_FLEX_SR.tier }} {{ summoner_stats.RANKED_FLEX_SR.rank }}   {{ summoner_stats.RANKED_FLEX_SR.leaguePoints }} LP </strong>   {{ summoner_stats.RANKED_FLEX_SR.wins }}-{{ summoner_stats.RANKED_FLEX_SR.losses }}   {{ summoner_stats.RANKED_FLEX_SR.win_rate }}% WR </span>
+                {% endif %}
+              </div>
+
+            </div>
+          </div>
         
-        <a href='/{{user_account_info.server}}/{{user_account_info.name}}/In-Game' class="btn btn-primary" role="button" >In-Game</a>
-        <p>Level: <strong>{{ user_account_info.summonerLevel }}</strong></p>
-        <p>Summoner id: <strong>{{ user_account_info.id }}</strong></p>
-
-        <p>puuid: <strong>{{ user_account_info.puuid }}</strong></p>
-
-        <div class="container py-3">
-
           <div class="row justify-content-around">
 
             <div class="col-4">
@@ -38,11 +77,11 @@
               <div class="col stats">
                 
                 {% if summoner_stats.RANKED_SOLO_5x5.tier == "Unranked" %}
-                  <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-regalia/unranked.png">
+                  <img class="img-fluid" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.png">
                   Ranked Solo: Unranked
 
                 {% else %}
-                  <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-regalia/{{ summoner_stats.RANKED_SOLO_5x5.tier|lower }}.png">
+                  <img class="img-fluid" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/{{ summoner_stats.RANKED_SOLO_5x5.tier|lower }}.png">
                   Ranked Solo: <strong>{{ summoner_stats.RANKED_SOLO_5x5.tier }} {{ summoner_stats.RANKED_SOLO_5x5.rank }}</strong>
                   {{ summoner_stats.RANKED_SOLO_5x5.leaguePoints }} LP / 
                   {{ summoner_stats.RANKED_SOLO_5x5.wins }}W {{ summoner_stats.RANKED_SOLO_5x5.losses }}L {{ summoner_stats.RANKED_SOLO_5x5.win_rate }}% WR
@@ -53,18 +92,17 @@
               <div class="col stats">
 
                 {% if summoner_stats.RANKED_FLEX_SR.tier == "Unranked" %}
-                  <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-regalia/unranked.png">
+                  <img class="img-fluid" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.png">
                   Ranked Flex: Unranked
 
                 {% else %}
-                  <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-regalia/{{ summoner_stats.RANKED_FLEX_SR.tier|lower }}.png">
+                  <img class="img-fluid" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/{{ summoner_stats.RANKED_FLEX_SR.tier|lower }}.png">
                   Ranked Flex: <strong>{{ summoner_stats.RANKED_FLEX_SR.tier }} {{ summoner_stats.RANKED_FLEX_SR.rank }}</strong>
                   LP: {{  summoner_stats.RANKED_FLEX_SR.leaguePoints}}
                   Winrate (ranked): <strong>W: {{ summoner_stats.RANKED_FLEX_SR.wins }} / L: {{ summoner_stats.RANKED_FLEX_SR.losses }} ({{summoner_stats.RANKED_FLEX_SR.win_rate }}%)</strong>
                 {% endif %}
 
               </div>
-              <div class="col stats">Column</div>
             </div>
 
             <div class="col-md-8">
@@ -90,7 +128,7 @@
 
       </main>
     {% endif %}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>  </body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
     <script src="{% static 'js/load-game-data.js' %}"></script>
   </body>
 
