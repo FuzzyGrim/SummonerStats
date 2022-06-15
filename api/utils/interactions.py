@@ -4,12 +4,11 @@ Contains functions that interacts with RIOT's API.
 
 import asyncio
 import datetime
+from pydoc import plain
 import requests
 from decouple import config
 import aiohttp
 from api.utils import helpers
-
-from pprint import pprint
 
 
 API_KEY = config("API")
@@ -158,7 +157,7 @@ def get_matchlist(server, puuid):
     return matchlist
 
 
-def get_game_summary_list(games, puuid):
+def get_game_summary_list(games, summoner_db, puuid):
     """
     Gets the main data from each game to show on the user profile page
     """
@@ -169,14 +168,15 @@ def get_game_summary_list(games, puuid):
 
         region = helpers.get_region_by_platform(platform)
 
-        game_summary_list = asyncio.run(get_match_preview(region,
+        summoner_db, game_summary_list = asyncio.run(get_match_preview(region,
                                                           games[:10],
+                                                          summoner_db,
                                                           puuid))
 
-    return game_summary_list
+    return summoner_db, game_summary_list
 
 
-async def get_match_preview(region, games, puuid):
+async def get_match_preview(region, games, summoner_db, puuid):
     """
     Async http request for getting game json and organizing the players data
     """
@@ -193,7 +193,6 @@ async def get_match_preview(region, games, puuid):
         game_preview_list = []
 
         for match in preview_list:
-
 
             game_dict = {}
             participant_number = 0
@@ -245,15 +244,103 @@ async def get_match_preview(region, games, puuid):
             if match["info"]["gameType"] != "CUSTOM_GAME":
                 game_dict["game_summary"]["info"]["matchups"] = []
                 game_base = game_dict["game_summary"]["info"]
-                # pprint(game_base["participants"])
-                print(game_dict["game_summary"]["info"]["gameId"])
                 for i in range(0, 5):
                     game_base["matchups"].append([game_base["participants"][i],
                                                 game_base["participants"][i + 5]])
 
+            # Only if it's a ranked or normal game, not urf, not aram... and teamPosition is not empty, which happens when player went afk and remaked
+            if match["info"]["gameMode"] == "CLASSIC" and player_json["teamPosition"] != "":
+                summoner_db.roles[player_json["teamPosition"]]["NUM"] += 1
+                if player_json["win"]:
+                    summoner_db.roles[player_json["teamPosition"]]["WINS"] += 1
+                else:
+                    summoner_db.roles[player_json["teamPosition"]]["LOSSES"] += 1
+                summoner_db.roles[player_json["teamPosition"]]["WR"] = int(round(summoner_db.roles[player_json["teamPosition"]]["WINS"]
+                                                                                 / summoner_db.roles[player_json["teamPosition"]]["NUM"] * 100, 2))
+
+                summoner_db = add_database_ranked_stats(summoner_db, match, player_json)
+
+                # Create key with champion name with default value of 0 and increment it
+                # summoner_db.champions[player_json["championName"]] = summoner_db.champions.get(player_json["championName"], 0) + 1
+                summoner_db = add_database_champion_stats(summoner_db, player_json)
             game_preview_list.append(game_dict)
 
-    return game_preview_list
+    return summoner_db, game_preview_list
+
+def add_database_ranked_stats(summoner_db, match, player_json):
+    summoner_db.games += 1
+    summoner_db.minutes += int(round(match["info"]["gameDuration"] / 60, 0))
+
+    summoner_db.stats["kills"]["total"] += player_json["kills"]
+    summoner_db.stats["kills"]["per_min"] = round(summoner_db.stats["kills"]["total"] / summoner_db.minutes, 2)
+    summoner_db.stats["kills"]["per_game"] = round(summoner_db.stats["kills"]["total"] / summoner_db.games, 2)
+
+    summoner_db.stats["assists"]["total"] += player_json["assists"]
+    summoner_db.stats["assists"]["per_min"] = round(summoner_db.stats["assists"]["total"] / summoner_db.minutes, 2)
+    summoner_db.stats["assists"]["per_game"] = round(summoner_db.stats["assists"]["total"] / summoner_db.games, 2)
+
+    summoner_db.stats["deaths"]["total"] += player_json["deaths"]
+    summoner_db.stats["deaths"]["per_min"] = round(summoner_db.stats["deaths"]["total"] / summoner_db.minutes, 2)
+    summoner_db.stats["deaths"]["per_game"] = round(summoner_db.stats["deaths"]["total"] / summoner_db.games, 2)
+
+    if summoner_db.stats["deaths"]["total"] != 0:
+        summoner_db.stats["kda"] = round((summoner_db.stats["kills"]["total"] + summoner_db.stats["assists"]["total"]) / summoner_db.stats["deaths"]["total"], 2)
+    else:
+        summoner_db.stats["kda"] = summoner_db.stats["kills"]["total"] + summoner_db.stats["assists"]["total"]
+
+    summoner_db.stats["vision"]["total"] += player_json["visionScore"]
+    summoner_db.stats["vision"]["per_min"] = round(summoner_db.stats["vision"]["total"] / summoner_db.minutes, 2)
+    summoner_db.stats["vision"]["per_game"] = round(summoner_db.stats["vision"]["total"] / summoner_db.games, 2)
+
+    summoner_db.stats["minions"]["total"] += player_json["totalMinionsKilled"] + player_json["neutralMinionsKilled"]
+    summoner_db.stats["minions"]["per_min"] = round(summoner_db.stats["minions"]["total"] / summoner_db.minutes, 2)
+    summoner_db.stats["minions"]["per_game"] = round(summoner_db.stats["minions"]["total"] / summoner_db.games, 2)
+
+    return summoner_db
+
+def add_database_champion_stats(summoner_db, player_json):
+    kills = player_json["kills"]
+    assists = player_json["assists"]
+    deaths = player_json["deaths"]
+    if player_json["championName"] not in summoner_db.champions:
+        summoner_db.champions[player_json["championName"]] = {
+            "num": 1,
+            "kills": kills,
+            "assists": assists,
+            "deaths": deaths,
+            "kda": round((kills + assists) / deaths, 2) if deaths != 0 else kills + assists,
+            "wins": 1 if player_json["win"] else 0,
+            "losses": 1 if not player_json["win"] else 0,
+            "win_rate": 100 if player_json["win"] else 0,
+            "play_rate": 1 / summoner_db.games,
+            "minions" : player_json["totalMinionsKilled"] + player_json["neutralMinionsKilled"],
+            "vision": player_json["visionScore"],
+            "gold": player_json["goldEarned"],
+            "damage" : player_json["totalDamageDealtToChampions"],
+        }
+    else:
+        champion_data = summoner_db.champions[player_json["championName"]]
+        champion_data["num"] += 1
+        champion_data["kills"] += kills
+        champion_data["assists"] += assists
+        champion_data["deaths"] += deaths
+        if champion_data["deaths"] != 0:
+            champion_data["kda"] = round((champion_data["kills"] + champion_data["assists"]) / champion_data["deaths"], 2) 
+        else:
+            champion_data["kda"] = champion_data["kills"] + champion_data["assists"]
+        if player_json["win"]:
+            champion_data["wins"] += 1
+        else:
+            champion_data["losses"] += 1
+        champion_data["win_rate"] = round(champion_data["wins"] / champion_data["num"] * 100, 2) 
+        champion_data["play_rate"] = round(champion_data["num"] / summoner_db.games, 2)
+        champion_data["minions"] += player_json["totalMinionsKilled"] + player_json["neutralMinionsKilled"]
+        champion_data["vision"] += player_json["visionScore"]
+        champion_data["gold"] += player_json["goldEarned"]
+        champion_data["damage"] += player_json["totalDamageDealtToChampions"]
+    
+    return summoner_db
+
 
 
 async def get_preview(session, url):

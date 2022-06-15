@@ -13,3 +13,23 @@ class Match(models.Model):
 
     def __str__(self):
         return self.match_id
+
+class Summoner(models.Model):
+
+    summoner = models.CharField(max_length=50)
+
+    games = models.IntegerField(default=0)
+
+    minutes = models.IntegerField(default=0)
+
+    champions = models.JSONField(default=dict)
+
+    roles = models.JSONField(default=dict)
+
+    stats = models.JSONField(default=dict)
+
+    class Meta:
+        ordering = ['id']
+
+    def __str__(self):
+        return self.summoner

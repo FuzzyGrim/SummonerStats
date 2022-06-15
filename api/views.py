@@ -38,11 +38,25 @@ def user_info(request,
         server = request.POST["server"]
         return redirect("/" + server + "/" + summoner_name + "/")
 
-    user_account_info, summoner_stats = api.utils.interactions.get_ranked_stats(
+    user_account_info, ranked_data = api.utils.interactions.get_ranked_stats(
         server, summoner_name
     )
 
     if user_account_info["success"]:
+#"deaths" : 0, "assists" : 0, "minions" : 0, "vision" : 0, "minutes" : 0
+        # if summoner not in database, create object for the stats database
+        if not api.models.Summoner.objects.filter(summoner=summoner_name).exists():
+            api.models.Summoner.objects.create(summoner=summoner_name,
+            stats={"kills" : {"total" : 0, "per_min" : 0, "per_game": 0},
+                   "deaths" : {"total" : 0, "per_min" : 0, "per_game": 0},
+                   "assists" : {"total" : 0, "per_min" : 0, "per_game": 0},
+                   "minions" : {"total" : 0, "per_min" : 0, "per_game": 0},
+                   "vision" : {"total" : 0, "per_min" : 0, "per_game": 0}},
+            roles={"TOP": {"NUM" : 0,  "WR" : 0, "WINS" : 0, "LOSSES" : 0},
+                   "JUNGLE": {"NUM" : 0, "WR" : 0, "WINS" : 0, "LOSSES" : 0},
+                   "MIDDLE": {"NUM" : 0, "WR" : 0, "WINS" : 0, "LOSSES" : 0},
+                   "BOTTOM": {"NUM" : 0, "WR" : 0, "WINS" : 0, "LOSSES" : 0},
+                   "UTILITY": {"NUM" : 0, "WR" : 0, "WINS" : 0, "LOSSES" : 0}})
 
         games_list = api.utils.interactions.get_matchlist(
             server, user_account_info["puuid"])
@@ -58,18 +72,24 @@ def user_info(request,
             if not api.models.Match.objects.filter(match_id=match,
                                         summoner=summoner_name).exists():
 
-                match_object = api.models.Match(match_id=match, summoner=summoner_name)
-                match_object.save()
+                api.models.Match.objects.create(match_id=match, summoner=summoner_name)
 
             # if match summary not in database, add it to the list
             if api.models.Match.objects.filter(match_id=match, summoner=summoner_name,
                                     summary_json__exact={}).exists():
                 summary_not_in_database.append(match)
 
+        summoner_db = api.models.Summoner.objects.get(summoner=summoner_name)
 
-        game_summary_list = api.utils.interactions.get_game_summary_list(
+        summoner_db, game_summary_list = api.utils.interactions.get_game_summary_list(
                                                     summary_not_in_database,
+                                                    summoner_db,
                                                     user_account_info["puuid"])
+        
+        # order champions in database by number of games
+        summoner_db.champions = dict(sorted(summoner_db.champions.items(), key=lambda item: item[1]["num"], reverse=True))
+
+        summoner_db.save()
 
         for game in game_summary_list:
             game_object = api.models.Match.objects.get(match_id=game["game_id"],
@@ -81,7 +101,8 @@ def user_info(request,
             "game_list": api.models.Match.objects.all().filter(summoner=summoner_name).order_by('-match_id'),
             "game_summary_list": game_summary_list,
             "user_account_info": user_account_info,
-            "summoner_stats": summoner_stats,
+            "ranked_data": ranked_data,
+            "summoner_db": summoner_db,
         }
 
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -94,7 +115,7 @@ def user_info(request,
 
         context = {
             "user_account_info": user_account_info,
-            "summoner_stats": summoner_stats,
+            "ranked_data": ranked_data,
         }
 
     return render(request, template, context)
