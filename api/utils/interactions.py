@@ -255,7 +255,7 @@ async def get_match_preview(region, games, summoner_db, puuid):
                     summoner_db.roles[player_json["teamPosition"]]["WINS"] += 1
                 else:
                     summoner_db.roles[player_json["teamPosition"]]["LOSSES"] += 1
-                summoner_db.roles[player_json["teamPosition"]]["WR"] = int(round(summoner_db.roles[player_json["teamPosition"]]["WINS"]
+                summoner_db.roles[player_json["teamPosition"]]["WIN_RATE"] = int(round(summoner_db.roles[player_json["teamPosition"]]["WINS"]
                                                                                  / summoner_db.roles[player_json["teamPosition"]]["NUM"] * 100, 2))
 
                 summoner_db = add_database_ranked_stats(summoner_db, match, player_json)

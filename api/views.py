@@ -52,11 +52,11 @@ def user_info(request,
                    "assists" : {"total" : 0, "per_min" : 0, "per_game": 0},
                    "minions" : {"total" : 0, "per_min" : 0, "per_game": 0},
                    "vision" : {"total" : 0, "per_min" : 0, "per_game": 0}},
-            roles={"TOP": {"NUM" : 0,  "WR" : 0, "WINS" : 0, "LOSSES" : 0},
-                   "JUNGLE": {"NUM" : 0, "WR" : 0, "WINS" : 0, "LOSSES" : 0},
-                   "MIDDLE": {"NUM" : 0, "WR" : 0, "WINS" : 0, "LOSSES" : 0},
-                   "BOTTOM": {"NUM" : 0, "WR" : 0, "WINS" : 0, "LOSSES" : 0},
-                   "UTILITY": {"NUM" : 0, "WR" : 0, "WINS" : 0, "LOSSES" : 0}})
+            roles={"TOP": {"NUM" : 0,  "WIN_RATE" : 0, "WINS" : 0, "LOSSES" : 0},
+                   "JUNGLE": {"NUM" : 0, "WIN_RATE" : 0, "WINS" : 0, "LOSSES" : 0},
+                   "MIDDLE": {"NUM" : 0, "WIN_RATE" : 0, "WINS" : 0, "LOSSES" : 0},
+                   "BOTTOM": {"NUM" : 0, "WIN_RATE" : 0, "WINS" : 0, "LOSSES" : 0},
+                   "UTILITY": {"NUM" : 0, "WIN_RATE" : 0, "WINS" : 0, "LOSSES" : 0}})
 
         games_list = api.utils.interactions.get_matchlist(
             server, user_account_info["puuid"])
@@ -104,9 +104,6 @@ def user_info(request,
             "ranked_data": ranked_data,
             "summoner_db": summoner_db,
         }
-
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            template = "api/include/games.html"
 
     # If user not found
     else:
