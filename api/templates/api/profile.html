@@ -60,60 +60,62 @@
 
             </div>
           </div>
-        
+
           <div class="row justify-content-around">
 
-            <div class="col-4">
-
-              <h3>Stats based on {{ summoner_db.games }} game{{ summoner_db.games|pluralize }}</h3>
-              <p>Load more games to get a better result </p>
+            <div class="col-4">              
 
               <div class="stats">
+                <span data-bs-toggle="tooltip" data-bs-placement="right" title="Stats based on {{ summoner_db.games }} game{{ summoner_db.games|pluralize }}" style="float: right; margin-right: 2rem; font-size: 1rem;">
+                <i class="bi bi-info-circle-fill"></i>
+                </span>
+                <div class="container d-flex align-items-center justify-content-center">
+                  <i class="bi bi-collection-fill" style="font-size: 1.5rem; margin-right: 2rem"></i> <span class="fs-3">CHAMPIONS</span> <i class="bi bi-collection-fill" style="font-size: 1.5rem; margin-left: 2rem"></i>
+                </div>
 
-                <h4>Stats</h4>
                 <div class="bars d-flex justify-content-around">
                   <div class="progress-role">
-                    <div class="progress progress-bar-vertical">
-                      <div class="progress-bar" role="progressbar" aria-valuenow="{{summoner_db.roles.TOP.WR}}" aria-valuemin="0" aria-valuemax="100" style="height: {{summoner_db.roles.TOP.WR}}%"> </div>
+                    <div class="progress progress-bar-vertical" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ summoner_db.roles.TOP.WINS }} - {{ summoner_db.roles.TOP.LOSSES }} / {{summoner_db.roles.TOP.WIN_RATE}}%">
+                      <div class="progress-bar" role="progressbar" aria-valuenow="{{summoner_db.roles.TOP.WIN_RATE}}" aria-valuemin="0" aria-valuemax="100" style="height: {{summoner_db.roles.TOP.WIN_RATE}}%"> </div>
                     </div>
                     <img class="bar-role-img" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-top.png">
-                    <div>{{summoner_db.roles.TOP.NUM}}</div>
+                    <div class="text-center">{{summoner_db.roles.TOP.NUM}}</div>
                   </div>
                   
                   <div class="progress-role">
-                    <div class="progress progress-bar-vertical">
-                      <div class="progress-bar" role="progressbar" aria-valuenow="{{summoner_db.roles.JUNGLE.WR}}" aria-valuemin="0" aria-valuemax="100" style="height: {{summoner_db.roles.JUNGLE.WR}}%"> </div>
+                    <div class="progress progress-bar-vertical" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ summoner_db.roles.JUNGLE.WINS }} - {{ summoner_db.roles.JUNGLE.LOSSES }} / {{summoner_db.roles.JUNGLE.WIN_RATE}}%">
+                      <div class="progress-bar" role="progressbar" aria-valuenow="{{summoner_db.roles.JUNGLE.WIN_RATE}}" aria-valuemin="0" aria-valuemax="100" style="height: {{summoner_db.roles.JUNGLE.WIN_RATE}}%"> </div>
                     </div>
                     <img class="bar-role-img" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-jungle.png">
-                    <div>{{summoner_db.roles.JUNGLE.NUM}}</div>
+                    <div class="text-center">{{summoner_db.roles.JUNGLE.NUM}}</div>
                   </div>
 
                   <div class="progress-role">
-                    <div class="progress progress-bar-vertical">
-                      <div class="progress-bar" role="progressbar" aria-valuenow="{{summoner_db.roles.MIDDLE.WR}}" aria-valuemin="0" aria-valuemax="100" style="height: {{summoner_db.roles.MIDDLE.WR}}%"> </div>
+                    <div class="progress progress-bar-vertical" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ summoner_db.roles.MIDDLE.WINS }} - {{ summoner_db.roles.MIDDLE.LOSSES }} / {{summoner_db.roles.MIDDLE.WIN_RATE}}%">
+                      <div class="progress-bar" role="progressbar" aria-valuenow="{{summoner_db.roles.MIDDLE.WIN_RATE}}" aria-valuemin="0" aria-valuemax="100" style="height: {{summoner_db.roles.MIDDLE.WIN_RATE}}%"> </div>
                     </div>
                     <img class="bar-role-img" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-middle.png">
-                    <div>{{summoner_db.roles.MIDDLE.NUM}}</div>
+                    <div class="text-center">{{summoner_db.roles.MIDDLE.NUM}}</div>
                   </div>
 
                   <div class="progress-role">
-                    <div class="progress progress-bar-vertical">
-                      <div class="progress-bar" role="progressbar" aria-valuenow="{{summoner_db.roles.BOTTOM.WR}}" aria-valuemin="0" aria-valuemax="100" style="height: {{summoner_db.roles.BOTTOM.WR}}%"> </div>
+                    <div class="progress progress-bar-vertical" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ summoner_db.roles.BOTTOM.WINS }} - {{ summoner_db.roles.BOTTOM.LOSSES }} / {{summoner_db.roles.BOTTOM.WIN_RATE}}%">
+                      <div class="progress-bar" role="progressbar" aria-valuenow="{{summoner_db.roles.BOTTOM.WIN_RATE}}" aria-valuemin="0" aria-valuemax="100" style="height: {{summoner_db.roles.BOTTOM.WIN_RATE}}%"> </div>
                     </div>
                     <img class="bar-role-img" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-bottom.png">
-                    <div>{{summoner_db.roles.BOTTOM.NUM}}</div>
+                    <div class="text-center">{{summoner_db.roles.BOTTOM.NUM}}</div>
                   </div>
 
                   <div class="progress-role">
-                    <div class="progress progress-bar-vertical">
-                      <div class="progress-bar" role="progressbar" aria-valuenow="{{summoner_db.roles.UTILITY.WR}}" aria-valuemin="0" aria-valuemax="100" style="height: {{summoner_db.roles.UTILITY.WR}}%"> </div>
+                    <div class="progress progress-bar-vertical" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ summoner_db.roles.UTILITY.WINS }} - {{ summoner_db.roles.UTILITY.LOSSES }} / {{summoner_db.roles.UTILITY.WIN_RATE}}%">
+                      <div class="progress-bar" role="progressbar" aria-valuenow="{{summoner_db.roles.UTILITY.WIN_RATE}}" aria-valuemin="0" aria-valuemax="100" style="height: {{summoner_db.roles.UTILITY.WIN_RATE}}%"> </div>
                     </div>
                     <img class="bar-role-img" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-utility.png">
-                    <div>{{summoner_db.roles.UTILITY.NUM}}</div>
+                    <div class="text-center">{{summoner_db.roles.UTILITY.NUM}}</div>
                   </div>
                 </div>
 
-                <table class="table table-striped">
+                <table class="table table-striped text-center">
                   <thead>
                     <tr>
                       <th scope="col">STAT</th>
@@ -124,31 +126,31 @@
                   </thead>
                   <tbody>
                     <tr>
-                      <td>kills</td>
+                      <td>Kills</td>
                       <td>{{summoner_db.stats.kills.total}}</td>
                       <td>{{summoner_db.stats.kills.per_min}}</td>
                       <td>{{summoner_db.stats.kills.per_game}}</td>
                     </tr>
                     <tr>
-                      <td>deaths</td>
+                      <td>Deaths</td>
                       <td>{{summoner_db.stats.deaths.total}}</td>
                       <td>{{summoner_db.stats.deaths.per_min}}</td>
                       <td>{{summoner_db.stats.deaths.per_game}}</td>
                     </tr>
                     <tr>
-                      <td>assists</td>
+                      <td>Assists</td>
                       <td>{{summoner_db.stats.assists.total}}</td>
                       <td>{{summoner_db.stats.assists.per_min}}</td>
                       <td>{{summoner_db.stats.assists.per_game}}</td>
                     </tr>
                     <tr>
-                      <td>minions</td>
+                      <td>Minions</td>
                       <td>{{summoner_db.stats.minions.total}}</td>
                       <td>{{summoner_db.stats.minions.per_min}}</td>
                       <td>{{summoner_db.stats.minions.per_game}}</td>
                     </tr>
                     <tr>
-                      <td>vision</td>
+                      <td>Vision</td>
                       <td>{{summoner_db.stats.vision.total}}</td>
                       <td>{{summoner_db.stats.vision.per_min}}</td>
                       <td>{{summoner_db.stats.vision.per_game}}</td>
@@ -159,10 +161,15 @@
               </div>
 
               <div class="champions">
-                
-                <h4>Top Champs</h4>
+                <span data-bs-toggle="tooltip" data-bs-placement="right" title="Stats based on {{ summoner_db.games }} game{{ summoner_db.games|pluralize }}" style="float: right; margin-right: 2rem; font-size: 1rem;">
+                  <i class="bi bi-info-circle-fill"></i>
+                  </span>
+                <div class="container d-flex align-items-center justify-content-center">
+                  <i class="bi bi-bar-chart-fill" style="font-size: 1.5rem; margin-right: 2rem"></i> <span class="fs-3">STATS</span> <i class="bi bi-bar-chart-fill" style="font-size: 1.5rem; margin-left: 2rem"></i>
+                </div>
 
-                <table class="table table-striped">
+
+                <table class="table table-striped text-center">
                   <thead>
                     <tr>
                       <th scope="col"></th>
@@ -212,6 +219,12 @@
     {% endif %}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
     <script src="{% static 'js/load-game-data.js' %}"></script>
+    <script>
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+      var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+      })
+    </script>
   </body>
 
 </html>
