@@ -5,11 +5,7 @@
 
 
 body {
-  background: url('../assets/poro.jpg') no-repeat center center fixed; 
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
-  background-size: cover;
+  background-color: #A0B7C7;
  }
 
 /* Remove margin of form in navbar to align with text on the left*/
@@ -37,12 +33,7 @@ main .stats-box {
 }
 
 main .stats-box .rank-img {
-  width: 3.5em;
-}
-
-main .items{
-  width:20px;
-  height:20px;
+  height: 3.5em;
 }
 
 .progress-bar-vertical {
@@ -64,4 +55,25 @@ main .items{
   display:block;
   margin-left: auto;
   margin-right: auto;
+}
+
+.names {
+  display: inline-block;
+  width: 6em;
+  font-size: .8em;
+}
+
+.champion-face {
+  max-width: 100%;
+  height: 1rem;
+}
+
+.items {
+  width: 1.5em;
+  height: 1.5em;
+  margin-right: .2rem;
+  margin-top: .2rem;
+}
+.items-blank {
+  background-color: #5190b9;
 }

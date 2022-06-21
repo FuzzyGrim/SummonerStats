@@ -70,3 +70,74 @@ def get_game_mode(queue_id):
         queue_id = "Special"
 
     return queue_id
+
+def get_summoner_spell(summoner_key):
+    """
+    Get summoner spell by the summoner_key
+    """
+    if summoner_key == 1:
+        summoner_key = "summoner_boost"
+
+    elif summoner_key == 3:
+        summoner_key = "summoner_exhaust"
+
+    elif summoner_key == 4:
+        summoner_key = "summoner_flash"
+
+    elif summoner_key == 6:
+        summoner_key = "summoner_haste"
+
+    elif summoner_key == 7:
+        summoner_key = "summoner_heal"
+
+    elif summoner_key == 11:
+        summoner_key = "summoner_smite"
+
+    elif summoner_key == 12:
+        summoner_key = "summoner_teleport"
+
+    elif summoner_key == 13:
+        summoner_key = "summonermana"
+
+    elif summoner_key == 14:
+        summoner_key = "summonerignite"
+        
+    elif summoner_key == 21:
+        summoner_key = "summonerbarrier"
+
+    elif summoner_key == 32:
+        summoner_key = "summoner_mark"
+
+    else:
+        summoner_key = "summoner_empty"
+    
+    return summoner_key
+
+def get_rune_primary(rune_id):
+    url = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perks.json"
+    response = requests.get(url)
+    data_json = response.json()
+    rune_dict =  next((item for item in data_json if item['id'] == rune_id), None)
+    return rune_dict["iconPath"].split("Styles/",1)[1]
+
+    
+def get_rune_secondary(rune_id):
+    """
+    Get rune by the rune_id
+    """
+    if rune_id == 8000:
+        rune_id = "7201_precision"
+
+    elif rune_id == 8100:
+        rune_id = "7200_domination"
+    
+    elif rune_id == 8200:
+        rune_id = "7202_sorcery"
+    
+    elif rune_id == 8300:
+        rune_id = "7203_whimsy"
+
+    else:
+        rune_id = "7204_resolve"
+
+    return rune_id

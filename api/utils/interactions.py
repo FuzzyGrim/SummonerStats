@@ -201,18 +201,31 @@ async def get_match_preview(region, games, summoner_db, puuid):
             while match["metadata"]["participants"][participant_number] != puuid:
                 participant_number += 1
 
-            player_json = match["info"]["participants"][participant_number]
-            game_dict["player_summary"] = player_json
+            game_dict["player_summary"] = match["info"]["participants"][participant_number]
 
             kills = game_dict["player_summary"]["kills"]
             assists = game_dict["player_summary"]["assists"]
             deaths = game_dict["player_summary"]["deaths"]
             try:
                 game_dict["player_summary"]["kda"] = round((kills + assists) / deaths, 2)
-
             # Happens when zero deaths
             except ZeroDivisionError:
                 game_dict["player_summary"]["kda"] = kills + assists
+            
+            game_dict["player_summary"]["cs"] = (game_dict["player_summary"]["totalMinionsKilled"] 
+                                                            + game_dict["player_summary"]["neutralMinionsKilled"]) 
+
+            game_dict["player_summary"]["cs_per_min"] = round((game_dict["player_summary"]["totalMinionsKilled"] 
+                                                            + game_dict["player_summary"]["neutralMinionsKilled"]) 
+                                                            / (match["info"]["gameDuration"] / 60), 1)
+
+            game_dict["player_summary"]["summoner_spell_1"] = helpers.get_summoner_spell(match["info"]["participants"][participant_number]["summoner1Id"])
+            game_dict["player_summary"]["summoner_spell_2"] = helpers.get_summoner_spell(match["info"]["participants"][participant_number]["summoner2Id"])
+            game_dict["player_summary"]["rune_primary"] = helpers.get_rune_primary(match["info"]["participants"][participant_number]["perks"]["styles"][0]["selections"][0]["perk"])
+            game_dict["player_summary"]["rune_secondary"] = helpers.get_rune_secondary(match["info"]["participants"][participant_number]["perks"]["styles"][1]["style"])
+            game_dict["player_summary"]["challenges"]["kill_participation_percentage"] = round(match["info"]["participants"][participant_number]["challenges"]["killParticipation"] * 100, 1)
+            game_dict["player_summary"]["gold_short"] = round(match["info"]["participants"][participant_number]["goldEarned"] / 1000, 1)
+            game_dict["player_summary"]["damage_short"] = round(match["info"]["participants"][participant_number]["totalDamageDealtToChampions"] / 1000, 1)
 
             # Get the date of game creation
             game_date = helpers.get_date_by_timestamp(match["info"]
@@ -249,20 +262,18 @@ async def get_match_preview(region, games, summoner_db, puuid):
                                                 game_base["participants"][i + 5]])
 
             # Only if it's a ranked or normal game, not urf, not aram... and teamPosition is not empty, which happens when player went afk and remaked
-            if match["info"]["gameMode"] == "CLASSIC" and player_json["teamPosition"] != "":
-                summoner_db.roles[player_json["teamPosition"]]["NUM"] += 1
-                if player_json["win"]:
-                    summoner_db.roles[player_json["teamPosition"]]["WINS"] += 1
+            if match["info"]["gameMode"] == "CLASSIC" and game_dict["player_summary"]["teamPosition"] != "":
+                summoner_db.roles[game_dict["player_summary"]["teamPosition"]]["NUM"] += 1
+                if game_dict["player_summary"]["win"]:
+                    summoner_db.roles[game_dict["player_summary"]["teamPosition"]]["WINS"] += 1
                 else:
-                    summoner_db.roles[player_json["teamPosition"]]["LOSSES"] += 1
-                summoner_db.roles[player_json["teamPosition"]]["WIN_RATE"] = int(round(summoner_db.roles[player_json["teamPosition"]]["WINS"]
-                                                                                 / summoner_db.roles[player_json["teamPosition"]]["NUM"] * 100, 2))
+                    summoner_db.roles[game_dict["player_summary"]["teamPosition"]]["LOSSES"] += 1
+                summoner_db.roles[game_dict["player_summary"]["teamPosition"]]["WIN_RATE"] = int(summoner_db.roles[game_dict["player_summary"]["teamPosition"]]["WINS"]
+                                                                                            / summoner_db.roles[game_dict["player_summary"]["teamPosition"]]["NUM"] * 100)
 
-                summoner_db = add_database_ranked_stats(summoner_db, match, player_json)
+                summoner_db = add_database_ranked_stats(summoner_db, match, game_dict["player_summary"])
 
-                # Create key with champion name with default value of 0 and increment it
-                # summoner_db.champions[player_json["championName"]] = summoner_db.champions.get(player_json["championName"], 0) + 1
-                summoner_db = add_database_champion_stats(summoner_db, player_json)
+                summoner_db = add_database_champion_stats(summoner_db, match, game_dict["player_summary"])
             game_preview_list.append(game_dict)
 
     return summoner_db, game_preview_list
@@ -298,7 +309,7 @@ def add_database_ranked_stats(summoner_db, match, player_json):
 
     return summoner_db
 
-def add_database_champion_stats(summoner_db, player_json):
+def add_database_champion_stats(summoner_db, match, player_json):
     kills = player_json["kills"]
     assists = player_json["assists"]
     deaths = player_json["deaths"]
@@ -317,6 +328,7 @@ def add_database_champion_stats(summoner_db, player_json):
             "vision": player_json["visionScore"],
             "gold": player_json["goldEarned"],
             "damage" : player_json["totalDamageDealtToChampions"],
+            "last_played": helpers.get_date_by_timestamp(match["info"]["gameCreation"]),
         }
     else:
         champion_data = summoner_db.champions[player_json["championName"]]
@@ -338,6 +350,7 @@ def add_database_champion_stats(summoner_db, player_json):
         champion_data["vision"] += player_json["visionScore"]
         champion_data["gold"] += player_json["goldEarned"]
         champion_data["damage"] += player_json["totalDamageDealtToChampions"]
+        champion_data["last_played"] = helpers.get_date_by_timestamp(match["info"]["gameCreation"])
     
     return summoner_db
 
