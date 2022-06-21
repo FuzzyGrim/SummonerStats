@@ -43,7 +43,6 @@ def user_info(request,
     )
 
     if user_account_info["success"]:
-#"deaths" : 0, "assists" : 0, "minions" : 0, "vision" : 0, "minutes" : 0
         # if summoner not in database, create object for the stats database
         if not api.models.Summoner.objects.filter(summoner=summoner_name).exists():
             api.models.Summoner.objects.create(summoner=summoner_name,
@@ -86,8 +85,8 @@ def user_info(request,
                                                     summoner_db,
                                                     user_account_info["puuid"])
         
-        # order champions in database by number of games
-        summoner_db.champions = dict(sorted(summoner_db.champions.items(), key=lambda item: item[1]["num"], reverse=True))
+        # order champions in database by number of games, then by win rate and then by kda
+        summoner_db.champions = dict(sorted(summoner_db.champions.items(), key=lambda item: (item[1]["num"], item[1]["win_rate"], item[1]["kda"]), reverse=True))
 
         summoner_db.save()
 
@@ -104,6 +103,9 @@ def user_info(request,
             "ranked_data": ranked_data,
             "summoner_db": summoner_db,
         }
+
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            template = "api/include/games.html"
 
     # If user not found
     else:
