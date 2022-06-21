@@ -39,7 +39,7 @@
               <strong><span style="color: white; text-align: center; font-size: 1.2em;">Ranked Solo</span></strong>
               <hr>
               {% if ranked_data.RANKED_SOLO_5x5.tier == "Unranked" %}
-                <img class="rank-img" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.png">
+                <span class="rank-img" style="display:inline-block"><img style="height: 3em;" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.png"></span>
                 <strong>UNRANKED</strong>
               {% else %}
                 <span><img class="rank-img" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/{{ ranked_data.RANKED_SOLO_5x5.tier|lower }}.png"> </span>
@@ -52,7 +52,7 @@
               <hr>
 
               {% if ranked_data.RANKED_FLEX_SR.tier == "Unranked" %}
-                <img class="rank-img" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.png">
+                <span class="rank-img" style="display:inline-block"><img style="height: 3em;" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.png"></span>
                 <strong>UNRANKED</strong>
               {% else %}
                 <span><img class="rank-img" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/{{ ranked_data.RANKED_FLEX_SR.tier|lower }}.png"></span>
@@ -64,8 +64,8 @@
 
           <div class="row justify-content-around">
 
-            <div class="col-4">              
-
+            <div class="col-4">
+              
               <div class="stats">
                 <span data-bs-toggle="tooltip" data-bs-placement="right" title="Stats based on {{ summoner_db.games }} game{{ summoner_db.games|pluralize }}" style="float: right; margin-right: 2rem; font-size: 1rem;">
                 <i class="bi bi-info-circle-fill"></i>
@@ -116,7 +116,7 @@
                   </div>
                 </div>
 
-                <table class="table table-striped text-center">
+                <table class="table table-sm table-striped text-center">
                   <thead>
                     <tr>
                       <th scope="col">STAT</th>
@@ -170,7 +170,7 @@
                 </div>
 
 
-                <table class="table table-striped text-center">
+                <table class="table table-sm table-striped text-center">
                   <thead>
                     <tr>
                       <th scope="col"></th>
