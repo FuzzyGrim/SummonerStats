@@ -1,7 +1,5 @@
 {% load static %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
-
 {% block content %}
 
 <!doctype html>
@@ -9,6 +7,8 @@
 
   <head>
     {% include "api/include/tags.html" %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+
     <title>SummonerStats</title>
   </head>
 

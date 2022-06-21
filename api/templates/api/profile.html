@@ -1,13 +1,14 @@
 {% load static %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'css/profile.css' %}">
-
 {% block content %}
+
 <!doctype html>
 <html lang="en">
 
   <head>
     {% include "api/include/tags.html" %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/profile.css' %}">
+
     <title>{{ user_account_info.name }} | SummonerStats</title>
   </head>
 
