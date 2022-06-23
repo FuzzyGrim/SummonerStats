@@ -51,6 +51,7 @@ def user_info(request,
                    "assists" : {"total" : 0, "per_min" : 0, "per_game": 0},
                    "minions" : {"total" : 0, "per_min" : 0, "per_game": 0},
                    "vision" : {"total" : 0, "per_min" : 0, "per_game": 0}},
+
             roles={"TOP": {"NUM" : 0,  "WIN_RATE" : 0, "WINS" : 0, "LOSSES" : 0},
                    "JUNGLE": {"NUM" : 0, "WIN_RATE" : 0, "WINS" : 0, "LOSSES" : 0},
                    "MIDDLE": {"NUM" : 0, "WIN_RATE" : 0, "WINS" : 0, "LOSSES" : 0},
@@ -98,7 +99,6 @@ def user_info(request,
 
         context = {
             "game_list": api.models.Match.objects.all().filter(summoner=summoner_name).order_by('-match_id'),
-            "game_summary_list": game_summary_list,
             "user_account_info": user_account_info,
             "ranked_data": ranked_data,
             "summoner_db": summoner_db,
@@ -132,6 +132,3 @@ def get_game_data(request, server, summoner_name, game_id):
                                                 game_id, game_info_json)
 
     return JsonResponse(game_info_json)
-
-def is_ajax(request):
-    return request.headers.get('x-requested-with') == 'XMLHttpRequest'
