@@ -4,7 +4,6 @@ Contains functions that interacts with RIOT's API.
 
 import asyncio
 import datetime
-from pydoc import plain
 import requests
 from decouple import config
 import aiohttp
@@ -187,93 +186,105 @@ async def get_match_preview(region, games, summoner_db, puuid):
             url = "https://" + region + \
                 ".api.riotgames.com/lol/match/v5/matches/" + \
                 match + "?api_key=" + API_KEY
-            tasks.append(asyncio.ensure_future(get_preview(session, url)))
+            tasks.append(asyncio.ensure_future(get_json(session, url)))
 
         preview_list = await asyncio.gather(*tasks)
         game_preview_list = []
 
         for match in preview_list:
-
-            game_dict = {}
-            participant_number = 0
-
-            # Find summoner participant number in the match
-            while match["metadata"]["participants"][participant_number] != puuid:
-                participant_number += 1
-
-            game_dict["player_summary"] = match["info"]["participants"][participant_number]
-
-            kills = game_dict["player_summary"]["kills"]
-            assists = game_dict["player_summary"]["assists"]
-            deaths = game_dict["player_summary"]["deaths"]
-            try:
-                game_dict["player_summary"]["kda"] = round((kills + assists) / deaths, 2)
-            # Happens when zero deaths
-            except ZeroDivisionError:
-                game_dict["player_summary"]["kda"] = kills + assists
             
-            game_dict["player_summary"]["cs"] = (game_dict["player_summary"]["totalMinionsKilled"] 
-                                                            + game_dict["player_summary"]["neutralMinionsKilled"]) 
-
-            game_dict["player_summary"]["cs_per_min"] = round((game_dict["player_summary"]["totalMinionsKilled"] 
-                                                            + game_dict["player_summary"]["neutralMinionsKilled"]) 
-                                                            / (match["info"]["gameDuration"] / 60), 1)
-
-            game_dict["player_summary"]["summoner_spell_1"] = helpers.get_summoner_spell(match["info"]["participants"][participant_number]["summoner1Id"])
-            game_dict["player_summary"]["summoner_spell_2"] = helpers.get_summoner_spell(match["info"]["participants"][participant_number]["summoner2Id"])
-            game_dict["player_summary"]["rune_primary"] = helpers.get_rune_primary(match["info"]["participants"][participant_number]["perks"]["styles"][0]["selections"][0]["perk"])
-            game_dict["player_summary"]["rune_secondary"] = helpers.get_rune_secondary(match["info"]["participants"][participant_number]["perks"]["styles"][1]["style"])
-            game_dict["player_summary"]["challenges"]["kill_participation_percentage"] = round(match["info"]["participants"][participant_number]["challenges"]["killParticipation"] * 100, 1)
-            game_dict["player_summary"]["gold_short"] = round(match["info"]["participants"][participant_number]["goldEarned"] / 1000, 1)
-            game_dict["player_summary"]["damage_short"] = round(match["info"]["participants"][participant_number]["totalDamageDealtToChampions"] / 1000, 1)
-
-            # Get the date of game creation
-            game_date = helpers.get_date_by_timestamp(match["info"]
-                                                        ["gameCreation"])
-            game_dict["date"] = game_date
-
-            # Get patch for assets, 11.23.409.111 -> 11.23.1
-            patch = ".".join(match["info"]["gameVersion"].split(".")[:2]) + ".1"
-            game_dict["patch"] = patch
-
-            game_dict["player_summary"]["items"] = [game_dict["player_summary"]["item0"],
-                                                    game_dict["player_summary"]["item1"],
-                                                    game_dict["player_summary"]["item2"],
-                                                    game_dict["player_summary"]["item6"],
-                                                    game_dict["player_summary"]["item3"],
-                                                    game_dict["player_summary"]["item4"],
-                                                    game_dict["player_summary"]["item5"]]
-
+            game_dict = {}
             game_dict["game_id"] = str(match["metadata"]["matchId"])
-
             game_dict["game_summary"] = match
 
-            if match["info"]["gameMode"] == "CLASSIC":
-                game_dict["game_mode"] = helpers.get_game_mode(match["info"]["queueId"])
+            if match["info"]["gameMode"] != "TUTORIAL_MODULE_1":
+                participant_number = 0
+                # Find summoner participant number in the match
+                while match["metadata"]["participants"][participant_number] != puuid:
+                    participant_number += 1
 
-            else:
-                game_dict["game_mode"] = match["info"]["gameMode"]
+                game_dict["player_summary"] = match["info"]["participants"][participant_number]
 
-            if match["info"]["gameType"] != "CUSTOM_GAME":
-                game_dict["game_summary"]["info"]["matchups"] = []
-                game_base = game_dict["game_summary"]["info"]
-                for i in range(0, 5):
-                    game_base["matchups"].append([game_base["participants"][i],
-                                                game_base["participants"][i + 5]])
+                kills = game_dict["player_summary"]["kills"]
+                assists = game_dict["player_summary"]["assists"]
+                deaths = game_dict["player_summary"]["deaths"]
+                try:
+                    game_dict["player_summary"]["kda"] = round((kills + assists) / deaths, 2)
+                # Happens when zero deaths
+                except ZeroDivisionError:
+                    game_dict["player_summary"]["kda"] = kills + assists
+                
+                game_dict["player_summary"]["cs"] = (game_dict["player_summary"]["totalMinionsKilled"] 
+                                                                + game_dict["player_summary"]["neutralMinionsKilled"]) 
 
-            # Only if it's a ranked or normal game, not urf, not aram... and teamPosition is not empty, which happens when player went afk and remaked
-            if match["info"]["gameMode"] == "CLASSIC" and game_dict["player_summary"]["teamPosition"] != "":
-                summoner_db.roles[game_dict["player_summary"]["teamPosition"]]["NUM"] += 1
-                if game_dict["player_summary"]["win"]:
-                    summoner_db.roles[game_dict["player_summary"]["teamPosition"]]["WINS"] += 1
+                game_dict["player_summary"]["cs_per_min"] = round((game_dict["player_summary"]["totalMinionsKilled"] 
+                                                                + game_dict["player_summary"]["neutralMinionsKilled"]) 
+                                                                / (match["info"]["gameDuration"] / 60), 1)
+
+                game_dict["player_summary"]["summoner_spell_1"] = helpers.get_summoner_spell(match["info"]["participants"][participant_number]["summoner1Id"])
+                game_dict["player_summary"]["summoner_spell_2"] = helpers.get_summoner_spell(match["info"]["participants"][participant_number]["summoner2Id"])
+                game_dict["player_summary"]["rune_primary"] = helpers.get_rune_primary(match["info"]["participants"][participant_number]["perks"]["styles"][0]["selections"][0]["perk"])
+                game_dict["player_summary"]["rune_secondary"] = helpers.get_rune_secondary(match["info"]["participants"][participant_number]["perks"]["styles"][1]["style"])
+
+                # Some game modes doesn't have challenges sections such as URF
+                if "challenges" in match["info"]["participants"][participant_number]:
+
+                    # Sometimes the killParticipation challenges is not available, e.g: remake games
+                    if "killParticipation" in match["info"]["participants"][participant_number]["challenges"]:
+                        game_dict["player_summary"]["challenges"]["kill_participation_percentage"] = round(match["info"]["participants"][participant_number]["challenges"]["killParticipation"] * 100, 1)
+                    else:
+                        game_dict["player_summary"]["challenges"]["kill_participation_percentage"] = "ERROR"
                 else:
-                    summoner_db.roles[game_dict["player_summary"]["teamPosition"]]["LOSSES"] += 1
-                summoner_db.roles[game_dict["player_summary"]["teamPosition"]]["WIN_RATE"] = int(summoner_db.roles[game_dict["player_summary"]["teamPosition"]]["WINS"]
-                                                                                            / summoner_db.roles[game_dict["player_summary"]["teamPosition"]]["NUM"] * 100)
+                    game_dict["player_summary"]["challenges"] = {}
+                    game_dict["player_summary"]["challenges"]["kill_participation_percentage"] = "ERROR"
 
-                summoner_db = add_database_ranked_stats(summoner_db, match, game_dict["player_summary"])
+                game_dict["player_summary"]["gold_short"] = round(match["info"]["participants"][participant_number]["goldEarned"] / 1000, 1)
+                game_dict["player_summary"]["damage_short"] = round(match["info"]["participants"][participant_number]["totalDamageDealtToChampions"] / 1000, 1)
 
-                summoner_db = add_database_champion_stats(summoner_db, match, game_dict["player_summary"])
+                # Get the date of game creation
+                game_date = helpers.get_date_by_timestamp(match["info"]
+                                                            ["gameCreation"])
+                game_dict["date"] = game_date
+
+                # Get patch for assets, 11.23.409.111 -> 11.23.1
+                patch = ".".join(match["info"]["gameVersion"].split(".")[:2]) + ".1"
+                game_dict["patch"] = patch
+
+                game_dict["player_summary"]["items"] = [game_dict["player_summary"]["item0"],
+                                                        game_dict["player_summary"]["item1"],
+                                                        game_dict["player_summary"]["item2"],
+                                                        game_dict["player_summary"]["item6"],
+                                                        game_dict["player_summary"]["item3"],
+                                                        game_dict["player_summary"]["item4"],
+                                                        game_dict["player_summary"]["item5"]]
+
+                if match["info"]["gameMode"] == "CLASSIC":
+                    game_dict["game_mode"] = helpers.get_game_mode(match["info"]["queueId"])
+
+                else:
+                    game_dict["game_mode"] = match["info"]["gameMode"]
+
+                if match["info"]["gameType"] != "CUSTOM_GAME":
+                    game_dict["game_summary"]["info"]["matchups"] = []
+                    game_base = game_dict["game_summary"]["info"]
+                    for i in range(0, 5):
+                        game_base["matchups"].append([game_base["participants"][i],
+                                                    game_base["participants"][i + 5]])
+
+                # Only if it's a ranked or normal game, not urf, not aram... and teamPosition is not empty, which happens when player went afk and remaked
+                if match["info"]["gameMode"] == "CLASSIC" and game_dict["player_summary"]["teamPosition"] != "":
+                    summoner_db.roles[game_dict["player_summary"]["teamPosition"]]["NUM"] += 1
+                    if game_dict["player_summary"]["win"]:
+                        summoner_db.roles[game_dict["player_summary"]["teamPosition"]]["WINS"] += 1
+                    else:
+                        summoner_db.roles[game_dict["player_summary"]["teamPosition"]]["LOSSES"] += 1
+                    summoner_db.roles[game_dict["player_summary"]["teamPosition"]]["WIN_RATE"] = int(summoner_db.roles[game_dict["player_summary"]["teamPosition"]]["WINS"]
+                                                                                                / summoner_db.roles[game_dict["player_summary"]["teamPosition"]]["NUM"] * 100)
+
+                    summoner_db = add_database_ranked_stats(summoner_db, match, game_dict["player_summary"])
+
+                    summoner_db = add_database_champion_stats(summoner_db, match, game_dict["player_summary"])
+            
             game_preview_list.append(game_dict)
 
     return summoner_db, game_preview_list
@@ -354,18 +365,6 @@ def add_database_champion_stats(summoner_db, match, player_json):
     
     return summoner_db
 
-
-
-async def get_preview(session, url):
-    """
-    Async to get the json from the request
-    """
-    async with session.get(url, raise_for_status=True) as response:
-
-        stats_json = await response.json()
-        return stats_json
-
-
 def game_summary(server, game_json):
     """Request: https://SERVER.api.riotgames.com/lol/match/v4/matches/GAME_ID
 
@@ -429,7 +428,7 @@ async def get_players_ranks(server, game_json, summoner_id_list):
                 + API_KEY
             )
 
-            tasks.append(asyncio.ensure_future(get_rank(session, url)))
+            tasks.append(asyncio.ensure_future(get_json(session, url)))
 
         stats_json_list = await asyncio.gather(*tasks)
         for stats_json in stats_json_list:
@@ -463,10 +462,10 @@ async def get_players_ranks(server, game_json, summoner_id_list):
     return game_json
 
 
-async def get_rank(session, url):
+async def get_json(session, url):
     """
     Async to get the json from the request
     """
-    async with session.get(url) as response:
+    async with session.get(url, raise_for_status=True) as response:
         stats_json = await response.json()
         return stats_json
