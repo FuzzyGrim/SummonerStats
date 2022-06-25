@@ -1,9 +1,9 @@
 {% load static %}
 
-<nav class="navbar fixed-top navbar-expand-lg navbar-light" style="background-color: #e3f2fd;">
+<nav class="navbar fixed-top navbar-expand-lg">
 
     <div class="container-fluid">
-      <a class="navbar-brand" href="/"><img class="img-fluid" src="{% static 'favicon/icon-260x260.png' %}" alt="" width="32" height="32" class="d-inline-block align-text-bottom"></a>
+      <a class="navbar-brand" href="/"><img src="{% static 'favicon/icon-260x260.png' %}"></a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -21,20 +21,14 @@
         </ul>
         <form class="d-flex" method="post">
           {% csrf_token %}
-          <div class="input-group">
-            <div class="col-md-auto">
-              <select id="server" name="server" class="form-select rounded-0 border-0 bg-light">
-                <option value="EUW1" >EUW</option>
-                <option value="NA1" >NA</option>
-                <option value="EUN1" >EUN</option>
-                <option value="KR" >KR</option>
-              </select>
-              </div>
-            <div class="col">
-              <input class="form-control rounded-0 border-0" type="text" name="summoners_name" placeholder="Summoner name" aria-label="Search" required>
-            </div>
-            <button class="btn bg-white text-dark rounded-0" type="submit"><i class="bi bi-search"></i></button>
-          </div>
+          <select name="server" class="form-select bg-light">
+            <option value="EUW1">EUW</option>
+            <option value="NA1">NA</option>
+            <option value="EUN1">EUN</option>
+            <option value="KR">KR</option>
+          </select>
+          <input class="form-control" type="text" name="summoners_name" placeholder="Summoner name" aria-label="Search" required>
+          <button class="btn bg-white text-dark" type="submit"><i class="bi bi-search"></i></button>
         </form>
       </div>
     </div>
