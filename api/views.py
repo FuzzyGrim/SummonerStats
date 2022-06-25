@@ -10,10 +10,7 @@ import api.models
 
 
 def index(request):
-    """
-    Home page
-    """
-    user = {}
+    """Home page"""
 
     # If user submits the form, it will redirect to the user profile page
     if ("summoners_name" and "server") in request.POST:
@@ -21,17 +18,12 @@ def index(request):
         server = request.POST["server"]
         return redirect("/" + server + "/" + summoner_name + "/")
 
-    return render(request, "api/index.html", {"user": user})
+    return render(request, "api/index.html")
 
 
-def user_info(request,
-              server,
-              summoner_name,
-              template="api/profile.html"):
-    """
-    Summoners' profile page
-    """
-
+def user_info(request, server, summoner_name, template="api/profile.html"):
+    """Summoners' profile page"""
+    
     # If user submits the form, it will redirect to the user profile page
     if ("summoners_name" and "server") in request.POST:
         summoner_name = request.POST["summoners_name"]
