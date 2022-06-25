@@ -197,7 +197,8 @@ async def get_match_preview(region, games, summoner_db, puuid):
             game_dict["game_id"] = str(match["metadata"]["matchId"])
             game_dict["game_summary"] = match
 
-            if match["info"]["gameMode"] != "TUTORIAL_MODULE_1":
+            # 0 is custom games; 2000, 2010 and 2020 are tutorial games
+            if match["info"]["queueId"] not in {0, 2000, 2010, 2020}:
                 participant_number = 0
                 # Find summoner participant number in the match
                 while match["metadata"]["participants"][participant_number] != puuid:

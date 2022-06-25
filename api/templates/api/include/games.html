@@ -2,7 +2,8 @@
 {% lazy_paginate game_list %}
 {% for game in game_list %}
 
-    {% if game.summary_json.game_summary.info.gameType != "CUSTOM_GAME" and game.summary_json.game_summary.info.gameMode != "TUTORIAL_MODULE_1" %}
+    <!-- 0 is custom games; 2000, 2010 and 2020 are tutorial games -->
+    {% if game.summary_json.game_summary.info.queueId != 0 and game.summary_json.game_summary.info.queueId < 2000 %}
 
         {% if game.summary_json.player_summary.win %}
             <div class="mb-2 rounded-2 p-2" style="background-color: #A3CFEC; cursor: pointer;" onclick="loadGameData('{{game.summary_json.game_id}}')">
