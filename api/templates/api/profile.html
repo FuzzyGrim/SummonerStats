@@ -7,12 +7,12 @@
 
   <head>
     {% include "api/include/tags.html" %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/profile.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
 
     <title>{{ user_account_info.name }} | SummonerStats</title>
   </head>
 
-  <body>
+  <body id="profile">
     {% include "api/include/navbar.html" %}
 
     {% if user_account_info.user_not_found %}
@@ -27,7 +27,7 @@
 
         <div class="container">
 
-          <div class="d-flex justify-content-around pt-4 pb-1 mb-5" style="align-items: center">
+          <div class="d-flex justify-content-around main-profile">
 
             <div class="icon position-relative">
               <img class="border border-secondary" style="border-radius: 20%; max-width: 100%; height: 6.5em" src="https://raw.communitydragon.org/latest/game/assets/ux/summonericons/profileicon{{ user_account_info.profileIconId }}.png">

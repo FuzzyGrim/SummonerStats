@@ -3,7 +3,7 @@
   src: url(../fonts/aquire-font/Aquire.otf);
 }
 
-body {
+#home {
   background: url('../assets/poro.jpg') no-repeat center center fixed; 
   -webkit-background-size: cover;
   -moz-background-size: cover;
@@ -11,23 +11,102 @@ body {
   background-size: cover;
  }
 
-/* Remove margin of form in navbar */
-.d-flex{
-  margin: 0;
- }
+.navbar {
+  background-color: #e3f2fd;
+}
 
+.navbar img {
+  max-height: auto;
+  width: 2vw;
+}
 .navbar .navbar-brand {
   font-family: 'Aquire';
   font-size: 1.5em;
-  padding: 0 0 0 0.5em;
+  padding: 0 0 0 0.5rem;
 }
 
-.nav-link {
+.navbar .nav-link {
   font-size: 1.3em;
 }
 
-main > .title {
+form .form-select, form .form-control, form .btn {
+  border: 0;
+  border-radius: 0;
+}
+
+form .form-select {
+  width: auto;
+}
+
+#home main .title {
   font-family: 'Aquire';
   font-size: 3em;
-  padding-bottom: 0.5em;
+  padding-bottom: 1.3rem;
+}
+
+#home main .title img {
+  max-width: 4vw;
+  max-height: auto;
+}
+
+#profile {
+  background-color: #A0B7C7;
+ }
+
+#profile main {
+  padding-top: 8rem;
+}
+
+main .main-profile {
+  margin-bottom: 3rem;
+  align-items: center;
+}
+
+main .stats-box {
+  text-align: center;
+  width: 25vw;
+}
+
+main .stats-box .rank-img {
+  height: 3.6vw;
+}
+
+.progress-bar-vertical {
+  width: 1vw;
+  min-height: 100px;
+  display: flex;         /* NEW, Spec - Firefox, Chrome, Opera */
+  align-items: flex-end;
+  -webkit-align-items: flex-end; /* Safari 7.0+ */
+}
+
+.progress-bar-vertical .progress-bar {
+  width: 100%;
+}
+
+.bar-role-img {
+  width: 1vw;
+  max-height: 100%;
+  margin-top: .4rem;
+}
+
+.names {
+  display: inline-block;
+  width: 6vw;
+  font-size: .8em;
+}
+
+.champion-face {
+  max-width: 100%;
+  height: 1vw;
+}
+
+.items {
+  width: 1.5em;
+  max-height: 1.5em;
+  margin-right: .2rem;
+  margin-top: .2rem;
+}
+
+.items-blank {
+  background-color: #5190b9;
 }
