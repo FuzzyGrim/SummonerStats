@@ -30,33 +30,33 @@
           <div class="d-flex justify-content-around main-profile">
 
             <div class="icon position-relative">
-              <img class="border border-secondary" style="border-radius: 20%; max-width: 100%; height: 6.5em" src="https://raw.communitydragon.org/latest/game/assets/ux/summonericons/profileicon{{ user_account_info.profileIconId }}.png">
+              <img class="profile-picture border border-secondary"src="https://raw.communitydragon.org/latest/game/assets/ux/summonericons/profileicon{{ user_account_info.profileIconId }}.png">
               <span class="position-absolute top-0 start-50 translate-middle badge bg-dark text-bg-primary border border-secondary">{{ user_account_info.summonerLevel }}</span>
-              <div style="color:white; text-align: center; font-size: 1em;"><strong>{{ user_account_info.name }}</strong> </div>   
+              <div class="summoner-name"><strong>{{ user_account_info.name }}</strong> </div>   
             </div>
 
-            <div class="stats-box rounded-2">
-              <strong><span style="color: white; text-align: center; font-size: 1.2em;">Ranked Solo</span></strong>
+            <div class="ranked-points rounded-2">
+              <strong><span class="rank-title">Ranked Solo</span></strong>
               <hr>
               {% if ranked_data.RANKED_SOLO_5x5.tier == "Unranked" %}
-                <span class="rank-img" style="display:inline-block"><img style="height: 3em;" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.png"></span>
-                <strong>UNRANKED</strong>
+                <span class="rank-img"><img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.png"></span>
+                <span class="rank-data"><strong>UNRANKED</strong></span>
               {% else %}
                 <span><img class="rank-img" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/{{ ranked_data.RANKED_SOLO_5x5.tier|lower }}.png"> </span>
-                <span style="white-space: pre"><strong class="fs-6">{{ ranked_data.RANKED_SOLO_5x5.tier }} {{ ranked_data.RANKED_SOLO_5x5.rank }}   {{ ranked_data.RANKED_SOLO_5x5.leaguePoints }} LP </strong>   {{ ranked_data.RANKED_SOLO_5x5.wins }}-{{ ranked_data.RANKED_SOLO_5x5.losses }}   {{ ranked_data.RANKED_SOLO_5x5.win_rate }}% WR </span>
+                <span class="rank-data"><strong>{{ ranked_data.RANKED_SOLO_5x5.tier }} {{ ranked_data.RANKED_SOLO_5x5.rank }}   {{ ranked_data.RANKED_SOLO_5x5.leaguePoints }} LP </strong>   {{ ranked_data.RANKED_SOLO_5x5.wins }}-{{ ranked_data.RANKED_SOLO_5x5.losses }}   {{ ranked_data.RANKED_SOLO_5x5.win_rate }}% WR </span>
               {% endif %}
             </div>
             
-            <div class="stats-box rounded-2">
-              <strong><span style="color: white; text-align: center; font-size: 1.2em;">Ranked Flex</span></strong>
+            <div class="ranked-points rounded-2">
+              <strong><span class="rank-title">Ranked Flex</span></strong>
               <hr>
 
               {% if ranked_data.RANKED_FLEX_SR.tier == "Unranked" %}
-                <span class="rank-img" style="display:inline-block"><img style="height: 3em;" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.png"></span>
-                <strong>UNRANKED</strong>
+                <span class="rank-img"><img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.png"></span>
+                <span class="rank-data"><strong>UNRANKED</strong></span>
               {% else %}
                 <span><img class="rank-img" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/{{ ranked_data.RANKED_FLEX_SR.tier|lower }}.png"></span>
-                <span style="white-space: pre"><strong class="fs-6">{{ ranked_data.RANKED_FLEX_SR.tier }} {{ ranked_data.RANKED_FLEX_SR.rank }}   {{ ranked_data.RANKED_FLEX_SR.leaguePoints }} LP </strong>   {{ ranked_data.RANKED_FLEX_SR.wins }}-{{ ranked_data.RANKED_FLEX_SR.losses }}   {{ ranked_data.RANKED_FLEX_SR.win_rate }}% WR </span>
+                <span class="rank-data"><strong>{{ ranked_data.RANKED_FLEX_SR.tier }} {{ ranked_data.RANKED_FLEX_SR.rank }}   {{ ranked_data.RANKED_FLEX_SR.leaguePoints }} LP </strong>   {{ ranked_data.RANKED_FLEX_SR.wins }}-{{ ranked_data.RANKED_FLEX_SR.losses }}   {{ ranked_data.RANKED_FLEX_SR.win_rate }}% WR </span>
               {% endif %}
 
             </div>
@@ -67,11 +67,11 @@
             <div class="col-4">
               
               <div class="stats">
-                <span data-bs-toggle="tooltip" data-bs-placement="right" title="Stats based on {{ summoner_db.games }} game{{ summoner_db.games|pluralize }}" style="float: right; margin-right: 2rem; font-size: 1rem;">
+                <span class="tooltip-information" data-bs-toggle="tooltip" data-bs-placement="right" title="Based on {{ summoner_db.games }} game{{ summoner_db.games|pluralize }} from normal and ranked games">
                 <i class="bi bi-info-circle-fill"></i>
                 </span>
                 <div class="container d-flex align-items-center justify-content-center">
-                  <i class="bi bi-collection-fill" style="font-size: 1.5rem; margin-right: 2rem"></i> <span class="fs-3">CHAMPIONS</span> <i class="bi bi-collection-fill" style="font-size: 1.5rem; margin-left: 2rem"></i>
+                  <i class="bi bi-collection-fill icons"></i> <span class="summary-title">STATS</span> <i class="bi bi-collection-fill icons"></i>
                 </div>
 
                 <div class="bars d-flex justify-content-around">
@@ -162,11 +162,11 @@
               </div>
 
               <div class="champions">
-                <span data-bs-toggle="tooltip" data-bs-placement="right" title="Stats based on {{ summoner_db.games }} game{{ summoner_db.games|pluralize }}" style="float: right; margin-right: 2rem; font-size: 1rem;">
+                <span class="tooltip-information" data-bs-toggle="tooltip" data-bs-placement="right" title="Based on {{ summoner_db.games }} game{{ summoner_db.games|pluralize }} from normal and ranked games">
                   <i class="bi bi-info-circle-fill"></i>
                   </span>
                 <div class="container d-flex align-items-center justify-content-center">
-                  <i class="bi bi-bar-chart-fill" style="font-size: 1.5rem; margin-right: 2rem"></i> <span class="fs-3">STATS</span> <i class="bi bi-bar-chart-fill" style="font-size: 1.5rem; margin-left: 2rem"></i>
+                  <i class="bi bi-bar-chart-fill icons"></i> <span class="summary-title">CHAMPIONS</span> <i class="bi bi-bar-chart-fill icons"></i>
                 </div>
 
 
@@ -195,7 +195,7 @@
               </div>
             </div>
 
-            <div class="col-md-8">
+            <div class="col-md-7 game-list">
               {% include "api/include/games.html" %}
       
               <!-- Twitter-style Pagination -->

@@ -17,7 +17,7 @@
 
 .navbar img {
   max-height: auto;
-  width: 2vw;
+  width: 1.5em;
 }
 .navbar .navbar-brand {
   font-family: 'Aquire';
@@ -45,7 +45,7 @@ form .form-select {
 }
 
 #home main .title img {
-  max-width: 4vw;
+  width: 1.5em;
   max-height: auto;
 }
 
@@ -62,51 +62,172 @@ main .main-profile {
   align-items: center;
 }
 
-main .stats-box {
+.main-profile .profile-picture {
+  border-radius: 20%;
+  max-width: 100%;
+  height: 6.5em;
+}
+
+.main-profile .summoner-name {
+  color:white;
+  text-align: center;
+  font-size: 1em;
+}
+
+main .ranked-points {
   text-align: center;
   width: 25vw;
 }
 
-main .stats-box .rank-img {
-  height: 3.6vw;
+.ranked-points .rank-title {
+  color: white; 
+  text-align: center;
+  font-size: 1.2em;
 }
 
-.progress-bar-vertical {
-  width: 1vw;
+.ranked-points .rank-img {
+  height: 3.6em;
+  display:inline-block;
+}
+
+.ranked-points .rank-data {
+  white-space: pre;
+  font-size: 1em;
+}
+
+.tooltip-information {
+  float: right;
+  margin-right: 2rem;
+  font-size: 1em;
+}
+
+.icons {
+  font-size: 2em;
+}
+
+.summary-title {
+  margin: 0 1.5rem 0 1.5rem;
+  font-size: 2em;
+}
+
+.stats .progress-bar-vertical {
+  width: 1.5em;
   min-height: 100px;
   display: flex;         /* NEW, Spec - Firefox, Chrome, Opera */
   align-items: flex-end;
   -webkit-align-items: flex-end; /* Safari 7.0+ */
 }
 
-.progress-bar-vertical .progress-bar {
+.stats .progress-bar-vertical .progress-bar {
   width: 100%;
 }
 
-.bar-role-img {
-  width: 1vw;
+.stats .bar-role-img {
+  width: 1em;
   max-height: 100%;
   margin-top: .4rem;
 }
 
-.names {
-  display: inline-block;
-  width: 6vw;
+.game-list .game-summary {
+  cursor: pointer;
+  margin-bottom: .5rem;
+  padding: .5rem;
+}
+
+.game-list #win {
+  background-color: #A3CFEC;
+}
+
+.game-list #lose {
+  background-color: #E2B6B3;
+}
+
+.game-list .group-one {
+  width: 20%;
+  text-align: center
+}
+
+.group-one .position-img {
+  width: 3em;
+  max-height: auto;
+}
+
+.game-list .group-two {
+  width: 30%;
+  margin-left: 1rem;
+}
+
+.group-two .main-champion {
+  max-width: 100%;
+  height: 3.5em;
+  margin-right: .4rem;
+}
+
+.group-two .main-spell {
+  max-width: 100%;
+  height: 1.5em;
+}
+
+.group-two .secondary-spell {
+  max-width: 100%;
+  height: 1em;
+}
+
+.group-two .kda {
+  margin-left: 1rem;
+}
+
+.group-two .kda .total {
+  font-size: 1.2em;
+}
+
+.group-two .kda .ratio {
   font-size: .8em;
 }
 
-.champion-face {
-  max-width: 100%;
-  height: 1vw;
-}
-
-.items {
+.group-two .items {
   width: 1.5em;
   max-height: 1.5em;
   margin-right: .2rem;
   margin-top: .2rem;
 }
 
-.items-blank {
+.group-two .items-blank {
   background-color: #5190b9;
+}
+
+.game-list .group-three {
+  width: 15%;
+  margin-left: 1rem;
+}
+
+.group-three svg{
+  width: 1em;
+  max-height: auto;
+}
+
+.group-three .svg-data {
+  margin-left: .4rem;
+}
+
+.game-list .group-four {
+  width: 30%;
+}
+
+.group-four .names {
+  display: inline-block;
+  width: 6em;
+  font-size: .8em;
+  margin-left: .4rem;
+}
+
+.group-four .champion-face {
+  max-width: 100%;
+  height: 1em;
+  margin-left: 0.4rem;
+}
+
+.details {
+  display: none;
+  margin-top: 2rem;
 }
