@@ -1,7 +1,7 @@
 var dict = new Object();
 function loadGameData(gameId) {
 $.ajax({
-    url : "tmp/" + gameId, // the endpoint
+    url : gameId, // the endpoint
     method: "GET",
     start_time: new Date().getTime(),
     error: function(xhr, status, error) {
@@ -36,7 +36,7 @@ $.ajax({
         gameJson.participants.slice(0,5).forEach(participant => $('#game-'+ gameId + '-tbody-blue').append(
             '<tr><td>' + participant.championName + '/<a href="/' + gameJson.platformId + '/' + participant.summonerName + '">' + participant.summonerName + '</a></td>'
             + '<td>' + participant.tier +  '</td>'
-            + '<td>' +  participant.kills + '/' +  participant.deaths + '/' +  participant.assists + '</td>'
+            + '<td>' + participant.kills + '/' +  participant.deaths + '/' +  participant.assists + '</td>'
             + '<td>' + participant.totalDamageDealtToChampions + '</td>'
             + '<td>' + participant.totalMinionsKilled + '</td>'
             + '<td>' + participant.visionScore + '</td></tr>'))
@@ -52,7 +52,7 @@ $.ajax({
         gameJson.participants.slice(5,10).forEach(participant => $('#game-'+ gameId + '-tbody-red').append(
             '<tr><td>' + participant.championName + '/<a href="/' + gameJson.platformId + '/' + participant.summonerName + '">' + participant.summonerName + '</a></td>'
             + '<td>' + participant.tier +  '</td>'
-            + '<td>' +  participant.kills + '/' +  participant.deaths + '/' +  participant.assists + '</td>'
+            + '<td>' + participant.kills + '/' +  participant.deaths + '/' +  participant.assists + '</td>'
             + '<td>' + participant.totalDamageDealtToChampions + '</td>'
             + '<td>' + participant.totalMinionsKilled + '</td>'
             + '<td>' + participant.visionScore + '</td></tr>'))

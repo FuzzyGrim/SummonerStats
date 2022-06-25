@@ -116,10 +116,10 @@
                         {% for matchup in game.summary_json.game_summary.info.matchups %}
                             <div class="d-inline-flex align-items-center">
                                 <img class= "champion-face rounded-circle"src="https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/{{ matchup.0.championId }}.png">
-                                <a class="names text-truncate">{{ matchup.0.summonerName }} </a>
+                                <a href="../{{ matchup.0.summonerName }}" class="summoner-names text-truncate">{{ matchup.0.summonerName }} </a>
 
                                 <img class= "champion-face rounded-circle" src="https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/{{ matchup.1.championId }}.png">
-                                <a class="names text-truncate">{{ matchup.1.summonerName }} </a>
+                                <a href="../{{ matchup.1.summonerName }}" class="summonernames text-truncate">{{ matchup.1.summonerName }} </a>
                             </div>
                         {% endfor %}
                     </div>

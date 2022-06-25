@@ -68,7 +68,7 @@
               
               <div class="stats">
                 <span class="tooltip-information" data-bs-toggle="tooltip" data-bs-placement="right" title="Based on {{ summoner_db.games }} game{{ summoner_db.games|pluralize }} from normal and ranked games">
-                <i class="bi bi-info-circle-fill"></i>
+                  <i class="bi bi-info-circle-fill"></i>
                 </span>
                 <div class="container d-flex align-items-center justify-content-center">
                   <i class="bi bi-collection-fill icons"></i> <span class="summary-title">STATS</span> <i class="bi bi-collection-fill icons"></i>
@@ -164,7 +164,7 @@
               <div class="champions">
                 <span class="tooltip-information" data-bs-toggle="tooltip" data-bs-placement="right" title="Based on {{ summoner_db.games }} game{{ summoner_db.games|pluralize }} from normal and ranked games">
                   <i class="bi bi-info-circle-fill"></i>
-                  </span>
+                </span>
                 <div class="container d-flex align-items-center justify-content-center">
                   <i class="bi bi-bar-chart-fill icons"></i> <span class="summary-title">CHAMPIONS</span> <i class="bi bi-bar-chart-fill icons"></i>
                 </div>
@@ -225,6 +225,13 @@
       var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl)
       })
+    </script>
+    <!-- class 'summoner-names' is inside a div with onclick, stopPropagation prevents the event from 'summoner-names' activate parent's div onclick event -->
+    <script>
+      const collection = document.getElementsByClassName('summoner-names');
+      for (let i = 0; i < collection.length; i++) {
+        collection[i].addEventListener('click', event => event.stopPropagation());
+      }
     </script>
   </body>
 
