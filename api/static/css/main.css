@@ -51,10 +51,14 @@ form .form-select {
 
 #profile {
   background-color: #A0B7C7;
- }
+}
 
 #profile main {
   padding-top: 8rem;
+}
+
+#profile main .summoner-error{
+  text-align:center;
 }
 
 main .main-profile {

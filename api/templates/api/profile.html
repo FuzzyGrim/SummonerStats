@@ -17,9 +17,10 @@
 
     {% if user_account_info.user_not_found %}
       <main>
-        <h2>Oh no! We couldn't find summoner "{{ user_account_info.name }}"</h2>
-        <h4>Please double check your spelling or the region selected</h4>
-      </main>
+        <div class="summoner-error alert alert-danger position-absolute top-50 start-50 translate-middle" role="alert">
+          <h2>Oh no! We couldn't find this summoner</h2>
+          <h4>Please double check your spelling or the region selected</h4>
+        </div>
 
     {% elif user_account_info.success %}
 
