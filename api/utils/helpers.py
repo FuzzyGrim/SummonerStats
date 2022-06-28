@@ -10,24 +10,11 @@ from decouple import config
 
 API_KEY = config("API")
 
-
-def get_response_json(url):
-    """Get json file from url
-    Args:
-        url (string): Riot API endpoint url
-
-    Returns:
-        dictionary: json
-    """
-
-    return requests.get(url).json()
-
-
 def get_date_by_timestamp(game_timestamp):
     """Game date from unix timestamp
 
     Args:
-        game_timestamp (int): Unix timestamp for when the game is created on the game serve
+        game_timestamp (int): Unix timestamp for when the game is created on the game server
 
     Returns:
         str: date when game was created, e.g 2021-11-24
@@ -57,87 +44,64 @@ def get_game_mode(queue_id):
     """
     Get game mode by the queue_id
     """
-    if queue_id == 400:
-        queue_id = "Normal Draft"
-
-    elif queue_id == 420:
-        queue_id = "Ranked Solo"
-
-    elif queue_id == 430:
-        queue_id = "Normal Blind"
-
-    else:
-        queue_id = "Special"
-
-    return queue_id
+    match queue_id:
+        case 400:
+            return "Normal Draft"
+        case 420:
+            return "Ranked Solo"
+        case 430:
+            return "Normal Blind"
+        case _:
+            return "Special"
 
 def get_summoner_spell(summoner_key):
     """
     Get summoner spell by the summoner_key
     """
-    if summoner_key == 1:
-        summoner_key = "summoner_boost"
-
-    elif summoner_key == 3:
-        summoner_key = "summoner_exhaust"
-
-    elif summoner_key == 4:
-        summoner_key = "summoner_flash"
-
-    elif summoner_key == 6:
-        summoner_key = "summoner_haste"
-
-    elif summoner_key == 7:
-        summoner_key = "summoner_heal"
-
-    elif summoner_key == 11:
-        summoner_key = "summoner_smite"
-
-    elif summoner_key == 12:
-        summoner_key = "summoner_teleport"
-
-    elif summoner_key == 13:
-        summoner_key = "summonermana"
-
-    elif summoner_key == 14:
-        summoner_key = "summonerignite"
-        
-    elif summoner_key == 21:
-        summoner_key = "summonerbarrier"
-
-    elif summoner_key == 32:
-        summoner_key = "summoner_mark"
-
-    else:
-        summoner_key = "summoner_empty"
-    
-    return summoner_key
+    match summoner_key:
+        case 1:
+            return "summoner_boost"
+        case 3:
+            return "summoner_exhaust"
+        case 4:
+            return "summoner_flash"
+        case 6:
+            return "summoner_haste"
+        case 7:
+            return "summoner_heal"
+        case 11:
+            return "summoner_smite"
+        case 12:
+            return "summoner_teleport"
+        case 13:
+            return "summonermana"
+        case 14:
+            return "summonerignite"
+        case 21:
+            return "summonerbarrier"
+        case 32:
+            return "summoner_mark"
+        case _:
+            return "summoner_empty"
 
 def get_rune_primary(rune_id):
     url = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perks.json"
-    response = requests.get(url)
-    data_json = response.json()
+    data_json = requests.get(url).json()
     rune_dict =  next((item for item in data_json if item['id'] == rune_id), None)
     return rune_dict["iconPath"].split("Styles/",1)[1]
 
-    
 def get_rune_secondary(rune_id):
     """
     Get rune by the rune_id
     """
-    if rune_id == 8000:
-        rune_id = "7201_precision"
-
-    elif rune_id == 8100:
-        rune_id = "7200_domination"
-    
-    elif rune_id == 8200:
-        rune_id = "7202_sorcery"
-    
-    elif rune_id == 8300:
-        rune_id = "7203_whimsy"
-
-    else:
-        rune_id = "7204_resolve"
-
-    return rune_id
+    match rune_id:
+        case 8000:
+            return "7201_precision"
+        case 8100:
+            return "7200_domination"
+        case 8200:
+            return "7202_sorcery"
+        case 8300:
+            return "7203_whimsy"
+        case _:
+            return "7204_resolve"
