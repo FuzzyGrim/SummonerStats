@@ -109,18 +109,10 @@ def get_matchlist(server, puuid):
 
     Args:
         server              (string)    Player's region
-        account_id          (string)
+        puuid          (string)
 
     Returns:
-        JSON with list of dictionaries with:
-            gameId 	        (long) 	    ID associated with the game
-            role 	        (string)
-            season 	        (int)
-            platformId 	    (string) 	Server, e.g. EUW
-            champion 	    (int) 	    Champion ID
-            queue 	        (int)
-            lane 	        (string)
-            timestamp 	    (long)      Unix timestamp
+        List with match ids
     """
 
     server = helpers.get_region_by_platform(server)

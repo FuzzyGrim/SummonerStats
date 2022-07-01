@@ -93,9 +93,7 @@ def get_region_by_platform(platform):
     return region
 
 def get_game_mode(queue_id):
-    """
-    Get game mode by the queue_id
-    """
+    """Get game mode by the queue_id"""
     match queue_id:
         case 400:
             return "Normal Draft"
@@ -107,9 +105,7 @@ def get_game_mode(queue_id):
             return "Special"
 
 def get_summoner_spell(summoner_key):
-    """
-    Get summoner spell by the summoner_key
-    """
+    """Get summoner spell by the summoner_key"""
     match summoner_key:
         case 1:
             return "summoner_boost"
@@ -143,9 +139,7 @@ def get_rune_primary(rune_id):
     return rune_dict["iconPath"].split("Styles/",1)[1]
 
 def get_rune_secondary(rune_id):
-    """
-    Get rune by the rune_id
-    """
+    """Get rune by the rune_id"""
     match rune_id:
         case 8000:
             return "7201_precision"
