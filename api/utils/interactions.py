@@ -134,7 +134,7 @@ def get_matchlist(server, puuid):
         + API_KEY
     )
 
-    matchlist = helpers.get_response_json(url)
+    matchlist = requests.get(url).json()
 
     return matchlist
 
@@ -144,16 +144,13 @@ def get_game_summary_list(games, summoner_db, puuid):
     Gets the main data from each game to show on the user profile page
     """
     game_summary_list = []
+    
     if games:
-
         platform = (games[0].split("_"))[0]
 
         region = helpers.get_region_by_platform(platform)
 
-        summoner_db, game_summary_list = asyncio.run(get_match_preview(region,
-                                                          games[:10],
-                                                          summoner_db,
-                                                          puuid))
+        summoner_db, game_summary_list = asyncio.run(get_match_preview(region, games, summoner_db, puuid))
 
     return summoner_db, game_summary_list
 

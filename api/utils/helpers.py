@@ -3,12 +3,64 @@ Functions that performs part of the computation of another function, usually fro
 because the functionality is needed in multiple places.
 """
 
-
 import datetime
 import requests
 from decouple import config
+import api.models
 
 API_KEY = config("API")
+
+
+def create_user_db(summoner_name):
+    """Create user in database"""
+    api.models.Summoner.objects.create(summoner=summoner_name,
+    stats={"kills" : {"total" : 0, "per_min" : 0, "per_game": 0},
+            "deaths" : {"total" : 0, "per_min" : 0, "per_game": 0},
+            "assists" : {"total" : 0, "per_min" : 0, "per_game": 0},
+            "minions" : {"total" : 0, "per_min" : 0, "per_game": 0},
+            "vision" : {"total" : 0, "per_min" : 0, "per_game": 0}},
+
+    roles={"TOP": {"NUM" : 0,  "WIN_RATE" : 0, "WINS" : 0, "LOSSES" : 0},
+            "JUNGLE": {"NUM" : 0, "WIN_RATE" : 0, "WINS" : 0, "LOSSES" : 0},
+            "MIDDLE": {"NUM" : 0, "WIN_RATE" : 0, "WINS" : 0, "LOSSES" : 0},
+            "BOTTOM": {"NUM" : 0, "WIN_RATE" : 0, "WINS" : 0, "LOSSES" : 0},
+            "UTILITY": {"NUM" : 0, "WIN_RATE" : 0, "WINS" : 0, "LOSSES" : 0}})
+            
+
+def add_matches_to_db(matchlist, summoner_name):
+    """Add matches to database"""
+    add_match_bulk_list = []
+    for match in matchlist:
+        # if match id with summoner name not found, create object in database
+        if api.models.Match.objects.filter(match_id=match, summoner=summoner_name).exists():
+            break
+        add_match_bulk_list.append(api.models.Match(match_id=match, summoner=summoner_name))
+    api.models.Match.objects.bulk_create(add_match_bulk_list)
+
+
+def find_summaries_not_in_db(matchlist, summoner_name):
+    """List of match ids which summaries are not in database"""
+    summary_not_in_database = []
+    for match in matchlist:
+        # If game summary not in database, create object in database
+        if api.models.Match.objects.filter(match_id=match, summoner=summoner_name,
+                                summary_json__exact={}).exists():
+            summary_not_in_database.append(match)
+            # Limit to 7 for lazy load pagination
+            if len(summary_not_in_database) == 7:
+                break
+    return summary_not_in_database
+
+
+def save_summaries_to_db(game_summary_list, summoner_name):
+    """Save game summaries to database"""
+    bulk_save_summary_list = []
+    for game in game_summary_list:
+        game_object = api.models.Match.objects.get(match_id=game["game_id"], summoner=summoner_name)
+        game_object.summary_json = game
+        bulk_save_summary_list.append(game_object)
+    api.models.Match.objects.bulk_update(bulk_save_summary_list, ["summary_json"])
+
 
 def get_date_by_timestamp(game_timestamp):
     """Game date from unix timestamp
