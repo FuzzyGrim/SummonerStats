@@ -47,7 +47,7 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
         helpers.save_summaries_to_db(game_summary_list, summoner_name)
 
         context = {
-            "game_list": Match.objects.all().filter(summoner=summoner_name).order_by('-match_id'),
+            "game_list": Match.objects.all().filter(summoner=summoner_name),
             "summoner": summoner,
             "summoner_league": summoner_league,
             "summoner_db": summoner_db,
