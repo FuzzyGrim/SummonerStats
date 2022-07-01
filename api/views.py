@@ -14,9 +14,7 @@ def index(request):
 
     # If user submits the form, it will redirect to the user profile page
     if ("summoners_name" and "server") in request.POST:
-        summoner_name = request.POST["summoners_name"]
-        server = request.POST["server"]
-        return redirect("/" + server + "/" + summoner_name + "/")
+        return redirect("/" + request.POST["server"] + "/" + request.POST["summoners_name"] + "/")
 
     return render(request, "api/index.html")
 
@@ -26,9 +24,7 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
     
     # If user submits the form, it will redirect to the user profile page
     if ("summoners_name" and "server") in request.POST:
-        summoner_name = request.POST["summoners_name"]
-        server = request.POST["server"]
-        return redirect("/" + server + "/" + summoner_name + "/")
+        return redirect("/" + request.POST["server"] + "/" + request.POST["summoners_name"] + "/")
 
     user_account_info, ranked_data = api.utils.interactions.get_ranked_stats(
         server, summoner_name
