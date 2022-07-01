@@ -26,11 +26,9 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
     if ("summoners_name" and "server") in request.POST:
         return redirect("/" + request.POST["server"] + "/" + request.POST["summoners_name"] + "/")
 
-    user_account_info, ranked_data = api.utils.interactions.get_ranked_stats(
-        server, summoner_name
-    )
+    summoner, summoner_league = sessions.load_summoner_league(request, server, summoner_name)
 
-    if user_account_info["success"]:
+    if summoner["success"]:
         # if summoner not in database, create object for the stats database
         if not api.models.Summoner.objects.filter(summoner=summoner_name).exists():
             api.models.Summoner.objects.create(summoner=summoner_name,
@@ -87,8 +85,8 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
 
         context = {
             "game_list": api.models.Match.objects.all().filter(summoner=summoner_name).order_by('-match_id'),
-            "user_account_info": user_account_info,
-            "ranked_data": ranked_data,
+            "summoner": summoner,
+            "summoner_league": summoner_league,
             "summoner_db": summoner_db,
         }
 
@@ -97,13 +95,7 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
 
     # If user not found
     else:
-        # Save summoner search for later indicating error
-        user_account_info["name"] = summoner_name
-
-        context = {
-            "user_account_info": user_account_info,
-            "ranked_data": ranked_data,
-        }
+        context = {"summoner": summoner}
 
     return render(request, template, context)
 
@@ -116,7 +108,6 @@ def get_game_data(request, server, summoner_name, game_id):
     game_data = api.models.Match.objects.get(match_id=game_id, summoner=summoner_name)
     game_general_json = game_data.summary_json
     game_info_json = game_general_json['game_summary']['info']
-    game_info_json = api.utils.sessions.load_game_summary(request, server,
-                                                game_id, game_info_json)
+    game_info_json = sessions.load_game_summary(request, server, game_id, game_info_json)
 
     return JsonResponse(game_info_json)

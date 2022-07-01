@@ -8,12 +8,13 @@ import requests
 from decouple import config
 import aiohttp
 from api.utils import helpers
+from api.utils import sessions
 
 
 API_KEY = config("API")
 
 
-def get_identifiable_data(server, summoner_name):
+def get_summoner(server, summoner_name):
     """Request:
     https://SERVER.api.riotgames.com/lol/summoner/v4/summoners/by-name/SUMMONER_NAME
 
@@ -41,13 +42,12 @@ def get_identifiable_data(server, summoner_name):
     )
     response = requests.get(url)
 
-    user_json = response.json()
-    user_json["success"] = response.status_code == 200
-    user_json["user_not_found"] = response.status_code == 404
-    return user_json
+    summoner_json = response.json()
+    summoner_json["success"] = response.status_code == 200
+    return summoner_json
 
 
-def get_ranked_stats(server, summoner_name):
+def get_summoner_league(request, server, summoner_name):
     """Request:
     https://SERVER.api.riotgames.com/lol/league/v4/entries/by-summoner/SUMMONER_ID
 
@@ -56,7 +56,7 @@ def get_ranked_stats(server, summoner_name):
         summoner_name       (string)    Summoner name
 
     Returns:
-        JSON with:
+        List of two dictionaries with:
             leagueId 	    (string)
             summonerId 	    (string) 	Player's encrypted summonerId.
             summonerName 	(string)
@@ -68,56 +68,39 @@ def get_ranked_stats(server, summoner_name):
             losses 	        (int) 	    Losing team on Summoners Rift.
     """
 
-    user_json = get_identifiable_data(server, summoner_name)
+    summoner_json = sessions.load_summoner(request, server, summoner_name)
 
-    if user_json["success"]:
+    if summoner_json["success"]:
 
         url = (
             "https://"
             + server
             + ".api.riotgames.com/lol/league/v4/entries/by-summoner/"
-            + user_json["id"]
+            + summoner_json["id"]
             + "?api_key="
             + API_KEY
         )
-
         # This json is a list of dictionaries
-        ranked_json = helpers.get_response_json(url)
+        summoner_league_list = requests.get(url).json()
+        # Set default values for each league
+        solo = {"tier" : "Unranked"}
+        flex = {"tier" : "Unranked"}
 
-        # Get dictionary of ranked solo from the list
-        try:
-            solo = next(mode for mode in ranked_json if mode["queueType"] == "RANKED_SOLO_5x5")
+        for queue in summoner_league_list:
+            total_games = queue["wins"] + queue["losses"]
+            queue["win_rate"] = round((queue["wins"]/ total_games) * 100)
+            
+            if queue["queueType"] == "RANKED_SOLO_5x5":
+                solo = queue
+            elif queue["queueType"] == "RANKED_FLEX_SR":
+                flex = queue
 
-        # If it doesn't exist, set as default unranked
-        except StopIteration:
-            solo = {"tier" : "Unranked"}
+        summoner_league_json = {"RANKED_SOLO_5x5": solo, "RANKED_FLEX_SR": flex}
 
-        # Same for ranked flex
-        try:
-            flex = next(mode for mode in ranked_json if mode["queueType"] == "RANKED_FLEX_SR")
-        except StopIteration:
-            flex = {"tier" : "Unranked"}
+    else:
+        summoner_league_json = {}
 
-        stats_json = {"RANKED_SOLO_5x5": solo, "RANKED_FLEX_SR": flex}
-
-        for game_mode in stats_json:
-
-            try:
-                wins = stats_json[game_mode]["wins"]
-                losses = stats_json[game_mode]["losses"]
-                total_games = wins + losses
-                stats_json[game_mode]["win_rate"] = round((wins / total_games) * 100)
-
-            # Error when player is unranked in that game mode
-            except KeyError:
-                pass
-
-        user_json["server"] = server
-
-    elif user_json["user_not_found"]:
-        stats_json = {}
-
-    return user_json, stats_json
+    return summoner_json, summoner_league_json
 
 
 def get_matchlist(server, puuid):
