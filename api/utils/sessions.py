@@ -9,7 +9,9 @@ def load_summoner(request, server, summoner_name):
         summoner_data = request.session[summoner_name]
 
     else:
-        request.session[summoner_name] = interactions.get_summoner(server, summoner_name)
+        request.session[summoner_name] = interactions.get_summoner(
+            server, summoner_name
+        )
         summoner_data = request.session[summoner_name]
     return summoner_data
 
@@ -21,7 +23,9 @@ def load_summoner_league(request, server, summoner_name):
         summoner_league_data = request.session[summoner_name_league]
 
     else:
-        request.session[summoner_name_league] = interactions.get_summoner_league(request, server, summoner_name)
+        request.session[summoner_name_league] = interactions.get_summoner_league(
+            request, server, summoner_name
+        )
         summoner_league_data = request.session[summoner_name_league]
     return summoner_league_data
 

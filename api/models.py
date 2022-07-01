@@ -10,7 +10,7 @@ class Match(models.Model):
     summoner = models.CharField(max_length=50)
 
     class Meta:
-        ordering = ['-match_id']
+        ordering = ["-match_id"]
 
     def __str__(self):
         return self.match_id
@@ -31,7 +31,7 @@ class Summoner(models.Model):
     stats = models.JSONField(default=dict)
 
     class Meta:
-        ordering = ['-games']
+        ordering = ["-games"]
 
     def __str__(self):
         return self.summoner

@@ -13,18 +13,23 @@ API_KEY = config("API")
 
 def create_user_db(summoner_name):
     """Create user in database"""
-    Summoner.objects.create(summoner=summoner_name,
-                            stats={"kills": {"total": 0, "per_min": 0, "per_game": 0},
-                                   "deaths": {"total": 0, "per_min": 0, "per_game": 0},
-                                   "assists": {"total": 0, "per_min": 0, "per_game": 0},
-                                   "minions": {"total": 0, "per_min": 0, "per_game": 0},
-                                   "vision": {"total": 0, "per_min": 0, "per_game": 0}},
-
-                            roles={"TOP": {"NUM": 0,  "WIN_RATE": 0, "WINS": 0, "LOSSES": 0},
-                                   "JUNGLE": {"NUM": 0, "WIN_RATE": 0, "WINS": 0, "LOSSES": 0},
-                                   "MIDDLE": {"NUM": 0, "WIN_RATE": 0, "WINS": 0, "LOSSES": 0},
-                                   "BOTTOM": {"NUM": 0, "WIN_RATE": 0, "WINS": 0, "LOSSES": 0},
-                                   "UTILITY": {"NUM": 0, "WIN_RATE": 0, "WINS": 0, "LOSSES": 0}})
+    Summoner.objects.create(
+        summoner=summoner_name,
+        stats={
+            "kills": {"total": 0, "per_min": 0, "per_game": 0},
+            "deaths": {"total": 0, "per_min": 0, "per_game": 0},
+            "assists": {"total": 0, "per_min": 0, "per_game": 0},
+            "minions": {"total": 0, "per_min": 0, "per_game": 0},
+            "vision": {"total": 0, "per_min": 0, "per_game": 0},
+        },
+        roles={
+            "TOP": {"NUM": 0, "WIN_RATE": 0, "WINS": 0, "LOSSES": 0},
+            "JUNGLE": {"NUM": 0, "WIN_RATE": 0, "WINS": 0, "LOSSES": 0},
+            "MIDDLE": {"NUM": 0, "WIN_RATE": 0, "WINS": 0, "LOSSES": 0},
+            "BOTTOM": {"NUM": 0, "WIN_RATE": 0, "WINS": 0, "LOSSES": 0},
+            "UTILITY": {"NUM": 0, "WIN_RATE": 0, "WINS": 0, "LOSSES": 0},
+        },
+    )
 
 
 def add_matches_to_db(matchlist, summoner_name):
@@ -34,8 +39,7 @@ def add_matches_to_db(matchlist, summoner_name):
         # if match id with summoner name not found, create object in database
         if Match.objects.filter(match_id=match, summoner=summoner_name).exists():
             break
-        add_match_bulk_list.append(Match(
-            match_id=match, summoner=summoner_name))
+        add_match_bulk_list.append(Match(match_id=match, summoner=summoner_name))
     Match.objects.bulk_create(add_match_bulk_list)
 
 
@@ -44,7 +48,9 @@ def find_summaries_not_in_db(matchlist, summoner_name):
     summary_not_in_database = []
     for match in matchlist:
         # If game summary not in database, create object in database
-        if Match.objects.filter(match_id=match, summoner=summoner_name, summary_json__exact={}).exists():
+        if Match.objects.filter(
+            match_id=match, summoner=summoner_name, summary_json__exact={}
+        ).exists():
             summary_not_in_database.append(match)
             # Limit to 7 for lazy load pagination
             if len(summary_not_in_database) == 7:
@@ -57,11 +63,11 @@ def save_summaries_to_db(game_summary_list, summoner_name):
     bulk_save_summary_list = []
     for game in game_summary_list:
         game_object = Match.objects.get(
-            match_id=game["game_id"], summoner=summoner_name)
+            match_id=game["game_id"], summoner=summoner_name
+        )
         game_object.summary_json = game
         bulk_save_summary_list.append(game_object)
-    Match.objects.bulk_update(
-        bulk_save_summary_list, ["summary_json"])
+    Match.objects.bulk_update(bulk_save_summary_list, ["summary_json"])
 
 
 def get_date_by_timestamp(game_timestamp):
@@ -140,8 +146,7 @@ def get_summoner_spell(summoner_key):
 def get_rune_primary(rune_id):
     url = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perks.json"
     data_json = get(url).json()
-    rune_dict = next(
-        (item for item in data_json if item['id'] == rune_id), None)
+    rune_dict = next((item for item in data_json if item["id"] == rune_id), None)
     return rune_dict["iconPath"].split("Styles/", 1)[1]
 
 
