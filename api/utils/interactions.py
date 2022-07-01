@@ -2,11 +2,11 @@
 Contains functions that interacts with RIOT's API.
 """
 
-import asyncio
-import datetime
-import requests
+from datetime import timedelta
+from requests import get
 from decouple import config
-import aiohttp
+from aiohttp import ClientSession
+import asyncio
 from api.utils import helpers
 from api.utils import sessions
 
@@ -40,7 +40,7 @@ def get_summoner(server, summoner_name):
         + "?api_key="
         + API_KEY
     )
-    response = requests.get(url)
+    response = get(url)
 
     summoner_json = response.json()
     summoner_json["success"] = response.status_code == 200
@@ -81,15 +81,15 @@ def get_summoner_league(request, server, summoner_name):
             + API_KEY
         )
         # This json is a list of dictionaries
-        summoner_league_list = requests.get(url).json()
+        summoner_league_list = get(url).json()
         # Set default values for each league
-        solo = {"tier" : "Unranked"}
-        flex = {"tier" : "Unranked"}
+        solo = {"tier": "Unranked"}
+        flex = {"tier": "Unranked"}
 
         for queue in summoner_league_list:
             total_games = queue["wins"] + queue["losses"]
-            queue["win_rate"] = round((queue["wins"]/ total_games) * 100)
-            
+            queue["win_rate"] = round((queue["wins"] / total_games) * 100)
+
             if queue["queueType"] == "RANKED_SOLO_5x5":
                 solo = queue
             elif queue["queueType"] == "RANKED_FLEX_SR":
@@ -126,7 +126,7 @@ def get_matchlist(server, puuid):
         + API_KEY
     )
 
-    matchlist = requests.get(url).json()
+    matchlist = get(url).json()
 
     return matchlist
 
@@ -136,7 +136,7 @@ def get_game_summary_list(games, summoner_db, puuid):
     Gets the main data from each game to show on the user profile page
     """
     game_summary_list = []
-    
+
     if games:
         platform = (games[0].split("_"))[0]
 
@@ -151,7 +151,7 @@ async def get_match_preview(region, games, summoner_db, puuid):
     """
     Async http request for getting game json and organizing the players data
     """
-    async with aiohttp.ClientSession() as session:
+    async with ClientSession() as session:
         tasks = []
 
         for match in games:
@@ -164,7 +164,7 @@ async def get_match_preview(region, games, summoner_db, puuid):
         game_preview_list = []
 
         for match in preview_list:
-            
+
             game_dict = {}
             game_dict["game_id"] = str(match["metadata"]["matchId"])
             game_dict["game_summary"] = match
@@ -186,13 +186,13 @@ async def get_match_preview(region, games, summoner_db, puuid):
                 # Happens when zero deaths
                 except ZeroDivisionError:
                     game_dict["player_summary"]["kda"] = kills + assists
-                
-                game_dict["player_summary"]["cs"] = (game_dict["player_summary"]["totalMinionsKilled"] 
-                                                                + game_dict["player_summary"]["neutralMinionsKilled"]) 
 
-                game_dict["player_summary"]["cs_per_min"] = round((game_dict["player_summary"]["totalMinionsKilled"] 
-                                                                + game_dict["player_summary"]["neutralMinionsKilled"]) 
-                                                                / (match["info"]["gameDuration"] / 60), 1)
+                game_dict["player_summary"]["cs"] = (game_dict["player_summary"]["totalMinionsKilled"]
+                                                     + game_dict["player_summary"]["neutralMinionsKilled"])
+
+                game_dict["player_summary"]["cs_per_min"] = round((game_dict["player_summary"]["totalMinionsKilled"]
+                                                                   + game_dict["player_summary"]["neutralMinionsKilled"])
+                                                                  / (match["info"]["gameDuration"] / 60), 1)
 
                 game_dict["player_summary"]["summoner_spell_1"] = helpers.get_summoner_spell(match["info"]["participants"][participant_number]["summoner1Id"])
                 game_dict["player_summary"]["summoner_spell_2"] = helpers.get_summoner_spell(match["info"]["participants"][participant_number]["summoner2Id"])
@@ -215,8 +215,7 @@ async def get_match_preview(region, games, summoner_db, puuid):
                 game_dict["player_summary"]["damage_short"] = round(match["info"]["participants"][participant_number]["totalDamageDealtToChampions"] / 1000, 1)
 
                 # Get the date of game creation
-                game_date = helpers.get_date_by_timestamp(match["info"]
-                                                            ["gameCreation"])
+                game_date = helpers.get_date_by_timestamp(match["info"]["gameCreation"])
                 game_dict["date"] = game_date
 
                 # Get patch for assets, 11.23.409.111 -> 11.23.1
@@ -241,8 +240,7 @@ async def get_match_preview(region, games, summoner_db, puuid):
                     game_dict["game_summary"]["info"]["matchups"] = []
                     game_base = game_dict["game_summary"]["info"]
                     for i in range(0, 5):
-                        game_base["matchups"].append([game_base["participants"][i],
-                                                    game_base["participants"][i + 5]])
+                        game_base["matchups"].append([game_base["participants"][i], game_base["participants"][i + 5]])
 
                 # Only if it's a ranked or normal game, not urf, not aram... and teamPosition is not empty, which happens when player went afk and remaked
                 if match["info"]["gameMode"] == "CLASSIC" and game_dict["player_summary"]["teamPosition"] != "":
@@ -257,10 +255,11 @@ async def get_match_preview(region, games, summoner_db, puuid):
                     summoner_db = add_database_ranked_stats(summoner_db, match, game_dict["player_summary"])
 
                     summoner_db = add_database_champion_stats(summoner_db, match, game_dict["player_summary"])
-            
+
             game_preview_list.append(game_dict)
 
     return summoner_db, game_preview_list
+
 
 def add_database_ranked_stats(summoner_db, match, player_json):
     summoner_db.games += 1
@@ -293,6 +292,7 @@ def add_database_ranked_stats(summoner_db, match, player_json):
 
     return summoner_db
 
+
 def add_database_champion_stats(summoner_db, match, player_json):
     kills = player_json["kills"]
     assists = player_json["assists"]
@@ -308,10 +308,10 @@ def add_database_champion_stats(summoner_db, match, player_json):
             "losses": 1 if not player_json["win"] else 0,
             "win_rate": 100 if player_json["win"] else 0,
             "play_rate": 1 / summoner_db.games,
-            "minions" : player_json["totalMinionsKilled"] + player_json["neutralMinionsKilled"],
+            "minions": player_json["totalMinionsKilled"] + player_json["neutralMinionsKilled"],
             "vision": player_json["visionScore"],
             "gold": player_json["goldEarned"],
-            "damage" : player_json["totalDamageDealtToChampions"],
+            "damage": player_json["totalDamageDealtToChampions"],
             "last_played": helpers.get_date_by_timestamp(match["info"]["gameCreation"]),
         }
     else:
@@ -335,8 +335,9 @@ def add_database_champion_stats(summoner_db, match, player_json):
         champion_data["gold"] += player_json["goldEarned"]
         champion_data["damage"] += player_json["totalDamageDealtToChampions"]
         champion_data["last_played"] = helpers.get_date_by_timestamp(match["info"]["gameCreation"])
-    
+
     return summoner_db
+
 
 def game_summary(server, game_json):
     """Request: https://SERVER.api.riotgames.com/lol/match/v4/matches/GAME_ID
@@ -350,7 +351,7 @@ def game_summary(server, game_json):
     """
 
     game_duration_seconds = game_json["gameDuration"]
-    game_duration = str(datetime.timedelta(seconds=game_duration_seconds))
+    game_duration = str(timedelta(seconds=game_duration_seconds))
     game_json["gameDuration"] = game_duration
 
     game_creation = game_json["gameCreation"]
@@ -386,7 +387,7 @@ async def get_players_ranks(server, game_json, summoner_id_list):
     """
     Async to get each player's rank from the game
     """
-    async with aiohttp.ClientSession() as session:
+    async with ClientSession() as session:
         current_player = 0
         tasks = []
 

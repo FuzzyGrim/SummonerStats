@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Match(models.Model):
 
     match_id = models.CharField(max_length=15)
@@ -13,6 +14,7 @@ class Match(models.Model):
 
     def __str__(self):
         return self.match_id
+
 
 class Summoner(models.Model):
 
