@@ -9,6 +9,8 @@ from api.utils import interactions
 from api.utils import sessions
 from api.models import Summoner, Match
 
+from asyncio import run
+
 
 def index(request):
     """Home page"""
@@ -47,9 +49,9 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
         )
 
         summoner_db = Summoner.objects.get(summoner=summoner_name)
-        summoner_db, game_summary_list = interactions.get_game_summary_list(
+        summoner_db, match_preview_list = run(interactions.get_match_preview_list(
             summary_not_in_database, summoner_db, summoner["puuid"]
-        )
+        ))
 
         # order champions in database by number of games, then by win rate and then by kda
         summoner_db.champions = dict(
@@ -60,7 +62,7 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
             )
         )
         summoner_db.save()
-        helpers.save_summaries_to_db(game_summary_list, summoner_name)
+        helpers.save_summaries_to_db(match_preview_list, summoner_name)
 
         context = {
             "game_list": Match.objects.all().filter(summoner=summoner_name),

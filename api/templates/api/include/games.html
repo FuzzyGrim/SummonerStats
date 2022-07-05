@@ -3,7 +3,7 @@
 {% for game in game_list %}
 
     <!-- 0 is custom games; 2000, 2010 and 2020 are tutorial games -->
-    {% if game.summary_json.game_summary.info.queueId != 0 and game.summary_json.game_summary.info.queueId < 2000 %}
+    {% if game.summary_json.info.queueId != 0 and game.summary_json.info.queueId < 2000 %}
 
         {% if game.summary_json.player_summary.win %}
             <div class="rounded-2 game-summary" id="win" onclick="loadGameData('{{game.summary_json.game_id}}')">
@@ -19,7 +19,7 @@
                         <div>
                         {% if game.summary_json.game_mode == "ARAM" %}
                             <img class="position-img" src="https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/content/src/leagueclient/gamemodeassets/aram/img/game-select-icon-active.png">
-                        {% elif game.summary_json.game_summary.info.gameMode == "CLASSIC" %}
+                        {% elif game.summary_json.info.gameMode == "CLASSIC" %}
                             <img class="position-img" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-{{game.summary_json.player_summary.teamPosition|lower}}.png">
                         {% endif %}
                         </div>
@@ -113,7 +113,7 @@
                         </div>
                     </div>
                     <div class="d-flex flex-column group-four">
-                        {% for matchup in game.summary_json.game_summary.info.matchups %}
+                        {% for matchup in game.summary_json.info.matchups %}
                             <div class="d-inline-flex align-items-center">
                                 <img class= "champion-face rounded-circle"src="https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/{{ matchup.0.championId }}.png">
                                 <a href="../{{ matchup.0.summonerName }}" class="summoner-names text-truncate">{{ matchup.0.summonerName }} </a>
