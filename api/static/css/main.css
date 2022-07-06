@@ -132,21 +132,21 @@ main .ranked-points {
   margin-top: .4rem;
 }
 
-.game-list .game-summary {
+.match-list .match-summary {
   cursor: pointer;
   margin-bottom: .5rem;
   padding: .5rem;
 }
 
-.game-list #win {
+.match-list #win {
   background-color: #A3CFEC;
 }
 
-.game-list #lose {
+.match-list #lose {
   background-color: #E2B6B3;
 }
 
-.game-list .group-one {
+.match-list .group-one {
   width: 20%;
   text-align: center
 }
@@ -156,7 +156,7 @@ main .ranked-points {
   max-height: auto;
 }
 
-.game-list .group-two {
+.match-list .group-two {
   width: 30%;
   margin-left: 1rem;
 }
@@ -200,7 +200,7 @@ main .ranked-points {
   background-color: #5190b9;
 }
 
-.game-list .group-three {
+.match-list .group-three {
   width: 15%;
   margin-left: 1rem;
 }
@@ -214,7 +214,7 @@ main .ranked-points {
   margin-left: .4rem;
 }
 
-.game-list .group-four {
+.match-list .group-four {
   width: 30%;
 }
 

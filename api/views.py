@@ -11,7 +11,6 @@ from api.models import Summoner, Match
 
 from asyncio import run
 
-
 def index(request):
     """Home page"""
 
@@ -53,7 +52,7 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
             summary_not_in_database, summoner_db, summoner["puuid"]
         ))
 
-        # order champions in database by number of games, then by win rate and then by kda
+        # order champions in database by number of matches, then by win rate and then by kda
         summoner_db.champions = dict(
             sorted(
                 summoner_db.champions.items(),
@@ -65,14 +64,14 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
         helpers.save_summaries_to_db(match_preview_list, summoner_name)
 
         context = {
-            "game_list": Match.objects.all().filter(summoner=summoner_name),
+            "match_list": Match.objects.all().filter(summoner=summoner_name),
             "summoner": summoner,
             "summoner_league": summoner_league,
             "summoner_db": summoner_db,
         }
 
         if request.headers.get("x-requested-with") == "XMLHttpRequest":
-            template = "api/include/games.html"
+            template = "api/include/matches.html"
 
     # If user not found
     else:
@@ -81,16 +80,16 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
     return render(request, template, context)
 
 
-def get_game_data(request, server, summoner_name, game_id):
+def get_match_data(request, server, summoner_name, match_id):
     """
-    Loads game information when load button is pressed in user_info
+    Loads match information when load button is pressed in user_info
     """
-
-    game_data = Match.objects.get(match_id=game_id, summoner=summoner_name)
-    game_general_json = game_data.summary_json
-    game_info_json = game_general_json["game_summary"]["info"]
-    game_info_json = sessions.load_game_summary(
-        request, server, game_id, game_info_json
+    print("checkpoint")
+    match_data = Match.objects.get(match_id=match_id, summoner=summoner_name)
+    match_general_json = match_data.summary_json
+    match_info_json = match_general_json["info"]
+    match_info_json = sessions.load_match_summary(
+        request, server, match_id, match_info_json
     )
 
-    return JsonResponse(game_info_json)
+    return JsonResponse(match_info_json)

@@ -16,11 +16,11 @@ def create_user_db(summoner_name):
     Summoner.objects.create(
         summoner=summoner_name,
         stats={
-            "kills": {"total": 0, "per_min": 0, "per_game": 0},
-            "deaths": {"total": 0, "per_min": 0, "per_game": 0},
-            "assists": {"total": 0, "per_min": 0, "per_game": 0},
-            "minions": {"total": 0, "per_min": 0, "per_game": 0},
-            "vision": {"total": 0, "per_min": 0, "per_game": 0},
+            "kills": {"total": 0, "per_min": 0, "per_match": 0},
+            "deaths": {"total": 0, "per_min": 0, "per_match": 0},
+            "assists": {"total": 0, "per_min": 0, "per_match": 0},
+            "minions": {"total": 0, "per_min": 0, "per_match": 0},
+            "vision": {"total": 0, "per_min": 0, "per_match": 0},
         },
         roles={
             "TOP": {"NUM": 0, "WIN_RATE": 0, "WINS": 0, "LOSSES": 0},
@@ -47,7 +47,7 @@ def find_summaries_not_in_db(matchlist, summoner_name):
     """List of match ids which summaries are not in database"""
     summary_not_in_database = []
     for match in matchlist:
-        # If game summary not in database, create object in database
+        # If match summary not in database, create object in database
         if Match.objects.filter(
             match_id=match, summoner=summoner_name, summary_json__exact={}
         ).exists():
@@ -58,29 +58,29 @@ def find_summaries_not_in_db(matchlist, summoner_name):
     return summary_not_in_database
 
 
-def save_summaries_to_db(game_summary_list, summoner_name):
-    """Save game summaries to database"""
+def save_summaries_to_db(match_summary_list, summoner_name):
+    """Save match summaries to database"""
     bulk_save_summary_list = []
-    for game in game_summary_list:
-        game_object = Match.objects.get(
-            match_id=game["metadata"]["matchId"], summoner=summoner_name
+    for match in match_summary_list:
+        match_object = Match.objects.get(
+            match_id=match["metadata"]["matchId"], summoner=summoner_name
         )
-        game_object.summary_json = game
-        bulk_save_summary_list.append(game_object)
+        match_object.summary_json = match
+        bulk_save_summary_list.append(match_object)
     Match.objects.bulk_update(bulk_save_summary_list, ["summary_json"])
 
 
-def get_date_by_timestamp(game_timestamp):
-    """Game date from unix timestamp
+def get_date_by_timestamp(match_timestamp):
+    """match date from unix timestamp
 
     Args:
-        game_timestamp (int): Unix timestamp for when the game is created on the game server
+        match_timestamp (int): Unix timestamp for when the match is created on the match server
 
     Returns:
-        str: date when game was created, e.g 2021-11-24
+        str: date when match was created, e.g 2021-11-24
     """
 
-    return str((datetime.fromtimestamp(game_timestamp / 1000.0)).date())
+    return str((datetime.fromtimestamp(match_timestamp / 1000.0)).date())
 
 
 def get_region_by_platform(platform):
@@ -101,8 +101,8 @@ def get_region_by_platform(platform):
     return region
 
 
-def get_game_mode(queue_id):
-    """Get game mode by the queue_id"""
+def get_match_mode(queue_id):
+    """Get match mode by the queue_id"""
     match queue_id:
         case 400:
             return "Normal Draft"

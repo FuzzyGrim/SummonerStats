@@ -30,13 +30,13 @@ def load_summoner_league(request, server, summoner_name):
     return summoner_league_data
 
 
-def load_game_summary(request, server, game_id, game_json):
-    """Session related to the game info"""
+def load_match_summary(request, server, match_id, match_json):
+    """Session related to the match info"""
 
-    if game_id in request.session:
-        game_data = request.session[game_id]
+    if match_id in request.session:
+        match_data = request.session[match_id]
 
     else:
-        request.session[game_id] = interactions.game_summary(server, game_json)
-        game_data = request.session[game_id]
-    return game_data
+        request.session[match_id] = interactions.match_summary(server, match_json)
+        match_data = request.session[match_id]
+    return match_data

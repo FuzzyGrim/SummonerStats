@@ -20,7 +20,7 @@ class Summoner(models.Model):
 
     summoner = models.CharField(max_length=50)
 
-    games = models.IntegerField(default=0)
+    matches = models.IntegerField(default=0)
 
     minutes = models.IntegerField(default=0)
 
@@ -31,7 +31,7 @@ class Summoner(models.Model):
     stats = models.JSONField(default=dict)
 
     class Meta:
-        ordering = ["-games"]
+        ordering = ["-matches"]
 
     def __str__(self):
         return self.summoner

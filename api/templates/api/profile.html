@@ -67,7 +67,7 @@
             <div class="col-4">
               
               <div class="stats">
-                <span class="tooltip-information" data-bs-toggle="tooltip" data-bs-placement="right" title="Based on {{ summoner_db.games }} game{{ summoner_db.games|pluralize }} from normal and ranked games">
+                <span class="tooltip-information" data-bs-toggle="tooltip" data-bs-placement="right" title="Based on {{ summoner_db.matches }} match{{ summoner_db.matches|pluralize:"es" }} from normal and ranked matches">
                   <i class="bi bi-info-circle-fill"></i>
                 </span>
                 <div class="container d-flex align-items-center justify-content-center">
@@ -130,31 +130,31 @@
                       <td>Kills</td>
                       <td>{{summoner_db.stats.kills.total}}</td>
                       <td>{{summoner_db.stats.kills.per_min}}</td>
-                      <td>{{summoner_db.stats.kills.per_game}}</td>
+                      <td>{{summoner_db.stats.kills.per_match}}</td>
                     </tr>
                     <tr>
                       <td>Deaths</td>
                       <td>{{summoner_db.stats.deaths.total}}</td>
                       <td>{{summoner_db.stats.deaths.per_min}}</td>
-                      <td>{{summoner_db.stats.deaths.per_game}}</td>
+                      <td>{{summoner_db.stats.deaths.per_match}}</td>
                     </tr>
                     <tr>
                       <td>Assists</td>
                       <td>{{summoner_db.stats.assists.total}}</td>
                       <td>{{summoner_db.stats.assists.per_min}}</td>
-                      <td>{{summoner_db.stats.assists.per_game}}</td>
+                      <td>{{summoner_db.stats.assists.per_match}}</td>
                     </tr>
                     <tr>
                       <td>Minions</td>
                       <td>{{summoner_db.stats.minions.total}}</td>
                       <td>{{summoner_db.stats.minions.per_min}}</td>
-                      <td>{{summoner_db.stats.minions.per_game}}</td>
+                      <td>{{summoner_db.stats.minions.per_match}}</td>
                     </tr>
                     <tr>
                       <td>Vision</td>
                       <td>{{summoner_db.stats.vision.total}}</td>
                       <td>{{summoner_db.stats.vision.per_min}}</td>
-                      <td>{{summoner_db.stats.vision.per_game}}</td>
+                      <td>{{summoner_db.stats.vision.per_match}}</td>
                     </tr>
                   <tbody>
                 </table>
@@ -162,7 +162,7 @@
               </div>
 
               <div class="champions">
-                <span class="tooltip-information" data-bs-toggle="tooltip" data-bs-placement="right" title="Based on {{ summoner_db.games }} game{{ summoner_db.games|pluralize }} from normal and ranked games">
+                <span class="tooltip-information" data-bs-toggle="tooltip" data-bs-placement="right" title="Based on {{ summoner_db.matches }} match{{ summoner_db.matches|pluralize:"es" }} from normal and ranked matches">
                   <i class="bi bi-info-circle-fill"></i>
                 </span>
                 <div class="container d-flex align-items-center justify-content-center">
@@ -175,7 +175,7 @@
                     <tr>
                       <th scope="col"></th>
                       <th scope="col">CHAMP</th>
-                      <th scope="col">GAMES</th>
+                      <th scope="col">PLAYS</th>
                       <th scope="col">WR</th>
                       <th scope="col">KDA</th>
                   </thead>
@@ -195,8 +195,8 @@
               </div>
             </div>
 
-            <div class="col-md-7 game-list">
-              {% include "api/include/games.html" %}
+            <div class="col-md-7 match-list">
+              {% include "api/include/matches.html" %}
       
               <!-- Twitter-style Pagination -->
               {% block js %}
@@ -219,7 +219,7 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
-    <script src="{% static 'js/load-game-data.js' %}"></script>
+    <script src="{% static 'js/load-match-data.js' %}"></script>
     <script>
       var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
       var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {

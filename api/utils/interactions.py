@@ -87,8 +87,7 @@ def get_summoner_league(request, server, summoner_name):
         flex = {"tier": "Unranked"}
 
         for queue in summoner_league_list:
-            total_games = queue["wins"] + queue["losses"]
-            queue["win_rate"] = round((queue["wins"] / total_games) * 100)
+            queue["win_rate"] = round((queue["wins"] / (queue["wins"] + queue["losses"])) * 100)
 
             if queue["queueType"] == "RANKED_SOLO_5x5":
                 solo = queue
@@ -131,21 +130,21 @@ def get_matchlist(server, puuid):
     return matchlist
 
 
-async def get_match_preview_list(games, summoner_db, puuid):
+async def get_match_preview_list(matches, summoner_db, puuid):
     """
-    Async http request for getting game json and organizing the players data
+    Async http request for getting match json and organizing the players data
     """
 
     match_preview_list = []
 
-    if games:
-        platform = (games[0].split("_"))[0]
+    if matches:
+        platform = (matches[0].split("_"))[0]
         region = helpers.get_region_by_platform(platform)
 
         async with ClientSession() as session:
             tasks = []
 
-            for match in games:
+            for match in matches:
                 url = (
                     "https://"
                     + region
@@ -161,14 +160,16 @@ async def get_match_preview_list(games, summoner_db, puuid):
             for match in match_preview_list:
 
                 position_dict = match["player_summary"]["teamPosition"]
-                # Only if it's a ranked or normal game, not urf, not aram...
-                # and position is not empty, which happens when player went afk and remaked
+                # Only if it's a ranked or normal match, not urf, not aram...
+                # and position isn't empty, which happens when player went afk and remaked
                 if match["info"]["gameMode"] == "CLASSIC" and position_dict != "":
                     summoner_db.roles[position_dict]["NUM"] += 1
+
                     if match["player_summary"]["win"]:
                         summoner_db.roles[position_dict]["WINS"] += 1
                     else:
                         summoner_db.roles[position_dict]["LOSSES"] += 1
+
                     summoner_db.roles[position_dict]["WIN_RATE"] = int(
                         summoner_db.roles[position_dict]["WINS"]
                         / summoner_db.roles[position_dict]["NUM"]
@@ -182,7 +183,6 @@ async def get_match_preview_list(games, summoner_db, puuid):
                     summoner_db = add_database_champion_stats(
                         summoner_db, match, match["player_summary"]
                     )
-
     return summoner_db, match_preview_list
 
 
@@ -193,7 +193,7 @@ async def get_match_preview(session, url, puuid):
     async with session.get(url, raise_for_status=True) as response:
         match = await response.json()
 
-        # 0 is custom games; 2000, 2010 and 2020 are tutorial games
+        # 0 is custom matches; 2000, 2010 and 2020 are tutorial matches
         if match["info"]["queueId"] not in {0, 2000, 2010, 2020}:
             participant_number = 0
             # Find summoner participant number in the match
@@ -240,10 +240,10 @@ async def get_match_preview(session, url, puuid):
                 user_match_data["perks"]["styles"][1]["style"]
             )
 
-            # Some game modes doesn't have challenges sections such as URF
+            # Some match modes doesn't have challenges sections such as URF
             if "challenges" in user_match_data:
 
-                # Sometimes the killParticipation challenges is not available, e.g: remake games
+                # Sometimes the killParticipation challenges is not available, e.g: remake matches
                 if "killParticipation" in user_match_data["challenges"]:
                     match["player_summary"]["challenges"][
                         "kill_participation_percentage"
@@ -270,9 +270,9 @@ async def get_match_preview(session, url, puuid):
                 1,
             )
 
-            # Get the date of game creation
-            game_date = helpers.get_date_by_timestamp(match["info"]["gameCreation"])
-            match["date"] = game_date
+            # Get the date of match creation
+            match_date = helpers.get_date_by_timestamp(match["info"]["gameCreation"])
+            match["date"] = match_date
 
             # Get patch for assets, 11.23.409.111 -> 11.23.1
             patch = ".".join(match["info"]["gameVersion"].split(".")[:2]) + ".1"
@@ -289,10 +289,10 @@ async def get_match_preview(session, url, puuid):
             ]
 
             if match["info"]["gameMode"] == "CLASSIC":
-                match["game_mode"] = helpers.get_game_mode(match["info"]["queueId"])
+                match["match_mode"] = helpers.get_match_mode(match["info"]["queueId"])
 
             else:
-                match["game_mode"] = match["info"]["gameMode"]
+                match["match_mode"] = match["info"]["gameMode"]
 
             if match["info"]["gameType"] != "CUSTOM_GAME":
                 match["info"]["matchups"] = []
@@ -307,31 +307,31 @@ async def get_match_preview(session, url, puuid):
 
 
 def add_database_ranked_stats(summoner_db, match, player_json):
-    summoner_db.games += 1
+    summoner_db.matches += 1
     summoner_db.minutes += int(round(match["info"]["gameDuration"] / 60, 0))
 
     summoner_db.stats["kills"]["total"] += player_json["kills"]
     summoner_db.stats["kills"]["per_min"] = round(
         summoner_db.stats["kills"]["total"] / summoner_db.minutes, 2
     )
-    summoner_db.stats["kills"]["per_game"] = round(
-        summoner_db.stats["kills"]["total"] / summoner_db.games, 2
+    summoner_db.stats["kills"]["per_match"] = round(
+        summoner_db.stats["kills"]["total"] / summoner_db.matches, 2
     )
 
     summoner_db.stats["assists"]["total"] += player_json["assists"]
     summoner_db.stats["assists"]["per_min"] = round(
         summoner_db.stats["assists"]["total"] / summoner_db.minutes, 2
     )
-    summoner_db.stats["assists"]["per_game"] = round(
-        summoner_db.stats["assists"]["total"] / summoner_db.games, 2
+    summoner_db.stats["assists"]["per_match"] = round(
+        summoner_db.stats["assists"]["total"] / summoner_db.matches, 2
     )
 
     summoner_db.stats["deaths"]["total"] += player_json["deaths"]
     summoner_db.stats["deaths"]["per_min"] = round(
         summoner_db.stats["deaths"]["total"] / summoner_db.minutes, 2
     )
-    summoner_db.stats["deaths"]["per_game"] = round(
-        summoner_db.stats["deaths"]["total"] / summoner_db.games, 2
+    summoner_db.stats["deaths"]["per_match"] = round(
+        summoner_db.stats["deaths"]["total"] / summoner_db.matches, 2
     )
 
     if summoner_db.stats["deaths"]["total"] != 0:
@@ -352,8 +352,8 @@ def add_database_ranked_stats(summoner_db, match, player_json):
     summoner_db.stats["vision"]["per_min"] = round(
         summoner_db.stats["vision"]["total"] / summoner_db.minutes, 2
     )
-    summoner_db.stats["vision"]["per_game"] = round(
-        summoner_db.stats["vision"]["total"] / summoner_db.games, 2
+    summoner_db.stats["vision"]["per_match"] = round(
+        summoner_db.stats["vision"]["total"] / summoner_db.matches, 2
     )
 
     summoner_db.stats["minions"]["total"] += (
@@ -362,8 +362,8 @@ def add_database_ranked_stats(summoner_db, match, player_json):
     summoner_db.stats["minions"]["per_min"] = round(
         summoner_db.stats["minions"]["total"] / summoner_db.minutes, 2
     )
-    summoner_db.stats["minions"]["per_game"] = round(
-        summoner_db.stats["minions"]["total"] / summoner_db.games, 2
+    summoner_db.stats["minions"]["per_match"] = round(
+        summoner_db.stats["minions"]["total"] / summoner_db.matches, 2
     )
 
     return summoner_db
@@ -385,7 +385,7 @@ def add_database_champion_stats(summoner_db, match, player_json):
             "wins": 1 if player_json["win"] else 0,
             "losses": 1 if not player_json["win"] else 0,
             "win_rate": 100 if player_json["win"] else 0,
-            "play_rate": 1 / summoner_db.games,
+            "play_rate": 1 / summoner_db.matches,
             "minions": player_json["totalMinionsKilled"]
             + player_json["neutralMinionsKilled"],
             "vision": player_json["visionScore"],
@@ -414,7 +414,7 @@ def add_database_champion_stats(summoner_db, match, player_json):
         champion_data["win_rate"] = round(
             champion_data["wins"] / champion_data["num"] * 100, 2
         )
-        champion_data["play_rate"] = round(champion_data["num"] / summoner_db.games, 2)
+        champion_data["play_rate"] = round(champion_data["num"] / summoner_db.matches, 2)
         champion_data["minions"] += (
             player_json["totalMinionsKilled"] + player_json["neutralMinionsKilled"]
         )
@@ -428,50 +428,50 @@ def add_database_champion_stats(summoner_db, match, player_json):
     return summoner_db
 
 
-def game_summary(server, game_json):
+def match_summary(server, match_json):
     """Request: https://SERVER.api.riotgames.com/lol/match/v4/matches/GAME_ID
 
     Args:
         server          (string)
-        game_json       (dictionary)
+        match_json       (dictionary)
 
     Returns:
         JSON: Participants stats and game info
     """
 
-    game_duration_seconds = game_json["gameDuration"]
-    game_duration = str(timedelta(seconds=game_duration_seconds))
-    game_json["gameDuration"] = game_duration
+    match_duration_seconds = match_json["gameDuration"]
+    match_duration = str(timedelta(seconds=match_duration_seconds))
+    match_json["gameDuration"] = match_duration
 
-    game_creation = game_json["gameCreation"]
-    game_creation = helpers.get_date_by_timestamp(game_creation)
-    game_json["gameCreation"] = game_creation
+    match_creation = match_json["gameCreation"]
+    match_creation = helpers.get_date_by_timestamp(match_creation)
+    match_json["gameCreation"] = match_creation
 
     summoner_id_list = []
 
-    for participant in game_json["participants"]:
+    for participant in match_json["participants"]:
         participant["totalMinionsKilled"] = (
             participant["totalMinionsKilled"] + participant["neutralMinionsKilled"]
         )
         summoner_id_list.append(participant["summonerId"])
 
     # Change vocabulary from Win/Fail to Victory/Defeat
-    for team in game_json["teams"]:
+    for team in match_json["teams"]:
         if team["win"]:
             team["win"] = "Victory"
         else:
             team["win"] = "Defeat"
 
-    # Get new game_json with the rank of each player. An API
+    # Get new match_json with the rank of each player. An API
     # call is needed for each player so asyncio was used.
-    game_json = run(get_players_ranks(server, game_json, summoner_id_list))
+    match_json = run(get_players_ranks(server, match_json, summoner_id_list))
 
-    return game_json
+    return match_json
 
 
-async def get_players_ranks(server, game_json, summoner_id_list):
+async def get_players_ranks(server, match_json, summoner_id_list):
     """
-    Async to get each player's rank from the game
+    Async to get each player's rank from the match
     """
     async with ClientSession() as session:
         current_player = 0
@@ -506,19 +506,20 @@ async def get_players_ranks(server, game_json, summoner_id_list):
                     "rank": None,
                 }
 
-            tier = stats_json["tier"]
-            rank = stats_json["rank"]
-
-            if rank is not None:
-                game_json["participants"][current_player]["tier"] = f"{tier} {rank}"
-
             # If the player doesn't have rank, display Unranked
-            elif rank is None:
-                game_json["participants"][current_player]["tier"] = f"{tier}"
+            if stats_json["rank"] is None:
+                match_json["participants"][current_player][
+                    "tier"
+                ] = f"{stats_json['tier']}"
+
+            else:
+                match_json["participants"][current_player][
+                    "tier"
+                ] = f"{stats_json['tier']} {stats_json['rank']}"
 
             current_player += 1
 
-    return game_json
+    return match_json
 
 
 async def get_json(session, url):
