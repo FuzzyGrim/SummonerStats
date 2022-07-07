@@ -84,12 +84,9 @@ def get_match_data(request, server, summoner_name, match_id):
     """
     Loads match information when load button is pressed in user_info
     """
-    print("checkpoint")
-    match_data = Match.objects.get(match_id=match_id, summoner=summoner_name)
-    match_general_json = match_data.summary_json
-    match_info_json = match_general_json["info"]
+    match_object = Match.objects.get(match_id=match_id, summoner=summoner_name)
     match_info_json = sessions.load_match_summary(
-        request, server, match_id, match_info_json
+        request, server, match_id, match_object.summary_json["info"]
     )
 
     return JsonResponse(match_info_json)
