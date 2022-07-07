@@ -4,7 +4,7 @@ Python functions that takes a Web request and returns a Web response.
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 
-from api.utils import helpers
+from api.utils import databases
 from api.utils import interactions
 from api.utils import sessions
 from api.models import Summoner, Match
@@ -39,11 +39,11 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
     if summoner["success"]:
         # if summoner not in database, create object for the stats database
         if not Summoner.objects.filter(summoner=summoner_name).exists():
-            helpers.create_user_db(summoner_name)
+            databases.create_user_db(summoner_name)
 
         matchlist = interactions.get_matchlist(server, summoner["puuid"])
-        helpers.add_matches_to_db(matchlist, summoner_name)
-        summary_not_in_database = helpers.find_summaries_not_in_db(
+        databases.add_matches_to_db(matchlist, summoner_name)
+        summary_not_in_database = databases.find_summaries_not_in_db(
             matchlist, summoner_name
         )
 
@@ -61,7 +61,7 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
             )
         )
         summoner_db.save()
-        helpers.save_summaries_to_db(match_preview_list, summoner_name)
+        databases.save_summaries_to_db(match_preview_list, summoner_name)
 
         context = {
             "match_list": Match.objects.all().filter(summoner=summoner_name),
