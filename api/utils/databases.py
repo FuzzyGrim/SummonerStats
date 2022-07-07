@@ -15,11 +15,11 @@ def create_user_db(summoner_name):
             "vision": {"total": 0, "per_min": 0, "per_match": 0},
         },
         roles={
-            "TOP": {"NUM": 0, "WIN_RATE": 0, "WINS": 0, "LOSSES": 0},
-            "JUNGLE": {"NUM": 0, "WIN_RATE": 0, "WINS": 0, "LOSSES": 0},
-            "MIDDLE": {"NUM": 0, "WIN_RATE": 0, "WINS": 0, "LOSSES": 0},
-            "BOTTOM": {"NUM": 0, "WIN_RATE": 0, "WINS": 0, "LOSSES": 0},
-            "UTILITY": {"NUM": 0, "WIN_RATE": 0, "WINS": 0, "LOSSES": 0},
+            "top": {"num": 0, "win_rate": 0, "wins": 0, "losses": 0},
+            "jungle": {"num": 0, "win_rate": 0, "wins": 0, "losses": 0},
+            "middle": {"num": 0, "win_rate": 0, "wins": 0, "losses": 0},
+            "bottom": {"num": 0, "win_rate": 0, "wins": 0, "losses": 0},
+            "utility": {"num": 0, "win_rate": 0, "wins": 0, "losses": 0},
         },
     )
 

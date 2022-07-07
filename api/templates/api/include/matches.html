@@ -47,47 +47,13 @@
                         </div>
 
                         <div class="d-flex">
-                            {% if match.summary_json.player_summary.item0 == 0 %}
-                                <div class="items items-blank"></div>
-                            {% else %}
-                                <img class="items" src="https://ddragon.leagueoflegends.com/cdn/{{ match.summary_json.patch }}/img/item/{{match.summary_json.player_summary.item0}}.png">
-                            {% endif %}
-
-                            {% if match.summary_json.player_summary.item1 == 0 %}
-                                <div class="items items-blank"></div>
-                            {% else %}
-                                <img class="items" src="https://ddragon.leagueoflegends.com/cdn/{{ match.summary_json.patch }}/img/item/{{match.summary_json.player_summary.item1}}.png">
-                            {% endif %}
-
-                            {% if match.summary_json.player_summary.item2 == 0 %}
-                                <div class="items items-blank"></div>
-                            {% else %}
-                                <img class="items" src="https://ddragon.leagueoflegends.com/cdn/{{ match.summary_json.patch }}/img/item/{{match.summary_json.player_summary.item2}}.png">
-                            {% endif %}
-
-                            {% if match.summary_json.player_summary.item3 == 0 %}
-                                <div class="items items-blank"></div>
-                            {% else %}
-                                <img class="items" src="https://ddragon.leagueoflegends.com/cdn/{{ match.summary_json.patch }}/img/item/{{match.summary_json.player_summary.item3}}.png">
-                            {% endif %}
-
-                            {% if match.summary_json.player_summary.item4 == 0 %}
-                                <div class="items items-blank"></div>
-                            {% else %}
-                                <img class="items" src="https://ddragon.leagueoflegends.com/cdn/{{ match.summary_json.patch }}/img/item/{{match.summary_json.player_summary.item4}}.png">
-                            {% endif %}
-
-                            {% if match.summary_json.player_summary.item5 == 0 %}
-                                <div class="items items-blank"></div>
-                            {% else %}
-                                <img class="items" src="https://ddragon.leagueoflegends.com/cdn/{{ match.summary_json.patch }}/img/item/{{match.summary_json.player_summary.item5}}.png">
-                            {% endif %}
-
-                            {% if match.summary_json.player_summary.item6 == 0 %}
-                                <div class="items items-blank"></div>
-                            {% else %}
-                                <img class="items" src="https://ddragon.leagueoflegends.com/cdn/{{ match.summary_json.patch }}/img/item/{{match.summary_json.player_summary.item6}}.png">
-                            {% endif %}
+                            {% for item in match.summary_json.player_summary.items %}
+                                {% if item == 0 %}
+                                    <div class="items items-blank"></div>
+                                {% else %}
+                                    <img class="items" src="https://ddragon.leagueoflegends.com/cdn/{{ match.summary_json.patch }}/img/item/{{item}}.png">
+                                {% endif %}
+                            {% endfor %}
                         </div>
                     </div>
 

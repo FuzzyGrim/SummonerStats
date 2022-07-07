@@ -75,45 +75,15 @@
                 </div>
 
                 <div class="bars d-flex justify-content-around">
-                  <div class="progress-role d-flex flex-column justify-content-center align-items-center">
-                    <div class="progress progress-bar-vertical" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ summoner_db.roles.TOP.WINS }} - {{ summoner_db.roles.TOP.LOSSES }} / {{summoner_db.roles.TOP.WIN_RATE}}%">
-                      <div class="progress-bar" role="progressbar" aria-valuenow="{{summoner_db.roles.TOP.WIN_RATE}}" aria-valuemin="0" aria-valuemax="100" style="height: {{summoner_db.roles.TOP.WIN_RATE}}%"> </div>
+                  {% for role, stats in summoner_db.roles.items %}
+                    <div class="progress-role d-flex flex-column justify-content-center align-items-center">
+                      <div class="progress progress-bar-vertical" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ stats.wins }} - {{ stats.losses }} / {{stats.win_rate}}%">
+                        <div class="progress-bar" role="progressbar" aria-valuenow="{{stats.win_rate}}" aria-valuemin="0" aria-valuemax="100" style="height: {{stats.win_rate}}%"> </div>
+                      </div>
+                      <img class="bar-role-img" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-{{ role }}.png">
+                      <div class="text-center">{{stats.num}}</div>
                     </div>
-                    <img class="bar-role-img" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-top.png">
-                    <div class="text-center">{{summoner_db.roles.TOP.NUM}}</div>
-                  </div>
-                  
-                  <div class="progress-role d-flex flex-column justify-content-center align-items-center">
-                    <div class="progress progress-bar-vertical" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ summoner_db.roles.JUNGLE.WINS }} - {{ summoner_db.roles.JUNGLE.LOSSES }} / {{summoner_db.roles.JUNGLE.WIN_RATE}}%">
-                      <div class="progress-bar" role="progressbar" aria-valuenow="{{summoner_db.roles.JUNGLE.WIN_RATE}}" aria-valuemin="0" aria-valuemax="100" style="height: {{summoner_db.roles.JUNGLE.WIN_RATE}}%"> </div>
-                    </div>
-                    <img class="bar-role-img" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-jungle.png">
-                    <div class="text-center">{{summoner_db.roles.JUNGLE.NUM}}</div>
-                  </div>
-
-                  <div class="progress-role d-flex flex-column justify-content-center align-items-center">
-                    <div class="progress progress-bar-vertical" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ summoner_db.roles.MIDDLE.WINS }} - {{ summoner_db.roles.MIDDLE.LOSSES }} / {{summoner_db.roles.MIDDLE.WIN_RATE}}%">
-                      <div class="progress-bar" role="progressbar" aria-valuenow="{{summoner_db.roles.MIDDLE.WIN_RATE}}" aria-valuemin="0" aria-valuemax="100" style="height: {{summoner_db.roles.MIDDLE.WIN_RATE}}%"> </div>
-                    </div>
-                    <img class="bar-role-img" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-middle.png">
-                    <div class="text-center">{{summoner_db.roles.MIDDLE.NUM}}</div>
-                  </div>
-
-                  <div class="progress-role d-flex flex-column justify-content-center align-items-center">
-                    <div class="progress progress-bar-vertical" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ summoner_db.roles.BOTTOM.WINS }} - {{ summoner_db.roles.BOTTOM.LOSSES }} / {{summoner_db.roles.BOTTOM.WIN_RATE}}%">
-                      <div class="progress-bar" role="progressbar" aria-valuenow="{{summoner_db.roles.BOTTOM.WIN_RATE}}" aria-valuemin="0" aria-valuemax="100" style="height: {{summoner_db.roles.BOTTOM.WIN_RATE}}%"> </div>
-                    </div>
-                    <img class="bar-role-img" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-bottom.png">
-                    <div class="text-center">{{summoner_db.roles.BOTTOM.NUM}}</div>
-                  </div>
-
-                  <div class="progress-role d-flex flex-column justify-content-center align-items-center">
-                    <div class="progress progress-bar-vertical" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ summoner_db.roles.UTILITY.WINS }} - {{ summoner_db.roles.UTILITY.LOSSES }} / {{summoner_db.roles.UTILITY.WIN_RATE}}%">
-                      <div class="progress-bar" role="progressbar" aria-valuenow="{{summoner_db.roles.UTILITY.WIN_RATE}}" aria-valuemin="0" aria-valuemax="100" style="height: {{summoner_db.roles.UTILITY.WIN_RATE}}%"> </div>
-                    </div>
-                    <img class="bar-role-img" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-utility.png">
-                    <div class="text-center">{{summoner_db.roles.UTILITY.NUM}}</div>
-                  </div>
+                  {% endfor %}
                 </div>
 
                 <table class="table table-sm table-striped text-center">
@@ -126,36 +96,14 @@
 
                   </thead>
                   <tbody>
+                    {% for stat, values in summoner_db.stats.items %}
                     <tr>
-                      <td>Kills</td>
-                      <td>{{summoner_db.stats.kills.total}}</td>
-                      <td>{{summoner_db.stats.kills.per_min}}</td>
-                      <td>{{summoner_db.stats.kills.per_match}}</td>
+                      <td>{{stat|capfirst}}</td>
+                      <td>{{values.total}}</td>
+                      <td>{{values.per_min}}</td>
+                      <td>{{values.per_match}}</td>
                     </tr>
-                    <tr>
-                      <td>Deaths</td>
-                      <td>{{summoner_db.stats.deaths.total}}</td>
-                      <td>{{summoner_db.stats.deaths.per_min}}</td>
-                      <td>{{summoner_db.stats.deaths.per_match}}</td>
-                    </tr>
-                    <tr>
-                      <td>Assists</td>
-                      <td>{{summoner_db.stats.assists.total}}</td>
-                      <td>{{summoner_db.stats.assists.per_min}}</td>
-                      <td>{{summoner_db.stats.assists.per_match}}</td>
-                    </tr>
-                    <tr>
-                      <td>Minions</td>
-                      <td>{{summoner_db.stats.minions.total}}</td>
-                      <td>{{summoner_db.stats.minions.per_min}}</td>
-                      <td>{{summoner_db.stats.minions.per_match}}</td>
-                    </tr>
-                    <tr>
-                      <td>Vision</td>
-                      <td>{{summoner_db.stats.vision.total}}</td>
-                      <td>{{summoner_db.stats.vision.per_min}}</td>
-                      <td>{{summoner_db.stats.vision.per_match}}</td>
-                    </tr>
+                  {% endfor %}
                   <tbody>
                 </table>
 
