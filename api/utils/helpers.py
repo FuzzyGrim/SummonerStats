@@ -3,12 +3,34 @@ Functions that performs part of the computation of another function, usually fro
 because the functionality is needed in multiple places.
 """
 
+from api.models import Summoner, Match
+
 from datetime import datetime
 from requests import get
 from decouple import config
-from api.models import Summoner, Match
+from time import sleep
 
 API_KEY = config("API")
+
+
+def get_response(url):
+    """Get response from url"""
+    max_attempts = 3
+    attempts = 0
+    while attempts < max_attempts:
+        response = get(url)
+        if response.status_code == 200:
+            return response
+        elif response.status_code == 429:
+            print(
+                "Rate limit exceeded, sleeping for "
+                + response.headers["Retry-After"]
+                + "seconds"
+            )
+            sleep(int(response.headers["Retry-After"]))
+        attempts += 1
+    if attempts >= max_attempts:
+        raise Exception("Failed: Maxed out attempts")
 
 
 def create_user_db(summoner_name):

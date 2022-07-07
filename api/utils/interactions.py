@@ -1,14 +1,14 @@
 """
 Contains functions that interacts with RIOT's API.
 """
+from api.utils import helpers
+from api.utils import sessions
 
 from datetime import timedelta
 from requests import get
 from decouple import config
 from aiohttp import ClientSession
-from asyncio import ensure_future, gather, run
-from api.utils import helpers
-from api.utils import sessions
+from asyncio import ensure_future, gather, run, sleep
 
 
 API_KEY = config("API")
@@ -40,8 +40,7 @@ def get_summoner(server, summoner_name):
         + "?api_key="
         + API_KEY
     )
-    response = get(url)
-
+    response = helpers.get_response(url)
     summoner_json = response.json()
     summoner_json["success"] = response.status_code == 200
     return summoner_json
@@ -81,13 +80,15 @@ def get_summoner_league(request, server, summoner_name):
             + API_KEY
         )
         # This json is a list of dictionaries
-        summoner_league_list = get(url).json()
+        summoner_league_list = helpers.get_response(url).json()
         # Set default values for each league
         solo = {"tier": "Unranked"}
         flex = {"tier": "Unranked"}
 
         for queue in summoner_league_list:
-            queue["win_rate"] = round((queue["wins"] / (queue["wins"] + queue["losses"])) * 100)
+            queue["win_rate"] = round(
+                (queue["wins"] / (queue["wins"] + queue["losses"])) * 100
+            )
 
             if queue["queueType"] == "RANKED_SOLO_5x5":
                 solo = queue
@@ -125,7 +126,7 @@ def get_matchlist(server, puuid):
         + API_KEY
     )
 
-    matchlist = get(url).json()
+    matchlist = helpers.get_response(url).json()
 
     return matchlist
 
@@ -190,120 +191,132 @@ async def get_match_preview(session, url, puuid):
     """
     Async to get the json from the request
     """
-    async with session.get(url, raise_for_status=True) as response:
-        match = await response.json()
+    max_attempts = 3
+    attempts = 0
+    while attempts < max_attempts:
+        async with session.get(url) as response:
+            if response.status == 200:
+                match = await response.json()
 
-        # 0 is custom matches; 2000, 2010 and 2020 are tutorial matches
-        if match["info"]["queueId"] not in {0, 2000, 2010, 2020}:
-            participant_number = 0
-            # Find summoner participant number in the match
-            while match["metadata"]["participants"][participant_number] != puuid:
-                participant_number += 1
+                # 0 is custom matches; 2000, 2010 and 2020 are tutorial matches
+                if match["info"]["queueId"] not in {0, 2000, 2010, 2020}:
+                    participant_number = 0
+                    # Find summoner participant number in the match
+                    while match["metadata"]["participants"][participant_number] != puuid:
+                        participant_number += 1
 
-            match["player_summary"] = match["info"]["participants"][participant_number]
+                    match["player_summary"] = match["info"]["participants"][participant_number]
 
-            kills = match["player_summary"]["kills"]
-            assists = match["player_summary"]["assists"]
-            deaths = match["player_summary"]["deaths"]
-            try:
-                match["player_summary"]["kda"] = round((kills + assists) / deaths, 2)
-            # Happens when zero deaths
-            except ZeroDivisionError:
-                match["player_summary"]["kda"] = kills + assists
+                    kills = match["player_summary"]["kills"]
+                    assists = match["player_summary"]["assists"]
+                    deaths = match["player_summary"]["deaths"]
+                    try:
+                        match["player_summary"]["kda"] = round((kills + assists) / deaths, 2)
+                    # Happens when zero deaths
+                    except ZeroDivisionError:
+                        match["player_summary"]["kda"] = kills + assists
 
-            match["player_summary"]["cs"] = (
-                match["player_summary"]["totalMinionsKilled"]
-                + match["player_summary"]["neutralMinionsKilled"]
-            )
+                    match["player_summary"]["cs"] = (
+                        match["player_summary"]["totalMinionsKilled"]
+                        + match["player_summary"]["neutralMinionsKilled"]
+                    )
 
-            match["player_summary"]["cs_per_min"] = round(
-                (
-                    match["player_summary"]["totalMinionsKilled"]
-                    + match["player_summary"]["neutralMinionsKilled"]
-                )
-                / (match["info"]["gameDuration"] / 60),
-                1,
-            )
-
-            user_match_data = match["info"]["participants"][participant_number]
-
-            match["player_summary"]["summoner_spell_1"] = helpers.get_summoner_spell(
-                user_match_data["summoner1Id"]
-            )
-            match["player_summary"]["summoner_spell_2"] = helpers.get_summoner_spell(
-                user_match_data["summoner2Id"]
-            )
-            match["player_summary"]["rune_primary"] = helpers.get_rune_primary(
-                user_match_data["perks"]["styles"][0]["selections"][0]["perk"]
-            )
-            match["player_summary"]["rune_secondary"] = helpers.get_rune_secondary(
-                user_match_data["perks"]["styles"][1]["style"]
-            )
-
-            # Some match modes doesn't have challenges sections such as URF
-            if "challenges" in user_match_data:
-
-                # Sometimes the killParticipation challenges is not available, e.g: remake matches
-                if "killParticipation" in user_match_data["challenges"]:
-                    match["player_summary"]["challenges"][
-                        "kill_participation_percentage"
-                    ] = round(
-                        user_match_data["challenges"]["killParticipation"] * 100,
+                    match["player_summary"]["cs_per_min"] = round(
+                        (
+                            match["player_summary"]["totalMinionsKilled"]
+                            + match["player_summary"]["neutralMinionsKilled"]
+                        )
+                        / (match["info"]["gameDuration"] / 60),
                         1,
                     )
-                else:
-                    match["player_summary"]["challenges"][
-                        "kill_participation_percentage"
-                    ] = "ERROR"
-            else:
-                match["player_summary"]["challenges"] = {}
-                match["player_summary"]["challenges"][
-                    "kill_participation_percentage"
-                ] = "ERROR"
 
-            match["player_summary"]["gold_short"] = round(
-                user_match_data["goldEarned"] / 1000,
-                1,
-            )
-            match["player_summary"]["damage_short"] = round(
-                user_match_data["totalDamageDealtToChampions"] / 1000,
-                1,
-            )
+                    user_match_data = match["info"]["participants"][participant_number]
 
-            # Get the date of match creation
-            match_date = helpers.get_date_by_timestamp(match["info"]["gameCreation"])
-            match["date"] = match_date
-
-            # Get patch for assets, 11.23.409.111 -> 11.23.1
-            patch = ".".join(match["info"]["gameVersion"].split(".")[:2]) + ".1"
-            match["patch"] = patch
-
-            match["player_summary"]["items"] = [
-                match["player_summary"]["item0"],
-                match["player_summary"]["item1"],
-                match["player_summary"]["item2"],
-                match["player_summary"]["item6"],
-                match["player_summary"]["item3"],
-                match["player_summary"]["item4"],
-                match["player_summary"]["item5"],
-            ]
-
-            if match["info"]["gameMode"] == "CLASSIC":
-                match["match_mode"] = helpers.get_match_mode(match["info"]["queueId"])
-
-            else:
-                match["match_mode"] = match["info"]["gameMode"]
-
-            if match["info"]["gameType"] != "CUSTOM_GAME":
-                match["info"]["matchups"] = []
-                for i in range(0, 5):
-                    match["info"]["matchups"].append(
-                        [
-                            match["info"]["participants"][i],
-                            match["info"]["participants"][i + 5],
-                        ]
+                    match["player_summary"]["summoner_spell_1"] = helpers.get_summoner_spell(
+                        user_match_data["summoner1Id"]
                     )
-        return match
+                    match["player_summary"]["summoner_spell_2"] = helpers.get_summoner_spell(
+                        user_match_data["summoner2Id"]
+                    )
+                    match["player_summary"]["rune_primary"] = helpers.get_rune_primary(
+                        user_match_data["perks"]["styles"][0]["selections"][0]["perk"]
+                    )
+                    match["player_summary"]["rune_secondary"] = helpers.get_rune_secondary(
+                        user_match_data["perks"]["styles"][1]["style"]
+                    )
+
+                    # Some match modes doesn't have challenges sections such as URF
+                    if "challenges" in user_match_data:
+
+                        # Sometimes the killParticipation challenges is not available, e.g: remake matches
+                        if "killParticipation" in user_match_data["challenges"]:
+                            match["player_summary"]["challenges"][
+                                "kill_participation_percentage"
+                            ] = round(
+                                user_match_data["challenges"]["killParticipation"] * 100,
+                                1,
+                            )
+                        else:
+                            match["player_summary"]["challenges"][
+                                "kill_participation_percentage"
+                            ] = "ERROR"
+                    else:
+                        match["player_summary"]["challenges"] = {}
+                        match["player_summary"]["challenges"][
+                            "kill_participation_percentage"
+                        ] = "ERROR"
+
+                    match["player_summary"]["gold_short"] = round(
+                        user_match_data["goldEarned"] / 1000,
+                        1,
+                    )
+                    match["player_summary"]["damage_short"] = round(
+                        user_match_data["totalDamageDealtToChampions"] / 1000,
+                        1,
+                    )
+
+                    # Get the date of match creation
+                    match_date = helpers.get_date_by_timestamp(match["info"]["gameCreation"])
+                    match["date"] = match_date
+
+                    # Get patch for assets, 11.23.409.111 -> 11.23.1
+                    patch = ".".join(match["info"]["gameVersion"].split(".")[:2]) + ".1"
+                    match["patch"] = patch
+
+                    match["player_summary"]["items"] = [
+                        match["player_summary"]["item0"],
+                        match["player_summary"]["item1"],
+                        match["player_summary"]["item2"],
+                        match["player_summary"]["item6"],
+                        match["player_summary"]["item3"],
+                        match["player_summary"]["item4"],
+                        match["player_summary"]["item5"],
+                    ]
+
+                    if match["info"]["gameMode"] == "CLASSIC":
+                        match["match_mode"] = helpers.get_match_mode(match["info"]["queueId"])
+
+                    else:
+                        match["match_mode"] = match["info"]["gameMode"]
+
+                    if match["info"]["gameType"] != "CUSTOM_GAME":
+                        match["info"]["matchups"] = []
+                        for i in range(0, 5):
+                            match["info"]["matchups"].append(
+                                [
+                                    match["info"]["participants"][i],
+                                    match["info"]["participants"][i + 5],
+                                ]
+                            )
+                return match
+
+            elif response.status == 429:
+                print("Rate limit exceeded, sleeping for " + response.headers["Retry-After"] + "seconds")
+                await sleep(int(response.headers["Retry-After"]))
+            attempts += 1
+
+    if attempts >= max_attempts:
+        raise Exception('Failed: Maxed out attempts')
 
 
 def add_database_ranked_stats(summoner_db, match, player_json):
@@ -414,7 +427,9 @@ def add_database_champion_stats(summoner_db, match, player_json):
         champion_data["win_rate"] = round(
             champion_data["wins"] / champion_data["num"] * 100, 2
         )
-        champion_data["play_rate"] = round(champion_data["num"] / summoner_db.matches, 2)
+        champion_data["play_rate"] = round(
+            champion_data["num"] / summoner_db.matches, 2
+        )
         champion_data["minions"] += (
             player_json["totalMinionsKilled"] + player_json["neutralMinionsKilled"]
         )
@@ -474,11 +489,8 @@ async def get_players_ranks(server, match_json, summoner_id_list):
     Async to get each player's rank from the match
     """
     async with ClientSession() as session:
-        current_player = 0
         tasks = []
-
         for summoner_id in summoner_id_list:
-
             url = (
                 "https://"
                 + server
@@ -487,45 +499,64 @@ async def get_players_ranks(server, match_json, summoner_id_list):
                 + "?api_key="
                 + API_KEY
             )
+            tasks.append(ensure_future(get_leagues_json(session, url)))
 
-            tasks.append(ensure_future(get_json(session, url)))
-
-        stats_json_list = await gather(*tasks)
-        for stats_json in stats_json_list:
+        summoners_leagues_list = await gather(*tasks)
+        current_player = 0
+        for leagues in summoners_leagues_list:
             try:
-                stats_json = next(
+                # If it's a flex match, search for flex rank
+                if match_json["queueId"] == 440:
+                    leagues = next(
                     item
-                    for item in stats_json
-                    if item["queueType"] == "RANKED_SOLO_5x5"
-                )
+                    for item in leagues
+                    if item["queueType"] == "RANKED_FLEX_SR"
+                    )
+                else:
+                    leagues = next(
+                        item
+                        for item in leagues
+                        if item["queueType"] == "RANKED_SOLO_5x5"
+                    )
 
             # If the player doesn't have rank, set tier to Unranked
             except StopIteration:
-                stats_json = {
+                leagues = {
                     "tier": "Unranked",
                     "rank": None,
                 }
 
             # If the player doesn't have rank, display Unranked
-            if stats_json["rank"] is None:
+            if leagues["rank"] is None:
                 match_json["participants"][current_player][
                     "tier"
-                ] = f"{stats_json['tier']}"
+                ] = f"{leagues['tier']}"
 
             else:
                 match_json["participants"][current_player][
                     "tier"
-                ] = f"{stats_json['tier']} {stats_json['rank']}"
+                ] = f"{leagues['tier']} {leagues['rank']}"
 
             current_player += 1
 
     return match_json
 
 
-async def get_json(session, url):
+async def get_leagues_json(session, url):
     """
     Async to get the json from the request
     """
-    async with session.get(url, raise_for_status=True) as response:
-        stats_json = await response.json()
-        return stats_json
+    max_attempts = 3
+    attempts = 0
+    while attempts < max_attempts:
+        async with session.get(url) as response:
+            if response.status == 200:
+                return await response.json()
+
+            elif response.status == 429:
+                print("Rate limit exceeded, sleeping for " + response.headers["Retry-After"] + "seconds")
+                await sleep(int(response.headers["Retry-After"]))
+            attempts += 1
+
+    if attempts >= max_attempts:
+        raise Exception('Failed: Maxed out attempts')
