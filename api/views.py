@@ -43,13 +43,13 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
 
         matchlist = interactions.get_matchlist(server, summoner["puuid"])
         databases.add_matches_to_db(matchlist, summoner_name)
-        summary_not_in_database = databases.find_summaries_not_in_db(
+        match_not_in_database = databases.find_summaries_not_in_db(
             matchlist, summoner_name
         )
 
         summoner_db = Summoner.objects.get(summoner=summoner_name)
         summoner_db, match_preview_list = run(interactions.get_match_preview_list(
-            summary_not_in_database, summoner_db, summoner["puuid"]
+            match_not_in_database, summoner_db, summoner["puuid"]
         ))
 
         # order champions in database by number of matches, then by win rate and then by kda

@@ -41,7 +41,7 @@ def find_summaries_not_in_db(matchlist, summoner_name):
     for match in matchlist:
         # If match summary not in database, create object in database
         if Match.objects.filter(
-            match_id=match, summoner=summoner_name, summary_json__exact={}
+            match_id=match, summoner=summoner_name, match_json__exact={}
         ).exists():
             summary_not_in_database.append(match)
             # Limit to 7 for lazy load pagination
@@ -57,7 +57,7 @@ def save_summaries_to_db(match_summary_list, summoner_name):
         match_object = Match.objects.get(
             match_id=match[0]["metadata"]["matchId"], summoner=summoner_name
         )
-        match_object.summary_json = match[0]
-        match_object.player_json = match[1]
+        match_object.match_json = match[0]
+        match_object.summoner_json = match[1]
         bulk_save_summary_list.append(match_object)
-    Match.objects.bulk_update(bulk_save_summary_list, ["summary_json", "player_json"])
+    Match.objects.bulk_update(bulk_save_summary_list, ["match_json", "summoner_json"])

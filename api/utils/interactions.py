@@ -283,11 +283,11 @@ async def get_match_preview(session, url, puuid):
         raise Exception("Failed: Maxed out attempts")
 
 
-def add_database_ranked_stats(summoner_db, match, player_json):
+def add_database_ranked_stats(summoner_db, match, summoner_json):
     summoner_db.matches += 1
     summoner_db.minutes += int(round(match["info"]["gameDuration"] / 60, 0))
 
-    summoner_db.stats["kills"]["total"] += player_json["kills"]
+    summoner_db.stats["kills"]["total"] += summoner_json["kills"]
     summoner_db.stats["kills"]["per_min"] = round(
         summoner_db.stats["kills"]["total"] / summoner_db.minutes, 2
     )
@@ -295,7 +295,7 @@ def add_database_ranked_stats(summoner_db, match, player_json):
         summoner_db.stats["kills"]["total"] / summoner_db.matches, 2
     )
 
-    summoner_db.stats["assists"]["total"] += player_json["assists"]
+    summoner_db.stats["assists"]["total"] += summoner_json["assists"]
     summoner_db.stats["assists"]["per_min"] = round(
         summoner_db.stats["assists"]["total"] / summoner_db.minutes, 2
     )
@@ -303,7 +303,7 @@ def add_database_ranked_stats(summoner_db, match, player_json):
         summoner_db.stats["assists"]["total"] / summoner_db.matches, 2
     )
 
-    summoner_db.stats["deaths"]["total"] += player_json["deaths"]
+    summoner_db.stats["deaths"]["total"] += summoner_json["deaths"]
     summoner_db.stats["deaths"]["per_min"] = round(
         summoner_db.stats["deaths"]["total"] / summoner_db.minutes, 2
     )
@@ -312,7 +312,7 @@ def add_database_ranked_stats(summoner_db, match, player_json):
     )
 
     summoner_db.stats["minions"]["total"] += (
-        player_json["totalMinionsKilled"] + player_json["neutralMinionsKilled"]
+        summoner_json["totalMinionsKilled"] + summoner_json["neutralMinionsKilled"]
     )
     summoner_db.stats["minions"]["per_min"] = round(
         summoner_db.stats["minions"]["total"] / summoner_db.minutes, 2
@@ -321,7 +321,7 @@ def add_database_ranked_stats(summoner_db, match, player_json):
         summoner_db.stats["minions"]["total"] / summoner_db.matches, 2
     )
 
-    summoner_db.stats["vision"]["total"] += player_json["visionScore"]
+    summoner_db.stats["vision"]["total"] += summoner_json["visionScore"]
     summoner_db.stats["vision"]["per_min"] = round(
         summoner_db.stats["vision"]["total"] / summoner_db.minutes, 2
     )
@@ -332,12 +332,12 @@ def add_database_ranked_stats(summoner_db, match, player_json):
     return summoner_db
 
 
-def add_database_champion_stats(summoner_db, match, player_json):
-    kills = player_json["kills"]
-    assists = player_json["assists"]
-    deaths = player_json["deaths"]
-    if player_json["championName"] not in summoner_db.champions:
-        summoner_db.champions[player_json["championName"]] = {
+def add_database_champion_stats(summoner_db, match, summoner_json):
+    kills = summoner_json["kills"]
+    assists = summoner_json["assists"]
+    deaths = summoner_json["deaths"]
+    if summoner_json["championName"] not in summoner_db.champions:
+        summoner_db.champions[summoner_json["championName"]] = {
             "num": 1,
             "kills": kills,
             "assists": assists,
@@ -345,19 +345,19 @@ def add_database_champion_stats(summoner_db, match, player_json):
             "kda": round((kills + assists) / deaths, 2)
             if deaths != 0
             else kills + assists,
-            "wins": 1 if player_json["win"] else 0,
-            "losses": 1 if not player_json["win"] else 0,
-            "win_rate": 100 if player_json["win"] else 0,
+            "wins": 1 if summoner_json["win"] else 0,
+            "losses": 1 if not summoner_json["win"] else 0,
+            "win_rate": 100 if summoner_json["win"] else 0,
             "play_rate": 1 / summoner_db.matches,
-            "minions": player_json["totalMinionsKilled"]
-            + player_json["neutralMinionsKilled"],
-            "vision": player_json["visionScore"],
-            "gold": player_json["goldEarned"],
-            "damage": player_json["totalDamageDealtToChampions"],
+            "minions": summoner_json["totalMinionsKilled"]
+            + summoner_json["neutralMinionsKilled"],
+            "vision": summoner_json["visionScore"],
+            "gold": summoner_json["goldEarned"],
+            "damage": summoner_json["totalDamageDealtToChampions"],
             "last_played": helpers.get_date_by_timestamp(match["info"]["gameCreation"]),
         }
     else:
-        champion_data = summoner_db.champions[player_json["championName"]]
+        champion_data = summoner_db.champions[summoner_json["championName"]]
         champion_data["num"] += 1
         champion_data["kills"] += kills
         champion_data["assists"] += assists
@@ -370,7 +370,7 @@ def add_database_champion_stats(summoner_db, match, player_json):
             )
         else:
             champion_data["kda"] = champion_data["kills"] + champion_data["assists"]
-        if player_json["win"]:
+        if summoner_json["win"]:
             champion_data["wins"] += 1
         else:
             champion_data["losses"] += 1
@@ -381,11 +381,11 @@ def add_database_champion_stats(summoner_db, match, player_json):
             champion_data["num"] / summoner_db.matches, 2
         )
         champion_data["minions"] += (
-            player_json["totalMinionsKilled"] + player_json["neutralMinionsKilled"]
+            summoner_json["totalMinionsKilled"] + summoner_json["neutralMinionsKilled"]
         )
-        champion_data["vision"] += player_json["visionScore"]
-        champion_data["gold"] += player_json["goldEarned"]
-        champion_data["damage"] += player_json["totalDamageDealtToChampions"]
+        champion_data["vision"] += summoner_json["visionScore"]
+        champion_data["gold"] += summoner_json["goldEarned"]
+        champion_data["damage"] += summoner_json["totalDamageDealtToChampions"]
         champion_data["last_played"] = helpers.get_date_by_timestamp(
             match["info"]["gameCreation"]
         )
