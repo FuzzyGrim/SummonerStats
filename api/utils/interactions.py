@@ -1,8 +1,7 @@
 """
 Contains functions that interacts with RIOT's API.
 """
-from api.utils import helpers
-from api.utils import sessions
+from api.utils import helpers, sessions
 
 from datetime import timedelta
 from requests import get
@@ -131,7 +130,7 @@ def get_matchlist(server, puuid):
     return matchlist
 
 
-async def get_match_preview_list(matches, summoner_db, puuid):
+async def get_match_preview_list(matches, puuid):
     """
     Async http request for getting match json and organizing the players data
     """
@@ -155,38 +154,10 @@ async def get_match_preview_list(matches, summoner_db, puuid):
                 tasks.append(ensure_future(get_match_preview(session, url, puuid)))
 
             match_preview_list = await gather(*tasks)
-
-            # match is [match_summary, player_summary]
-            for match in match_preview_list:
-
-                position_dict = match[1]["teamPosition"].lower()
-                # Only if it's a ranked or normal match, not urf, not aram...
-                # and position isn't empty, which happens when player went afk and remaked
-                if match[0]["info"]["gameMode"] == "CLASSIC" and position_dict != "":
-                    summoner_db.roles[position_dict]["num"] += 1
-
-                    if match[1]["win"]:
-                        summoner_db.roles[position_dict]["wins"] += 1
-                    else:
-                        summoner_db.roles[position_dict]["losses"] += 1
-
-                    summoner_db.roles[position_dict]["win_rate"] = int(
-                        summoner_db.roles[position_dict]["wins"]
-                        / summoner_db.roles[position_dict]["num"]
-                        * 100
-                    )
-
-                    summoner_db = add_database_ranked_stats(
-                        summoner_db, match[0], match[1]
-                    )
-
-                    summoner_db = add_database_champion_stats(
-                        summoner_db, match[0], match[1]
-                    )
     else:
         match_preview_list = []
 
-    return summoner_db, match_preview_list
+    return match_preview_list
 
 
 async def get_match_preview(session, url, puuid):
@@ -281,116 +252,6 @@ async def get_match_preview(session, url, puuid):
 
     if attempts >= max_attempts:
         raise Exception("Failed: Maxed out attempts")
-
-
-def add_database_ranked_stats(summoner_db, match, summoner_json):
-    summoner_db.matches += 1
-    summoner_db.minutes += int(round(match["info"]["gameDuration"] / 60, 0))
-
-    summoner_db.stats["kills"]["total"] += summoner_json["kills"]
-    summoner_db.stats["kills"]["per_min"] = round(
-        summoner_db.stats["kills"]["total"] / summoner_db.minutes, 2
-    )
-    summoner_db.stats["kills"]["per_match"] = round(
-        summoner_db.stats["kills"]["total"] / summoner_db.matches, 2
-    )
-
-    summoner_db.stats["assists"]["total"] += summoner_json["assists"]
-    summoner_db.stats["assists"]["per_min"] = round(
-        summoner_db.stats["assists"]["total"] / summoner_db.minutes, 2
-    )
-    summoner_db.stats["assists"]["per_match"] = round(
-        summoner_db.stats["assists"]["total"] / summoner_db.matches, 2
-    )
-
-    summoner_db.stats["deaths"]["total"] += summoner_json["deaths"]
-    summoner_db.stats["deaths"]["per_min"] = round(
-        summoner_db.stats["deaths"]["total"] / summoner_db.minutes, 2
-    )
-    summoner_db.stats["deaths"]["per_match"] = round(
-        summoner_db.stats["deaths"]["total"] / summoner_db.matches, 2
-    )
-
-    summoner_db.stats["minions"]["total"] += (
-        summoner_json["totalMinionsKilled"] + summoner_json["neutralMinionsKilled"]
-    )
-    summoner_db.stats["minions"]["per_min"] = round(
-        summoner_db.stats["minions"]["total"] / summoner_db.minutes, 2
-    )
-    summoner_db.stats["minions"]["per_match"] = round(
-        summoner_db.stats["minions"]["total"] / summoner_db.matches, 2
-    )
-
-    summoner_db.stats["vision"]["total"] += summoner_json["visionScore"]
-    summoner_db.stats["vision"]["per_min"] = round(
-        summoner_db.stats["vision"]["total"] / summoner_db.minutes, 2
-    )
-    summoner_db.stats["vision"]["per_match"] = round(
-        summoner_db.stats["vision"]["total"] / summoner_db.matches, 2
-    )
-
-    return summoner_db
-
-
-def add_database_champion_stats(summoner_db, match, summoner_json):
-    kills = summoner_json["kills"]
-    assists = summoner_json["assists"]
-    deaths = summoner_json["deaths"]
-    if summoner_json["championName"] not in summoner_db.champions:
-        summoner_db.champions[summoner_json["championName"]] = {
-            "num": 1,
-            "kills": kills,
-            "assists": assists,
-            "deaths": deaths,
-            "kda": round((kills + assists) / deaths, 2)
-            if deaths != 0
-            else kills + assists,
-            "wins": 1 if summoner_json["win"] else 0,
-            "losses": 1 if not summoner_json["win"] else 0,
-            "win_rate": 100 if summoner_json["win"] else 0,
-            "play_rate": 1 / summoner_db.matches,
-            "minions": summoner_json["totalMinionsKilled"]
-            + summoner_json["neutralMinionsKilled"],
-            "vision": summoner_json["visionScore"],
-            "gold": summoner_json["goldEarned"],
-            "damage": summoner_json["totalDamageDealtToChampions"],
-            "last_played": helpers.get_date_by_timestamp(match["info"]["gameCreation"]),
-        }
-    else:
-        champion_data = summoner_db.champions[summoner_json["championName"]]
-        champion_data["num"] += 1
-        champion_data["kills"] += kills
-        champion_data["assists"] += assists
-        champion_data["deaths"] += deaths
-        if champion_data["deaths"] != 0:
-            champion_data["kda"] = round(
-                (champion_data["kills"] + champion_data["assists"])
-                / champion_data["deaths"],
-                2,
-            )
-        else:
-            champion_data["kda"] = champion_data["kills"] + champion_data["assists"]
-        if summoner_json["win"]:
-            champion_data["wins"] += 1
-        else:
-            champion_data["losses"] += 1
-        champion_data["win_rate"] = round(
-            champion_data["wins"] / champion_data["num"] * 100, 2
-        )
-        champion_data["play_rate"] = round(
-            champion_data["num"] / summoner_db.matches, 2
-        )
-        champion_data["minions"] += (
-            summoner_json["totalMinionsKilled"] + summoner_json["neutralMinionsKilled"]
-        )
-        champion_data["vision"] += summoner_json["visionScore"]
-        champion_data["gold"] += summoner_json["goldEarned"]
-        champion_data["damage"] += summoner_json["totalDamageDealtToChampions"]
-        champion_data["last_played"] = helpers.get_date_by_timestamp(
-            match["info"]["gameCreation"]
-        )
-
-    return summoner_db
 
 
 def match_summary(server, match_json):
