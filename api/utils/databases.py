@@ -55,8 +55,9 @@ def save_summaries_to_db(match_summary_list, summoner_name):
     bulk_save_summary_list = []
     for match in match_summary_list:
         match_object = Match.objects.get(
-            match_id=match["metadata"]["matchId"], summoner=summoner_name
+            match_id=match[0]["metadata"]["matchId"], summoner=summoner_name
         )
-        match_object.summary_json = match
+        match_object.summary_json = match[0]
+        match_object.player_json = match[1]
         bulk_save_summary_list.append(match_object)
-    Match.objects.bulk_update(bulk_save_summary_list, ["summary_json"])
+    Match.objects.bulk_update(bulk_save_summary_list, ["summary_json", "player_json"])

@@ -156,15 +156,16 @@ async def get_match_preview_list(matches, summoner_db, puuid):
 
             match_preview_list = await gather(*tasks)
 
+            # match is [match_summary, player_summary]
             for match in match_preview_list:
 
-                position_dict = match["player_summary"]["teamPosition"].lower()
+                position_dict = match[1]["teamPosition"].lower()
                 # Only if it's a ranked or normal match, not urf, not aram...
                 # and position isn't empty, which happens when player went afk and remaked
-                if match["info"]["gameMode"] == "CLASSIC" and position_dict != "":
+                if match[0]["info"]["gameMode"] == "CLASSIC" and position_dict != "":
                     summoner_db.roles[position_dict]["num"] += 1
 
-                    if match["player_summary"]["win"]:
+                    if match[1]["win"]:
                         summoner_db.roles[position_dict]["wins"] += 1
                     else:
                         summoner_db.roles[position_dict]["losses"] += 1
@@ -176,12 +177,14 @@ async def get_match_preview_list(matches, summoner_db, puuid):
                     )
 
                     summoner_db = add_database_ranked_stats(
-                        summoner_db, match, match["player_summary"]
+                        summoner_db, match[0], match[1]
                     )
 
                     summoner_db = add_database_champion_stats(
-                        summoner_db, match, match["player_summary"]
+                        summoner_db, match[0], match[1]
                     )
+    else:
+        match_preview_list = []
 
     return summoner_db, match_preview_list
 
@@ -201,69 +204,55 @@ async def get_match_preview(session, url, puuid):
                 if match["info"]["queueId"] not in {0, 2000, 2010, 2020}:
                     participant_number = helpers.get_participant_number(match, puuid)
 
-                    match["player_summary"] = match["info"]["participants"][
-                        participant_number
-                    ]
+                    player_summary = match["info"]["participants"][participant_number]
 
                     try:
-                        match["player_summary"]["kda"] = round(
-                            (
-                                match["player_summary"]["kills"]
-                                + match["player_summary"]["assists"]
-                            )
-                            / match["player_summary"]["deaths"],
+                        player_summary["kda"] = round(
+                            (player_summary["kills"] + player_summary["assists"])
+                            / player_summary["deaths"],
                             2,
                         )
                     # Happens when zero deaths
                     except ZeroDivisionError:
-                        match["player_summary"]["kda"] = (
-                            match["player_summary"]["kills"]
-                            + match["player_summary"]["assists"]
+                        player_summary["kda"] = (
+                            player_summary["kills"] + player_summary["assists"]
                         )
 
-                    match["player_summary"][
-                        "summoner_spell_1"
-                    ] = helpers.get_summoner_spell(
-                        match["player_summary"]["summoner1Id"]
+                    player_summary["summoner_spell_1"] = helpers.get_summoner_spell(
+                        player_summary["summoner1Id"]
                     )
-                    match["player_summary"][
-                        "summoner_spell_2"
-                    ] = helpers.get_summoner_spell(
-                        match["player_summary"]["summoner2Id"]
+                    player_summary["summoner_spell_2"] = helpers.get_summoner_spell(
+                        player_summary["summoner2Id"]
                     )
-                    match["player_summary"]["rune_primary"] = helpers.get_rune_primary(
-                        match["player_summary"]["perks"]["styles"][0]["selections"][0][
-                            "perk"
-                        ]
+                    player_summary["rune_primary"] = helpers.get_rune_primary(
+                        player_summary["perks"]["styles"][0]["selections"][0]["perk"]
                     )
-                    match["player_summary"][
-                        "rune_secondary"
-                    ] = helpers.get_rune_secondary(
-                        match["player_summary"]["perks"]["styles"][1]["style"]
+                    player_summary["rune_secondary"] = helpers.get_rune_secondary(
+                        player_summary["perks"]["styles"][1]["style"]
                     )
 
-                    match["player_summary"] = helpers.get_preview_stats(match)
+                    player_summary = helpers.get_preview_stats(
+                        player_summary, match["info"]["gameDuration"] / 60
+                    )
+
+                    player_summary["items"] = [
+                        player_summary["item0"],
+                        player_summary["item1"],
+                        player_summary["item2"],
+                        player_summary["item6"],
+                        player_summary["item3"],
+                        player_summary["item4"],
+                        player_summary["item5"],
+                    ]
 
                     # Get the date of match creation
-                    match_date = helpers.get_date_by_timestamp(
+                    match["date"] = helpers.get_date_by_timestamp(
                         match["info"]["gameCreation"]
                     )
-                    match["date"] = match_date
 
                     # Get patch for assets, 11.23.409.111 -> 11.23.1
                     patch = ".".join(match["info"]["gameVersion"].split(".")[:2]) + ".1"
                     match["patch"] = patch
-
-                    match["player_summary"]["items"] = [
-                        match["player_summary"]["item0"],
-                        match["player_summary"]["item1"],
-                        match["player_summary"]["item2"],
-                        match["player_summary"]["item6"],
-                        match["player_summary"]["item3"],
-                        match["player_summary"]["item4"],
-                        match["player_summary"]["item5"],
-                    ]
-
                     if match["info"]["gameMode"] == "CLASSIC":
                         match["match_mode"] = helpers.get_match_mode(
                             match["info"]["queueId"]
@@ -279,7 +268,7 @@ async def get_match_preview(session, url, puuid):
                                 match["info"]["participants"][i + 5],
                             ]
                         )
-                return match
+                return [match, player_summary]
 
             elif response.status == 429:
                 print(

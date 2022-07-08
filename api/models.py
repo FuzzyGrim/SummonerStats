@@ -7,6 +7,8 @@ class Match(models.Model):
 
     summary_json = models.JSONField(default=dict)
 
+    player_json = models.JSONField(default=dict)
+
     summoner = models.CharField(max_length=50)
 
     class Meta:

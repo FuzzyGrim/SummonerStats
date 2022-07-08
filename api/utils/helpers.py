@@ -39,48 +39,40 @@ def get_participant_number(match, puuid):
     return participant_number
 
 
-def get_preview_stats(match):
-    match["player_summary"]["cs"] = (
-        match["player_summary"]["totalMinionsKilled"]
-        + match["player_summary"]["neutralMinionsKilled"]
+def get_preview_stats(player_summary, game_duration):
+    player_summary["cs"] = (
+        player_summary["totalMinionsKilled"] + player_summary["neutralMinionsKilled"]
     )
 
-    match["player_summary"]["cs_per_min"] = round(
-        (
-            match["player_summary"]["totalMinionsKilled"]
-            + match["player_summary"]["neutralMinionsKilled"]
-        )
-        / (match["info"]["gameDuration"] / 60),
+    player_summary["cs_per_min"] = round(
+        (player_summary["totalMinionsKilled"] + player_summary["neutralMinionsKilled"])
+        / game_duration,
         1,
     )
     # Some match modes doesn't have challenges sections such as URF
-    if "challenges" in match["player_summary"]:
+    if "challenges" in player_summary:
 
         # Sometimes the killParticipation challenges is not available, e.g: remake matches
-        if "killParticipation" in match["player_summary"]["challenges"]:
-            match["player_summary"]["challenges"][
-                "kill_participation_percentage"
-            ] = round(
-                match["player_summary"]["challenges"]["killParticipation"] * 100,
+        if "killParticipation" in player_summary["challenges"]:
+            player_summary["challenges"]["kill_participation_percentage"] = round(
+                player_summary["challenges"]["killParticipation"] * 100,
                 1,
             )
         else:
-            match["player_summary"]["challenges"][
-                "kill_participation_percentage"
-            ] = "ERROR"
+            player_summary["challenges"]["kill_participation_percentage"] = "ERROR"
     else:
-        match["player_summary"]["challenges"] = {}
-        match["player_summary"]["challenges"]["kill_participation_percentage"] = "ERROR"
+        player_summary["challenges"] = {}
+        player_summary["challenges"]["kill_participation_percentage"] = "ERROR"
 
-    match["player_summary"]["gold_short"] = round(
-        match["player_summary"]["goldEarned"] / 1000,
+    player_summary["gold_short"] = round(
+        player_summary["goldEarned"] / 1000,
         1,
     )
-    match["player_summary"]["damage_short"] = round(
-        match["player_summary"]["totalDamageDealtToChampions"] / 1000,
+    player_summary["damage_short"] = round(
+        player_summary["totalDamageDealtToChampions"] / 1000,
         1,
     )
-    return match["player_summary"]
+    return player_summary
 
 
 def get_date_by_timestamp(match_timestamp):
