@@ -132,9 +132,7 @@ def get_matchlist(server, puuid):
 
 
 async def get_match_json_list(matches):
-    """
-    Async http request for getting match json and organizing the players data
-    """
+    """Async http request for getting match json and organizing the players data"""
 
     platform = (matches[0].split("_"))[0]
     region = helpers.get_region_by_platform(platform)
@@ -157,14 +155,15 @@ async def get_match_json_list(matches):
 
 
 async def get_match_json(session, url, match):
-    """
-    Async to get the json from the request
-    """
+    """Async to get the json from the request"""
+
     max_attempts = 3
     attempts = 0
     while attempts < max_attempts:
         # Search for match json in database
-        matches = await sync_to_async(list)(Match.objects.filter(match_id=match).exclude(match_json__exact={}))
+        matches = await sync_to_async(list)(
+            Match.objects.filter(match_id=match).exclude(match_json__exact={})
+        )
         if matches:
             return matches[0].match_json
         else:
@@ -215,9 +214,7 @@ async def get_match_json(session, url, match):
 
 
 async def get_player_summary_list(matches, puuid):
-    """
-    Async http request for getting match json and organizing the players data
-    """
+    """Async to get a list of players summaries from match list"""
 
     tasks = []
 
@@ -228,6 +225,8 @@ async def get_player_summary_list(matches, puuid):
 
 
 async def get_player_summary(match, puuid):
+    """Async to organize the players data"""
+
     participant_number = helpers.get_participant_number(match, puuid)
 
     player_summary = match["info"]["participants"][participant_number]
@@ -321,9 +320,8 @@ def match_summary(server, match_json):
 
 
 async def get_players_ranks(server, match_json, summoner_id_list):
-    """
-    Async to get each player's rank from the match
-    """
+    """Async to get each player's rank from the match"""
+
     async with ClientSession() as session:
         tasks = []
         for summoner_id in summoner_id_list:
@@ -379,9 +377,8 @@ async def get_players_ranks(server, match_json, summoner_id_list):
 
 
 async def get_leagues_json(session, url):
-    """
-    Async to get the json from the request
-    """
+    """Async to get the json from the request"""
+
     max_attempts = 3
     attempts = 0
     while attempts < max_attempts:

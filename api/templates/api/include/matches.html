@@ -1,8 +1,8 @@
 {% load el_pagination_tags %}
 {% lazy_paginate match_list %}
-{% for match in match_list %}
 
-    <!-- 0 is custom matches; 2000, 2010 and 2020 are tutorial matches -->
+ <!-- 0 is custom matches; 2000, 2010 and 2020 are tutorial matches -->
+{% for match in match_list %}
     {% if match.match_json.info.queueId != 0 and match.match_json.info.queueId < 2000 %}
 
         {% if match.summoner_json.win %}

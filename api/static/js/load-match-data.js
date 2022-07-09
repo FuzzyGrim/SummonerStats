@@ -4,8 +4,8 @@ $.ajax({
     url : matchId, // the endpoint
     method: "GET",
     start_time: new Date().getTime(),
-    error: function(xhr, status, error) {
-    alert("Rate limitation error");
+    error: function(xhr) {
+    alert("Error: " + xhr.status + " - " + xhr.statusText);
     },
     success: function(matchJson){
     if(!( matchId in dict)){

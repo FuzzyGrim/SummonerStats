@@ -3,6 +3,7 @@
 from api.models import Summoner, Match
 from api.utils import helpers
 
+
 def update_summoner_db(summoner_db, player_summary_list):
     for player_summary in player_summary_list:
         position_dict = player_summary["teamPosition"].lower()
@@ -22,14 +23,9 @@ def update_summoner_db(summoner_db, player_summary_list):
                 * 100
             )
 
-            summoner_db = add_database_ranked_stats(
-                summoner_db, player_summary
-            )
+            summoner_db = add_database_ranked_stats(summoner_db, player_summary)
+            summoner_db = add_database_champion_stats(summoner_db, player_summary)
 
-            summoner_db = add_database_champion_stats(
-                summoner_db, player_summary
-            )
-    
     # order champions in database by number of matches, then by win rate and then by kda
     summoner_db.champions = dict(
         sorted(
@@ -112,7 +108,7 @@ def add_database_champion_stats(summoner_db, summoner_json):
             "vision": summoner_json["visionScore"],
             "gold": summoner_json["goldEarned"],
             "damage": summoner_json["totalDamageDealtToChampions"],
-            "last_played": summoner_json["gameCreation"]
+            "last_played": summoner_json["gameCreation"],
         }
     else:
         champion_data = summoner_db.champions[summoner_json["championName"]]
@@ -205,6 +201,7 @@ def save_matches_to_db(match_summary_list, summoner_name):
         match_object.match_json = match
         bulk_save_summary_list.append(match_object)
     Match.objects.bulk_update(bulk_save_summary_list, ["match_json"])
+
 
 def save_player_summaries_to_db(player_summary_list, summoner_name):
     """Save player summaries to database"""

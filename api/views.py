@@ -52,13 +52,13 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
 
         if match_not_in_database:
             match_json_list = run(
-                interactions.get_match_json_list(
-                    match_not_in_database
-                )
+                interactions.get_match_json_list(match_not_in_database)
             )
             databases.save_matches_to_db(match_json_list, summoner_name)
 
-            player_summary_list = run(interactions.get_player_summary_list(match_json_list, summoner["puuid"]))
+            player_summary_list = run(
+                interactions.get_player_summary_list(match_json_list, summoner["puuid"])
+            )
             databases.save_player_summaries_to_db(player_summary_list, summoner_name)
             summoner_db = databases.update_summoner_db(summoner_db, player_summary_list)
             summoner_db.save()
