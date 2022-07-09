@@ -48,6 +48,8 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
             matchlist, summoner_name
         )
 
+        summoner_db = Summoner.objects.get(summoner=summoner_name)
+
         if match_not_in_database:
             match_json_list = run(
                 interactions.get_match_json_list(
@@ -58,7 +60,6 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
 
             player_summary_list = run(interactions.get_player_summary_list(match_json_list, summoner["puuid"]))
             databases.save_player_summaries_to_db(player_summary_list, summoner_name)
-            summoner_db = Summoner.objects.get(summoner=summoner_name)
             summoner_db = databases.update_summoner_db(summoner_db, player_summary_list)
             summoner_db.save()
 
@@ -79,6 +80,11 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
     print("Time:", time.time() - x0)
 
     return render(request, template, context)
+
+
+def summoner_stats_refresh(request, server, summoner_name):
+    summoner_db = Summoner.objects.get(summoner=summoner_name)
+    return render(request, "api/include/refresh.html", {"summoner_db": summoner_db})
 
 
 def get_match_data(request, server, summoner_name, match_id):

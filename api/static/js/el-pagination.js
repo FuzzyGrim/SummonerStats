@@ -78,6 +78,7 @@
                         // Fire onCompleted callback.
                         settings.onCompleted.apply(
                             html_link, [context, $.trim(fragment)]);
+                        $("#stats-champions").load(window.location.pathname + "refresh");
                     }).fail(function (xhr, textStatus, error) {
                         // Remove the container left if any
                         container.remove();
