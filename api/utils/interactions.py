@@ -2,7 +2,8 @@
 Contains functions that interacts with RIOT's API.
 """
 from api.utils import helpers, sessions
-
+from api.models import Summoner, Match
+from asgiref.sync import sync_to_async
 from datetime import timedelta
 from requests import get
 from decouple import config
@@ -150,57 +151,64 @@ async def get_match_json_list(matches):
                 + "?api_key="
                 + API_KEY
             )
-            tasks.append(ensure_future(get_match_json(session, url)))
+            tasks.append(ensure_future(get_match_json(session, url, match)))
 
         return await gather(*tasks)
 
 
-async def get_match_json(session, url):
+async def get_match_json(session, url, match):
     """
     Async to get the json from the request
     """
     max_attempts = 3
     attempts = 0
     while attempts < max_attempts:
-        async with session.get(url) as response:
-            if response.status == 200:
-                match = await response.json()
-                # 0 is custom matches; 2000, 2010 and 2020 are tutorial matches
-                if match["info"]["queueId"] not in {0, 2000, 2010, 2020}:
+        # Search for match json in database
+        matches = await sync_to_async(list)(Match.objects.filter(match_id=match).exclude(match_json__exact={}))
+        if matches:
+            return matches[0].match_json
+        else:
+            async with session.get(url) as response:
+                if response.status == 200:
+                    match = await response.json()
+                    # 0 is custom matches; 2000, 2010 and 2020 are tutorial matches
+                    if match["info"]["queueId"] not in {0, 2000, 2010, 2020}:
 
-                    # Get the date of match creation
-                    match["date"] = helpers.get_date_by_timestamp(
-                        match["info"]["gameCreation"]
+                        # Get the date of match creation
+                        match["date"] = helpers.get_date_by_timestamp(
+                            match["info"]["gameCreation"]
+                        )
+
+                        # Get patch for assets, 11.23.409.111 -> 11.23.1
+                        patch = (
+                            ".".join(match["info"]["gameVersion"].split(".")[:2]) + ".1"
+                        )
+                        match["patch"] = patch
+                        if match["info"]["gameMode"] == "CLASSIC":
+                            match["match_mode"] = helpers.get_match_mode(
+                                match["info"]["queueId"]
+                            )
+                        else:
+                            match["match_mode"] = match["info"]["gameMode"]
+
+                        match["info"]["matchups"] = []
+                        for i in range(0, 5):
+                            match["info"]["matchups"].append(
+                                [
+                                    match["info"]["participants"][i],
+                                    match["info"]["participants"][i + 5],
+                                ]
+                            )
+                    return match
+
+                elif response.status == 429:
+                    print(
+                        "Rate limit exceeded, sleeping for "
+                        + response.headers["Retry-After"]
+                        + " seconds"
                     )
-
-                    # Get patch for assets, 11.23.409.111 -> 11.23.1
-                    patch = ".".join(match["info"]["gameVersion"].split(".")[:2]) + ".1"
-                    match["patch"] = patch
-                    if match["info"]["gameMode"] == "CLASSIC":
-                        match["match_mode"] = helpers.get_match_mode(
-                            match["info"]["queueId"]
-                        )
-                    else:
-                        match["match_mode"] = match["info"]["gameMode"]
-
-                    match["info"]["matchups"] = []
-                    for i in range(0, 5):
-                        match["info"]["matchups"].append(
-                            [
-                                match["info"]["participants"][i],
-                                match["info"]["participants"][i + 5],
-                            ]
-                        )
-                return match
-
-            elif response.status == 429:
-                print(
-                    "Rate limit exceeded, sleeping for "
-                    + response.headers["Retry-After"]
-                    + " seconds"
-                )
-                await sleep(int(response.headers["Retry-After"]))
-            attempts += 1
+                    await sleep(int(response.headers["Retry-After"]))
+                attempts += 1
 
     if attempts >= max_attempts:
         raise Exception("Failed: Maxed out attempts")
@@ -221,7 +229,6 @@ async def get_player_summary_list(matches, puuid):
 
 async def get_player_summary(match, puuid):
     participant_number = helpers.get_participant_number(match, puuid)
-    print(match["metadata"]["matchId"])
 
     player_summary = match["info"]["participants"][participant_number]
 
@@ -233,9 +240,7 @@ async def get_player_summary(match, puuid):
         )
     # Happens when zero deaths
     except ZeroDivisionError:
-        player_summary["kda"] = (
-            player_summary["kills"] + player_summary["assists"]
-        )
+        player_summary["kda"] = player_summary["kills"] + player_summary["assists"]
 
     player_summary["summoner_spell_1"] = helpers.get_summoner_spell(
         player_summary["summoner1Id"]
@@ -267,7 +272,9 @@ async def get_player_summary(match, puuid):
     player_summary["matchId"] = match["metadata"]["matchId"]
     player_summary["gameMode"] = match["info"]["gameMode"]
     player_summary["gameDuration"] = int(round(match["info"]["gameDuration"] / 60, 0))
-    player_summary["gameCreation"] = helpers.get_date_by_timestamp(match["info"]["gameCreation"])
+    player_summary["gameCreation"] = helpers.get_date_by_timestamp(
+        match["info"]["gameCreation"]
+    )
 
     return player_summary
 
