@@ -23,7 +23,7 @@ def get_response(url):
             print(
                 "Rate limit exceeded, sleeping for "
                 + response.headers["Retry-After"]
-                + "seconds"
+                + " seconds"
             )
             sleep(int(response.headers["Retry-After"]))
         attempts += 1

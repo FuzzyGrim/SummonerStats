@@ -3,33 +3,32 @@
 from api.models import Summoner, Match
 from api.utils import helpers
 
-def update_summoner_db(summoner_db, matches):
-    for match in matches:
-        if match[1]:
-            position_dict = match[1]["teamPosition"].lower()
-            # Only if it's a ranked or normal match, not urf, not aram...
-            # and position isn't empty, which happens when player went afk and remaked
-            if match[0]["info"]["gameMode"] == "CLASSIC" and position_dict != "":
-                summoner_db.roles[position_dict]["num"] += 1
+def update_summoner_db(summoner_db, player_summary_list):
+    for player_summary in player_summary_list:
+        position_dict = player_summary["teamPosition"].lower()
+        # Only if it's a ranked or normal match, not urf, not aram...
+        # and position isn't empty, which happens when player went afk and remaked
+        if player_summary["gameMode"] == "CLASSIC" and position_dict != "":
+            summoner_db.roles[position_dict]["num"] += 1
 
-                if match[1]["win"]:
-                    summoner_db.roles[position_dict]["wins"] += 1
-                else:
-                    summoner_db.roles[position_dict]["losses"] += 1
+            if player_summary["win"]:
+                summoner_db.roles[position_dict]["wins"] += 1
+            else:
+                summoner_db.roles[position_dict]["losses"] += 1
 
-                summoner_db.roles[position_dict]["win_rate"] = int(
-                    summoner_db.roles[position_dict]["wins"]
-                    / summoner_db.roles[position_dict]["num"]
-                    * 100
-                )
+            summoner_db.roles[position_dict]["win_rate"] = int(
+                summoner_db.roles[position_dict]["wins"]
+                / summoner_db.roles[position_dict]["num"]
+                * 100
+            )
 
-                summoner_db = add_database_ranked_stats(
-                    summoner_db, match[0], match[1]
-                )
+            summoner_db = add_database_ranked_stats(
+                summoner_db, player_summary
+            )
 
-                summoner_db = add_database_champion_stats(
-                    summoner_db, match[0], match[1]
-                )
+            summoner_db = add_database_champion_stats(
+                summoner_db, player_summary
+            )
     
     # order champions in database by number of matches, then by win rate and then by kda
     summoner_db.champions = dict(
@@ -42,9 +41,9 @@ def update_summoner_db(summoner_db, matches):
     return summoner_db
 
 
-def add_database_ranked_stats(summoner_db, match, summoner_json):
+def add_database_ranked_stats(summoner_db, summoner_json):
     summoner_db.matches += 1
-    summoner_db.minutes += int(round(match["info"]["gameDuration"] / 60, 0))
+    summoner_db.minutes += summoner_json["gameDuration"]
 
     summoner_db.stats["kills"]["total"] += summoner_json["kills"]
     summoner_db.stats["kills"]["per_min"] = round(
@@ -91,7 +90,7 @@ def add_database_ranked_stats(summoner_db, match, summoner_json):
     return summoner_db
 
 
-def add_database_champion_stats(summoner_db, match, summoner_json):
+def add_database_champion_stats(summoner_db, summoner_json):
     kills = summoner_json["kills"]
     assists = summoner_json["assists"]
     deaths = summoner_json["deaths"]
@@ -113,7 +112,7 @@ def add_database_champion_stats(summoner_db, match, summoner_json):
             "vision": summoner_json["visionScore"],
             "gold": summoner_json["goldEarned"],
             "damage": summoner_json["totalDamageDealtToChampions"],
-            "last_played": helpers.get_date_by_timestamp(match["info"]["gameCreation"]),
+            "last_played": summoner_json["gameCreation"]
         }
     else:
         champion_data = summoner_db.champions[summoner_json["championName"]]
@@ -145,10 +144,7 @@ def add_database_champion_stats(summoner_db, match, summoner_json):
         champion_data["vision"] += summoner_json["visionScore"]
         champion_data["gold"] += summoner_json["goldEarned"]
         champion_data["damage"] += summoner_json["totalDamageDealtToChampions"]
-        champion_data["last_played"] = helpers.get_date_by_timestamp(
-            match["info"]["gameCreation"]
-        )
-
+        champion_data["last_played"] = summoner_json["gameCreation"]
     return summoner_db
 
 
@@ -184,8 +180,8 @@ def add_matches_to_db(matchlist, summoner_name):
     Match.objects.bulk_create(add_match_bulk_list)
 
 
-def find_summaries_not_in_db(matchlist, summoner_name):
-    """List of match ids which summaries are not in database"""
+def find_matches_not_in_db(matchlist, summoner_name):
+    """List of match ids which are not in database"""
     summary_not_in_database = []
     for match in matchlist:
         # If match summary not in database, create object in database
@@ -199,14 +195,24 @@ def find_summaries_not_in_db(matchlist, summoner_name):
     return summary_not_in_database
 
 
-def save_summaries_to_db(match_summary_list, summoner_name):
-    """Save match summaries to database"""
+def save_matches_to_db(match_summary_list, summoner_name):
+    """Save matches to database"""
     bulk_save_summary_list = []
     for match in match_summary_list:
         match_object = Match.objects.get(
-            match_id=match[0]["metadata"]["matchId"], summoner=summoner_name
+            match_id=match["metadata"]["matchId"], summoner=summoner_name
         )
-        match_object.match_json = match[0]
-        match_object.summoner_json = match[1]
+        match_object.match_json = match
         bulk_save_summary_list.append(match_object)
-    Match.objects.bulk_update(bulk_save_summary_list, ["match_json", "summoner_json"])
+    Match.objects.bulk_update(bulk_save_summary_list, ["match_json"])
+
+def save_player_summaries_to_db(player_summary_list, summoner_name):
+    """Save player summaries to database"""
+    bulk_save_summary_list = []
+    for player_summary in player_summary_list:
+        match_object = Match.objects.get(
+            match_id=player_summary["matchId"], summoner=summoner_name
+        )
+        match_object.summoner_json = player_summary
+        bulk_save_summary_list.append(match_object)
+    Match.objects.bulk_update(bulk_save_summary_list, ["summoner_json"])

@@ -8,6 +8,7 @@ from api.utils import databases, interactions, sessions
 from api.models import Summoner, Match
 
 from asyncio import run
+import time
 
 
 def index(request):
@@ -24,6 +25,7 @@ def index(request):
 
 def user_info(request, server, summoner_name, template="api/profile.html"):
     """Summoners' profile page"""
+    x0 = time.time()
 
     # If user submits the form, it will redirect to the user profile page
     if ("summoners_name" and "server") in request.POST:
@@ -42,21 +44,23 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
 
         matchlist = interactions.get_matchlist(server, summoner["puuid"])
         databases.add_matches_to_db(matchlist, summoner_name)
-        match_not_in_database = databases.find_summaries_not_in_db(
+        match_not_in_database = databases.find_matches_not_in_db(
             matchlist, summoner_name
         )
 
         if match_not_in_database:
-            match_preview_list = run(
-                interactions.get_match_preview_list(
-                    match_not_in_database, summoner["puuid"]
+            match_json_list = run(
+                interactions.get_match_json_list(
+                    match_not_in_database
                 )
             )
-            databases.save_summaries_to_db(match_preview_list, summoner_name)
+            databases.save_matches_to_db(match_json_list, summoner_name)
 
-        summoner_db = Summoner.objects.get(summoner=summoner_name)
-        summoner_db = databases.update_summoner_db(summoner_db, match_preview_list)
-        summoner_db.save()
+            player_summary_list = run(interactions.get_player_summary_list(match_json_list, summoner["puuid"]))
+            databases.save_player_summaries_to_db(player_summary_list, summoner_name)
+            summoner_db = Summoner.objects.get(summoner=summoner_name)
+            summoner_db = databases.update_summoner_db(summoner_db, player_summary_list)
+            summoner_db.save()
 
         context = {
             "match_list": Match.objects.all().filter(summoner=summoner_name),
@@ -72,6 +76,8 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
     else:
         context = {"summoner": summoner}
 
+    print("Time:", time.time() - x0)
+
     return render(request, template, context)
 
 
@@ -81,7 +87,7 @@ def get_match_data(request, server, summoner_name, match_id):
     """
     match_object = Match.objects.get(match_id=match_id, summoner=summoner_name)
     match_info_json = sessions.load_match_summary(
-        request, server, match_id, match_object.summary_json["info"]
+        request, server, match_id, match_object.match_json["info"]
     )
 
     return JsonResponse(match_info_json)

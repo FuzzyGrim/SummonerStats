@@ -130,7 +130,7 @@ def get_matchlist(server, puuid):
     return matchlist
 
 
-async def get_match_preview_list(matches, puuid):
+async def get_match_json_list(matches):
     """
     Async http request for getting match json and organizing the players data
     """
@@ -150,12 +150,12 @@ async def get_match_preview_list(matches, puuid):
                 + "?api_key="
                 + API_KEY
             )
-            tasks.append(ensure_future(get_match_preview(session, url, puuid)))
+            tasks.append(ensure_future(get_match_json(session, url)))
 
         return await gather(*tasks)
 
 
-async def get_match_preview(session, url, puuid):
+async def get_match_json(session, url):
     """
     Async to get the json from the request
     """
@@ -165,51 +165,8 @@ async def get_match_preview(session, url, puuid):
         async with session.get(url) as response:
             if response.status == 200:
                 match = await response.json()
-
                 # 0 is custom matches; 2000, 2010 and 2020 are tutorial matches
                 if match["info"]["queueId"] not in {0, 2000, 2010, 2020}:
-                    participant_number = helpers.get_participant_number(match, puuid)
-
-                    player_summary = match["info"]["participants"][participant_number]
-
-                    try:
-                        player_summary["kda"] = round(
-                            (player_summary["kills"] + player_summary["assists"])
-                            / player_summary["deaths"],
-                            2,
-                        )
-                    # Happens when zero deaths
-                    except ZeroDivisionError:
-                        player_summary["kda"] = (
-                            player_summary["kills"] + player_summary["assists"]
-                        )
-
-                    player_summary["summoner_spell_1"] = helpers.get_summoner_spell(
-                        player_summary["summoner1Id"]
-                    )
-                    player_summary["summoner_spell_2"] = helpers.get_summoner_spell(
-                        player_summary["summoner2Id"]
-                    )
-                    player_summary["rune_primary"] = helpers.get_rune_primary(
-                        player_summary["perks"]["styles"][0]["selections"][0]["perk"]
-                    )
-                    player_summary["rune_secondary"] = helpers.get_rune_secondary(
-                        player_summary["perks"]["styles"][1]["style"]
-                    )
-
-                    player_summary = helpers.get_preview_stats(
-                        player_summary, match["info"]["gameDuration"] / 60
-                    )
-
-                    player_summary["items"] = [
-                        player_summary["item0"],
-                        player_summary["item1"],
-                        player_summary["item2"],
-                        player_summary["item6"],
-                        player_summary["item3"],
-                        player_summary["item4"],
-                        player_summary["item5"],
-                    ]
 
                     # Get the date of match creation
                     match["date"] = helpers.get_date_by_timestamp(
@@ -234,21 +191,85 @@ async def get_match_preview(session, url, puuid):
                                 match["info"]["participants"][i + 5],
                             ]
                         )
-                else:
-                    player_summary = {}
-                return [match, player_summary]
+                return match
 
             elif response.status == 429:
                 print(
                     "Rate limit exceeded, sleeping for "
                     + response.headers["Retry-After"]
-                    + "seconds"
+                    + " seconds"
                 )
                 await sleep(int(response.headers["Retry-After"]))
             attempts += 1
 
     if attempts >= max_attempts:
         raise Exception("Failed: Maxed out attempts")
+
+
+async def get_player_summary_list(matches, puuid):
+    """
+    Async http request for getting match json and organizing the players data
+    """
+
+    tasks = []
+
+    for match in matches:
+        tasks.append(ensure_future(get_player_summary(match, puuid)))
+
+    return await gather(*tasks)
+
+
+async def get_player_summary(match, puuid):
+    participant_number = helpers.get_participant_number(match, puuid)
+    print(match["metadata"]["matchId"])
+
+    player_summary = match["info"]["participants"][participant_number]
+
+    try:
+        player_summary["kda"] = round(
+            (player_summary["kills"] + player_summary["assists"])
+            / player_summary["deaths"],
+            2,
+        )
+    # Happens when zero deaths
+    except ZeroDivisionError:
+        player_summary["kda"] = (
+            player_summary["kills"] + player_summary["assists"]
+        )
+
+    player_summary["summoner_spell_1"] = helpers.get_summoner_spell(
+        player_summary["summoner1Id"]
+    )
+    player_summary["summoner_spell_2"] = helpers.get_summoner_spell(
+        player_summary["summoner2Id"]
+    )
+    player_summary["rune_primary"] = helpers.get_rune_primary(
+        player_summary["perks"]["styles"][0]["selections"][0]["perk"]
+    )
+    player_summary["rune_secondary"] = helpers.get_rune_secondary(
+        player_summary["perks"]["styles"][1]["style"]
+    )
+
+    player_summary = helpers.get_preview_stats(
+        player_summary, match["info"]["gameDuration"] / 60
+    )
+
+    player_summary["items"] = [
+        player_summary["item0"],
+        player_summary["item1"],
+        player_summary["item2"],
+        player_summary["item6"],
+        player_summary["item3"],
+        player_summary["item4"],
+        player_summary["item5"],
+    ]
+
+    player_summary["matchId"] = match["metadata"]["matchId"]
+    player_summary["gameMode"] = match["info"]["gameMode"]
+    player_summary["gameDuration"] = int(round(match["info"]["gameDuration"] / 60, 0))
+    player_summary["gameCreation"] = helpers.get_date_by_timestamp(match["info"]["gameCreation"])
+
+    return player_summary
 
 
 def match_summary(server, match_json):
