@@ -5,30 +5,31 @@ from api.utils import helpers
 
 def update_summoner_db(summoner_db, matches):
     for match in matches:
-        position_dict = match[1]["teamPosition"].lower()
-        # Only if it's a ranked or normal match, not urf, not aram...
-        # and position isn't empty, which happens when player went afk and remaked
-        if match[0]["info"]["gameMode"] == "CLASSIC" and position_dict != "":
-            summoner_db.roles[position_dict]["num"] += 1
+        if match[1]:
+            position_dict = match[1]["teamPosition"].lower()
+            # Only if it's a ranked or normal match, not urf, not aram...
+            # and position isn't empty, which happens when player went afk and remaked
+            if match[0]["info"]["gameMode"] == "CLASSIC" and position_dict != "":
+                summoner_db.roles[position_dict]["num"] += 1
 
-            if match[1]["win"]:
-                summoner_db.roles[position_dict]["wins"] += 1
-            else:
-                summoner_db.roles[position_dict]["losses"] += 1
+                if match[1]["win"]:
+                    summoner_db.roles[position_dict]["wins"] += 1
+                else:
+                    summoner_db.roles[position_dict]["losses"] += 1
 
-            summoner_db.roles[position_dict]["win_rate"] = int(
-                summoner_db.roles[position_dict]["wins"]
-                / summoner_db.roles[position_dict]["num"]
-                * 100
-            )
+                summoner_db.roles[position_dict]["win_rate"] = int(
+                    summoner_db.roles[position_dict]["wins"]
+                    / summoner_db.roles[position_dict]["num"]
+                    * 100
+                )
 
-            summoner_db = add_database_ranked_stats(
-                summoner_db, match[0], match[1]
-            )
+                summoner_db = add_database_ranked_stats(
+                    summoner_db, match[0], match[1]
+                )
 
-            summoner_db = add_database_champion_stats(
-                summoner_db, match[0], match[1]
-            )
+                summoner_db = add_database_champion_stats(
+                    summoner_db, match[0], match[1]
+                )
     
     # order champions in database by number of matches, then by win rate and then by kda
     summoner_db.champions = dict(

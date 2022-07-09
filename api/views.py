@@ -46,12 +46,13 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
             matchlist, summoner_name
         )
 
-        match_preview_list = run(
-            interactions.get_match_preview_list(
-                match_not_in_database, summoner["puuid"]
+        if match_not_in_database:
+            match_preview_list = run(
+                interactions.get_match_preview_list(
+                    match_not_in_database, summoner["puuid"]
+                )
             )
-        )
-        databases.save_summaries_to_db(match_preview_list, summoner_name)
+            databases.save_summaries_to_db(match_preview_list, summoner_name)
 
         summoner_db = Summoner.objects.get(summoner=summoner_name)
         summoner_db = databases.update_summoner_db(summoner_db, match_preview_list)

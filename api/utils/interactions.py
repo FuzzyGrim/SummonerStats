@@ -135,29 +135,24 @@ async def get_match_preview_list(matches, puuid):
     Async http request for getting match json and organizing the players data
     """
 
-    if matches:
-        platform = (matches[0].split("_"))[0]
-        region = helpers.get_region_by_platform(platform)
+    platform = (matches[0].split("_"))[0]
+    region = helpers.get_region_by_platform(platform)
 
-        async with ClientSession() as session:
-            tasks = []
+    async with ClientSession() as session:
+        tasks = []
 
-            for match in matches:
-                url = (
-                    "https://"
-                    + region
-                    + ".api.riotgames.com/lol/match/v5/matches/"
-                    + match
-                    + "?api_key="
-                    + API_KEY
-                )
-                tasks.append(ensure_future(get_match_preview(session, url, puuid)))
+        for match in matches:
+            url = (
+                "https://"
+                + region
+                + ".api.riotgames.com/lol/match/v5/matches/"
+                + match
+                + "?api_key="
+                + API_KEY
+            )
+            tasks.append(ensure_future(get_match_preview(session, url, puuid)))
 
-            match_preview_list = await gather(*tasks)
-    else:
-        match_preview_list = []
-
-    return match_preview_list
+        return await gather(*tasks)
 
 
 async def get_match_preview(session, url, puuid):
@@ -239,6 +234,8 @@ async def get_match_preview(session, url, puuid):
                                 match["info"]["participants"][i + 5],
                             ]
                         )
+                else:
+                    player_summary = {}
                 return [match, player_summary]
 
             elif response.status == 429:
