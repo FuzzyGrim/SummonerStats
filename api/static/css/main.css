@@ -54,15 +54,21 @@ form .form-select {
 }
 
 #profile main {
-  padding-top: 8rem;
+  padding-top: 6rem;
 }
 
 #profile main .summoner-error{
   text-align:center;
 }
 
+#profile main .main-container{
+  max-width: 70%;
+}
+
 main .main-profile {
-  margin-bottom: 3rem;
+  padding: 1.2rem 0 .5rem 0;
+  background-color: #abaceee0;
+  margin-bottom: 1rem;
   align-items: center;
 }
 
@@ -99,19 +105,33 @@ main .ranked-points {
   font-size: 1em;
 }
 
-.tooltip-information {
+#stats-champions .card-stats-champions {
+  padding-top: 1rem;
+  background-color: #abc5d8;
+  border-color: #A0B7C7;
+}
+
+#stats-champions .title{
+  margin-bottom: 1rem
+}
+
+#stats-champions .tooltip-information {
   float: right;
-  margin-right: 2rem;
+  margin-right: 1rem;
   font-size: 1em;
 }
 
-.icons {
+#stats-champions .icons {
   font-size: 2em;
 }
 
-.summary-title {
+#stats-champions .summary-title {
   margin: 0 1.5rem 0 1.5rem;
   font-size: 2em;
+}
+
+.stats {
+  margin-bottom: 1rem;
 }
 
 .stats .progress-bar-vertical {
@@ -130,6 +150,11 @@ main .ranked-points {
   width: 1em;
   max-height: 100%;
   margin-top: .4rem;
+}
+
+.match-list .matches {
+  background-color: #A0B7C7;
+  border-color: #A0B7C7;
 }
 
 .match-list .match-summary {
@@ -196,8 +221,12 @@ main .ranked-points {
   margin-top: .2rem;
 }
 
-.group-two .items-blank {
-  background-color: #5190b9;
+.group-two .items-blue-blank {
+  background-color: #63b5ec;
+}
+
+.group-two .items-red-blank {
+  background-color: #e6867f;
 }
 
 .match-list .group-three {

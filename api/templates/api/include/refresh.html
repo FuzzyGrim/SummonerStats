@@ -1,76 +1,75 @@
-<div class="stats">
-  <span class="tooltip-information" data-bs-toggle="tooltip" data-bs-placement="right" title="Based on {{ summoner_db.matches }} match{{ summoner_db.matches|pluralize:"es" }} from normal and ranked matches">
-    <i class="bi bi-info-circle-fill"></i>
-  </span>
-  <div class="container d-flex align-items-center justify-content-center">
-    <i class="bi bi-collection-fill icons"></i> <span class="summary-title">STATS</span> <i class="bi bi-collection-fill icons"></i>
-  </div>
+<div class="card card-stats-champions">
+  <div class="stats">
+    <span class="tooltip-information" data-bs-toggle="tooltip" data-bs-placement="right" title="Based on {{ summoner_db.matches }} match{{ summoner_db.matches|pluralize:"es" }} from normal and ranked matches">
+      <i class="bi bi-info-circle-fill"></i>
+    </span>
+    <div class="container d-flex align-items-center justify-content-center title">
+      <i class="bi bi-collection-fill icons"></i> <span class="summary-title">STATS</span> <i class="bi bi-collection-fill icons"></i>
+    </div>
 
-  <div class="bars d-flex justify-content-around">
-    {% for role, stats in summoner_db.roles.items %}
-      <div class="progress-role d-flex flex-column justify-content-center align-items-center">
-        <div class="progress progress-bar-vertical" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ stats.wins }} - {{ stats.losses }} / {{stats.win_rate}}%">
-          <div class="progress-bar" role="progressbar" aria-valuenow="{{stats.win_rate}}" aria-valuemin="0" aria-valuemax="100" style="height: {{stats.win_rate}}%"> </div>
+    <div class="bars d-flex justify-content-around">
+      {% for role, stats in summoner_db.roles.items %}
+        <div class="progress-role d-flex flex-column justify-content-center align-items-center">
+          <div class="progress progress-bar-vertical" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ stats.wins }}W - {{ stats.losses }}L / {{stats.win_rate}}% WR">
+            <div class="progress-bar" role="progressbar" aria-valuenow="{{stats.win_rate}}" aria-valuemin="0" aria-valuemax="100" style="height: {{stats.win_rate}}%"> </div>
+          </div>
+          <img class="bar-role-img" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-{{ role }}.png">
+          <div class="text-center">{{stats.num}}</div>
         </div>
-        <img class="bar-role-img" src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-{{ role }}.png">
-        <div class="text-center">{{stats.num}}</div>
-      </div>
-    {% endfor %}
-  </div>
+      {% endfor %}
+    </div>
 
-  <table class="table table-sm table-striped text-center">
-    <thead>
-      <tr>
-        <th scope="col">STAT</th>
-        <th scope="col">TOTAL</th>
-        <th scope="col">PER MIN</th>
-        <th scope="col">AVG</th>
-
-    </thead>
-    <tbody>
-      {% for stat, values in summoner_db.stats.items %}
-      <tr>
-        <td>{{stat|capfirst}}</td>
-        <td>{{values.total}}</td>
-        <td>{{values.per_min}}</td>
-        <td>{{values.per_match}}</td>
-      </tr>
-    {% endfor %}
-    <tbody>
-  </table>
-
-</div>
-
-<div class="champions">
-  <span class="tooltip-information" data-bs-toggle="tooltip" data-bs-placement="right" title="Based on {{ summoner_db.matches }} match{{ summoner_db.matches|pluralize:"es" }} from normal and ranked matches">
-    <i class="bi bi-info-circle-fill"></i>
-  </span>
-  <div class="container d-flex align-items-center justify-content-center">
-    <i class="bi bi-bar-chart-fill icons"></i> <span class="summary-title">CHAMPIONS</span> <i class="bi bi-bar-chart-fill icons"></i>
-  </div>
-
-  <table class="table table-sm table-striped text-center">
-    <thead>
-      <tr>
-        <th scope="col"></th>
-        <th scope="col">CHAMP</th>
-        <th scope="col">PLAYS</th>
-        <th scope="col">WR</th>
-        <th scope="col">KDA</th>
-    </thead>
-    <tbody>
-      {% for champion, stats in summoner_db.champions.items %}
+    <table class="table table-sm table-striped text-center">
+      <thead>
         <tr>
-          <th scope="row">{{ forloop.counter }}</th>
-          <td>{{champion}}</td>
-          <td>{{stats.num}}</td>
-          <td>{{stats.win_rate}}</td>
-          <td>{{stats.kda}}</td>
+          <th scope="col">STAT</th>
+          <th scope="col">TOTAL</th>
+          <th scope="col">PER MIN</th>
+          <th scope="col">AVG</th>
+
+      </thead>
+      <tbody>
+        {% for stat, values in summoner_db.stats.items %}
+        <tr>
+          <td>{{stat|capfirst}}</td>
+          <td>{{values.total}}</td>
+          <td>{{values.per_min}}</td>
+          <td>{{values.per_match}}</td>
         </tr>
       {% endfor %}
-    <tbody>
-  </table>
+      <tbody>
+    </table>
 
+  </div>
+
+  <div class="champions">
+    <div class="container d-flex align-items-center justify-content-center title">
+      <i class="bi bi-bar-chart-fill icons"></i> <span class="summary-title">CHAMPIONS</span> <i class="bi bi-bar-chart-fill icons"></i>
+    </div>
+
+    <table class="table table-sm table-striped text-center">
+      <thead>
+        <tr>
+          <th scope="col"></th>
+          <th scope="col">CHAMP</th>
+          <th scope="col">PLAYS</th>
+          <th scope="col">WR</th>
+          <th scope="col">KDA</th>
+      </thead>
+      <tbody>
+        {% for champion, stats in summoner_db.champions.items %}
+          <tr>
+            <th scope="row">{{ forloop.counter }}</th>
+            <td>{{champion}}</td>
+            <td>{{stats.num}}</td>
+            <td>{{stats.win_rate}}</td>
+            <td>{{stats.kda}}</td>
+          </tr>
+        {% endfor %}
+      <tbody>
+    </table>
+  
+  </div>
 </div>
 
 <script>
