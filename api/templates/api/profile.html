@@ -36,7 +36,7 @@
             </div>
 
             <div class="ranked-points rounded-2">
-              <strong><span class="rank-title">Ranked Solo</span></strong>
+              <strong><span class="rank-title">RANKED SOLO</span></strong>
               <hr>
               {% if summoner_league.RANKED_SOLO_5x5.tier == "Unranked" %}
                 <span class="rank-img"><img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.png"></span>
@@ -48,7 +48,7 @@
             </div>
             
             <div class="ranked-points rounded-2">
-              <strong><span class="rank-title">Ranked Flex</span></strong>
+              <strong><span class="rank-title">RANKED FLEX</span></strong>
               <hr>
 
               {% if summoner_league.RANKED_FLEX_SR.tier == "Unranked" %}
@@ -151,7 +151,7 @@
               <script>
                 $.endlessPaginate({
                     paginateOnScroll: true,
-                    paginateOnScrollMargin: 100
+                    paginateOnScrollMargin: 350
                 });
               </script>
               {% endblock %}

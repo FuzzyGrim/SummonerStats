@@ -67,7 +67,8 @@ form .form-select {
 
 main .main-profile {
   padding: 1.2rem 0 .5rem 0;
-  background-color: #abaceee0;
+  /* background-color: #abaceee0; */
+  background-color: #ADD8E6;
   margin-bottom: 1rem;
   align-items: center;
 }
@@ -79,7 +80,7 @@ main .main-profile {
 }
 
 .main-profile .summoner-name {
-  color:white;
+  color: black;
   text-align: center;
   font-size: 1em;
 }
@@ -90,7 +91,7 @@ main .ranked-points {
 }
 
 .ranked-points .rank-title {
-  color: white; 
+  color: black; 
   text-align: center;
   font-size: 1.2em;
 }
