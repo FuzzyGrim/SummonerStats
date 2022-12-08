@@ -148,10 +148,8 @@ def get_summoner_spell(summoner_key):
             return "summoner_empty"
 
 
-def get_rune_primary(rune_id):
-    url = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perks.json"
-    data_json = get(url).json()
-    rune_dict = next((item for item in data_json if item["id"] == rune_id), None)
+def get_rune_primary(rune_id, perks_json):
+    rune_dict = next((item for item in perks_json if item["id"] == rune_id), None)
     return rune_dict["iconPath"].split("Styles/", 1)[1]
 
 

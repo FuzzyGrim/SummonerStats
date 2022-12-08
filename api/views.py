@@ -8,7 +8,6 @@ from api.utils import databases, interactions, sessions
 from api.models import Summoner, Match
 
 from asyncio import run
-import time
 
 
 def index(request):
@@ -25,7 +24,6 @@ def index(request):
 
 def user_info(request, server, summoner_name, template="api/profile.html"):
     """Summoners' profile page"""
-    x0 = time.time()
 
     # If user submits the form, it will redirect to the user profile page
     if ("summoners_name" and "server") in request.POST:
@@ -56,9 +54,11 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
             )
             databases.save_matches_to_db(match_json_list, summoner_name)
 
+            perks_json = sessions.load_perks_json(request)
             player_summary_list = run(
-                interactions.get_player_summary_list(match_json_list, summoner["puuid"])
+                interactions.get_player_summary_list(match_json_list, summoner["puuid"], perks_json)
             )
+
             databases.save_player_summaries_to_db(player_summary_list, summoner_name)
             summoner_db = databases.update_summoner_db(summoner_db, player_summary_list)
             summoner_db.save()
@@ -76,8 +76,6 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
     # If user not found
     else:
         context = {"summoner": summoner}
-
-    print("Time:", time.time() - x0)
 
     return render(request, template, context)
 

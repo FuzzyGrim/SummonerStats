@@ -2,10 +2,9 @@
 Contains functions that interacts with RIOT's API.
 """
 from api.utils import helpers, sessions
-from api.models import Summoner, Match
+from api.models import Match
 from asgiref.sync import sync_to_async
 from datetime import timedelta
-from requests import get
 from decouple import config
 from aiohttp import ClientSession
 from asyncio import ensure_future, gather, run, sleep
@@ -213,18 +212,17 @@ async def get_match_json(session, url, match):
         raise Exception("Failed: Maxed out attempts")
 
 
-async def get_player_summary_list(matches, puuid):
+async def get_player_summary_list(matches, puuid, perks_json):
     """Async to get a list of players summaries from match list"""
-
     tasks = []
 
     for match in matches:
-        tasks.append(ensure_future(get_player_summary(match, puuid)))
+        tasks.append(ensure_future(get_player_summary(match, puuid, perks_json)))
 
     return await gather(*tasks)
 
 
-async def get_player_summary(match, puuid):
+async def get_player_summary(match, puuid, perks_json):
     """Async to organize the players data"""
 
     participant_number = helpers.get_participant_number(match, puuid)
@@ -247,8 +245,9 @@ async def get_player_summary(match, puuid):
     player_summary["summoner_spell_2"] = helpers.get_summoner_spell(
         player_summary["summoner2Id"]
     )
+
     player_summary["rune_primary"] = helpers.get_rune_primary(
-        player_summary["perks"]["styles"][0]["selections"][0]["perk"]
+        player_summary["perks"]["styles"][0]["selections"][0]["perk"], perks_json
     )
     player_summary["rune_secondary"] = helpers.get_rune_secondary(
         player_summary["perks"]["styles"][1]["style"]
