@@ -161,7 +161,6 @@ main .ranked-points {
 .match-list .match-summary {
   cursor: pointer;
   margin-bottom: .5rem;
-  padding: .5rem;
 }
 
 .match-list #win {
@@ -170,6 +169,10 @@ main .ranked-points {
 
 .match-list #lose {
   background-color: #E2B6B3;
+}
+
+.match-list .flex-wrap {
+  padding: .5rem;
 }
 
 .match-list .group-one {
@@ -263,5 +266,10 @@ main .ranked-points {
 
 .details {
   display: none;
-  margin-top: 2rem;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.details td {
+  border-bottom-width: 0px;
 }

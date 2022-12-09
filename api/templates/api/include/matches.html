@@ -96,19 +96,15 @@
                 </div>
 
                 <div>
-                    <table class="table table-bordered details" id="match-{{match.match_json.metadata.matchId}}">
+                    <table class="table details" id="match-{{match.match_json.metadata.matchId}}">
                         <!-- table structure for later editing with javascript -->
-                        <thead id='match-{{match.match_json.metadata.matchId}}-thead-general'>
-                        </thead>
-                        <tbody id='match-{{match.match_json.metadata.matchId}}-tbody-general'>
-                        </tbody>
                         <thead id='match-{{match.match_json.metadata.matchId}}-thead-blue'>
                         </thead>
-                        <tbody id='match-{{match.match_json.metadata.matchId}}-tbody-blue'>
+                        <tbody class="table-group-divider" id='match-{{match.match_json.metadata.matchId}}-tbody-blue'>
                         </tbody>
                         <thead id='match-{{match.match_json.metadata.matchId}}-thead-red'>
                         </thead>
-                        <tbody id='match-{{match.match_json.metadata.matchId}}-tbody-red'>
+                        <tbody class="table-group-divider" id='match-{{match.match_json.metadata.matchId}}-tbody-red'>
                         </tbody>
                         <!-- table structure for later editing with javascript -->
                     </table>

@@ -65,13 +65,10 @@ def get_preview_stats(player_summary, game_duration):
         player_summary["challenges"]["kill_participation_percentage"] = "ERROR"
 
     player_summary["gold_short"] = round(
-        player_summary["goldEarned"] / 1000,
-        1,
-    )
+        player_summary["goldEarned"] / 1000, 1)
+
     player_summary["damage_short"] = round(
-        player_summary["totalDamageDealtToChampions"] / 1000,
-        1,
-    )
+        player_summary["totalDamageDealtToChampions"] / 1000, 1)
     return player_summary
 
 

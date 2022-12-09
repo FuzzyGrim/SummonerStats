@@ -302,6 +302,9 @@ def match_summary(server, match_json):
         participant["totalMinionsKilled"] = (
             participant["totalMinionsKilled"] + participant["neutralMinionsKilled"]
         )
+        participant["totalDamageDealtToChampions"] = round(participant["totalDamageDealtToChampions"] / 1000, 1)
+        participant["killParticipation"] = round(participant["challenges"]["killParticipation"] * 100, 1)
+        participant["goldEarned"] = round(participant["goldEarned"] / 1000, 1)
         summoner_id_list.append(participant["summonerId"])
 
     # Change vocabulary from Win/Fail to Victory/Defeat
