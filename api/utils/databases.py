@@ -185,8 +185,8 @@ def find_matches_not_in_db(matchlist, summoner_name):
             match_id=match, summoner=summoner_name, match_json__exact={}
         ).exists():
             summary_not_in_database.append(match)
-            # Limit to 7 for lazy load pagination
-            if len(summary_not_in_database) == 7:
+            # Limit to 10 for lazy load pagination
+            if len(summary_not_in_database) == 10:
                 break
     return summary_not_in_database
 
