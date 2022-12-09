@@ -1,0 +1,19 @@
+{
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.linting.pylintArgs": [
+        "--load-plugins=pylint_django --django-settings-module=api.settings",
+    ],
+    "cSpell.words": [
+        "aiohttp",
+        "EUNE",
+        "matchups",
+        "puuid",
+        "remaked",
+        "riotgames",
+        "summonerbarrier",
+        "summonerignite",
+        "summonermana",
+        "Unranked"
+    ],
+}
