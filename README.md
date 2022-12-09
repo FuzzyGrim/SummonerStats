@@ -1,6 +1,9 @@
 <br />
 
-![SummonerStats Logo](./api/static/favicon/android-chrome-256x256.png)
+<p align="center">
+  <img src="./api/static/favicon/android-chrome-192x192.png" />
+</p>
+
 
 <h3 align="center">SummonerStats</h3>
 
@@ -16,7 +19,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-![screenshot]](./screenshot.png)
+![screenshot](./api/static/assets/screenshot.png)
 
 SummonerStats is a site that provides League of Legends summoner's stats.
 
