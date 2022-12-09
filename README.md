@@ -1,12 +1,12 @@
 <br />
 
+![SummonerStats Logo](./api/static/favicon/android-chrome-256x256.png)
+
 <h3 align="center">SummonerStats</h3>
 
 <p align="center">
   <br />
   <br />
-  <a href="https://github.com/othneildrew/Best-README-Template">View Demo</a>
-  ·
   <a href="https://github.com/FuzzyGrim/SummonerStats/issues">Report Bug</a>
   ·
   <a href="https://github.com/FuzzyGrim/SummonerStats/issues">Request Feature</a>
@@ -16,7 +16,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
+![screenshot]](./screenshot.png)
 
 SummonerStats is a site that provides League of Legends summoner's stats.
 
@@ -24,6 +24,8 @@ SummonerStats is a site that provides League of Legends summoner's stats.
 
 * [Django](https://djangoproject.com), a high-level Python Web framework.
 * [Bootstrap](https://getbootstrap.com), a free and responsive framework for faster and easier web development.
+* [Sqlite3](https://www.sqlite.org/index.html), a small, fast, self-contained SQL database engine.
+* [JQuery](https://jquery.com), a fast, small, and feature-rich JavaScript library.
 
 
 <!-- GETTING STARTED -->
@@ -31,12 +33,9 @@ SummonerStats is a site that provides League of Legends summoner's stats.
 
 To get a local copy up and running follow these simple example steps.
 
-### Prerequisites
-
-* Python 3
-
 ### Installation
 
+1. Install [Python 3](https://www.python.org/downloads/)
 1. Get a free API Key at [Riot Developer Portal](https://developer.riotgames.com/)
 2. Clone the repo
    ```sh
@@ -67,33 +66,6 @@ To get a local copy up and running follow these simple example steps.
    python manage.py runserver
    ```
 9. Now that the server’s running, visit http://127.0.0.1:8000/ with your Web browser
-
-
-## Deployment
-
-It is possible to deploy to Heroku or to your own server.
-
-### Heroku
-
-```bash
-$ heroku create
-$ heroku addons:add heroku-postgresql:hobby-dev
-$ heroku pg:promote DATABASE_URL
-$ heroku config:set ENVIRONMENT=PRODUCTION
-$ heroku config:set DJANGO_SECRET_KEY=`./manage.py generate_secret_key`
-```
-
-<!-- CONTRIBUTING -->
-## Contributing
-
-Do not hesitate to open an issue or pull request. Any contributions you make are **greatly appreciated**. To open a pull request:
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
 
 <!-- LICENSE -->
 ## License
