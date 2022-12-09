@@ -8,8 +8,6 @@
 <h3 align="center">SummonerStats</h3>
 
 <p align="center">
-  <br />
-  <br />
   <a href="https://github.com/FuzzyGrim/SummonerStats/issues">Report Bug</a>
   ·
   <a href="https://github.com/FuzzyGrim/SummonerStats/issues">Request Feature</a>
