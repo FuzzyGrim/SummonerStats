@@ -1,8 +1,6 @@
 """Functions that performs computation on the database"""
 
 from api.models import Summoner, Match
-from api.utils import helpers
-
 
 def update_summoner_db(summoner_db, player_summary_list):
     for player_summary in player_summary_list:
