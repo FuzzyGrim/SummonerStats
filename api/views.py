@@ -80,7 +80,7 @@ def user_info(request, server, summoner_name, template="api/profile.html"):
     return render(request, template, context)
 
 
-def summoner_stats_refresh(request, summoner_name):
+def summoner_stats_refresh(request, server, summoner_name):
     summoner_db = Summoner.objects.get(summoner=summoner_name)
     return render(request, "api/include/refresh.html", {"summoner_db": summoner_db})
 
